@@ -3,9 +3,8 @@ using WheelDeck.Core.Output;
 namespace WheelDeck.Backends.Windows;
 
 /// <summary>
-/// Windows ViGEmBus virtual Xbox 360 controller backend. Exposes analog axes and
-/// controller buttons. Simulated key presses are handled separately (TASK-014), so
-/// SendKey is a no-op here until that backend lands.
+/// Windows virtual output backend. Exposes analog axes and controller buttons through
+/// ViGEmBus, and simulates keyboard presses through the SendInput API.
 /// </summary>
 public sealed class ViGEmXboxBackend : VirtualOutputBackend
 {
@@ -52,6 +51,7 @@ public sealed class ViGEmXboxBackend : VirtualOutputBackend
         };
 
     private readonly object _lock = new();
+    private readonly SendInputKeySimulator _keys = new();
 
     private IntPtr _vigem = IntPtr.Zero;
     private IntPtr _target = IntPtr.Zero;
@@ -170,7 +170,17 @@ public sealed class ViGEmXboxBackend : VirtualOutputBackend
 
     public void SendKey(KeyCode keyCode, bool pressed)
     {
-        // Simulated key presses are implemented by the SendInput backend (TASK-014).
+        lock (_lock)
+        {
+            if (pressed)
+            {
+                _keys.Press(keyCode);
+            }
+            else
+            {
+                _keys.Release(keyCode);
+            }
+        }
     }
 
     public void Neutralize()
@@ -184,6 +194,7 @@ public sealed class ViGEmXboxBackend : VirtualOutputBackend
             _brake = 0f;
             _clutch = 0f;
             _buttons = 0;
+            _keys.ReleaseAll();
 
             Update();
         }
@@ -210,6 +221,8 @@ public sealed class ViGEmXboxBackend : VirtualOutputBackend
             ViGEmClient.vigem_disconnect(_vigem);
             ViGEmClient.vigem_free(_vigem);
             _vigem = IntPtr.Zero;
+
+            _keys.Dispose();
         }
     }
 
@@ -220,6 +233,7 @@ public sealed class ViGEmXboxBackend : VirtualOutputBackend
         _brake = 0f;
         _clutch = 0f;
         _buttons = 0;
+        _keys.ReleaseAll();
         Update();
     }
 
