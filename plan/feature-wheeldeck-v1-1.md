@@ -76,7 +76,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | TASK-013 | Implement ViGEmBus virtual Xbox controller in `desktop/WheelDeck.Backends/Windows/`. | ✅ | 2026-09-03 |
 | TASK-014 | Implement SendInput key simulation in the Windows backend. | ✅ | 2026-09-03 |
 | TASK-015 | Implement uinput virtual joystick in `desktop/WheelDeck.Backends/Linux/`. | ✅ | 2026-09-03 |
-| TASK-016 | Implement `neutralize()` on both backends to zero axes and release buttons/keys. | | |
+| TASK-016 | Implement `neutralize()` on both backends to zero axes and release buttons/keys. | ✅ | 2026-09-03 |
 
 ### Implementation Phase 5: Desktop network/session layer
 
