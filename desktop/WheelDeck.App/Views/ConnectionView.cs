@@ -12,5 +12,11 @@ public sealed partial class ConnectionView : UserControl
         DataContext = new ConnectionViewModel();
     }
 
+    public ConnectionView(ConnectionViewModel viewModel)
+    {
+        InitializeComponent();
+        DataContext = viewModel;
+    }
+
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 }

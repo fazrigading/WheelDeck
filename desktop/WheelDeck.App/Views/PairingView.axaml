@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WheelDeck.App.Views.PairingView">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock FontSize="22" FontWeight="SemiBold" Text="Pairing" />
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="Generate code" Command="{Binding GenerateCodeCommand}" />
+      <TextBlock VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Text="{Binding PairingCode}" />
+    </StackPanel>
+
+    <TextBlock Text="Enter this code on the phone, or scan its QR equivalent." />
+
+    <TextBlock FontWeight="SemiBold" Text="Paired devices" />
+
+    <ListBox ItemsSource="{Binding Devices}">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,2">
+            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                       Text="{Binding DisplayName}" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="8,0"
+                       Text="active" IsVisible="{Binding IsActive}" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+              <Button Content="Set active"
+                      Command="{Binding $parent[UserControl].DataContext.SetActiveCommand}"
+                      CommandParameter="{Binding Id}" />
+              <Button Content="Revoke"
+                      Command="{Binding $parent[UserControl].DataContext.RevokeCommand}"
+                      CommandParameter="{Binding Id}" />
+            </StackPanel>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </StackPanel>
+</UserControl>
