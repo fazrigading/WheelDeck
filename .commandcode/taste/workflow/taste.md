@@ -15,3 +15,4 @@
 
 - Reads existing type/enum definitions before writing code that depends on them, to stay consistent with current shapes and naming. Confidence: 0.6
 - Works on Linux and expects OS-specific tasks to be skipped when they don't apply to the current platform (e.g. skipped TASK-013/014 "because we are on Linux"). Confidence: 0.7
+- When implementation tasks complete, update the plan's task table "Completed" and "Date" columns to reflect done work, then commit that plan update as a chore. Confidence: 0.9
