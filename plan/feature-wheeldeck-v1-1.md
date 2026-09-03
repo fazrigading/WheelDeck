@@ -96,7 +96,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-021 | Add composition root in `desktop/WheelDeck.App/` that picks the backend by OS. | ✅ | 2026-09-03 |
-| TASK-022 | Build connection management UI (status, active device, firewall reminder). | | |
+| TASK-022 | Build connection management UI (status, active device, firewall reminder). | ✅ | 2026-09-03 |
 | TASK-023 | Build pairing UI (PIN/QR, paired list, revoke, set active). | | |
 | TASK-024 | Add first-run setup check for ViGEmBus or uinput permissions. | | |
 | TASK-025 | Add manual launch default and opt-in daemon mode. | | |
