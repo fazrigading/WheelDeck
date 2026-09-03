@@ -15,13 +15,15 @@ public sealed class MainWindow : Window
 
         var pairingManager = new PairingManager();
         var connectionViewModel = new ConnectionViewModel();
+        var setupViewModel = new SetupViewModel(new SetupChecker());
 
         Content = new TabControl
         {
             Items =
             {
                 new TabItem { Header = "Connection", Content = new ConnectionView(connectionViewModel) },
-                new TabItem { Header = "Pairing", Content = new PairingView(pairingManager) }
+                new TabItem { Header = "Pairing", Content = new PairingView(pairingManager) },
+                new TabItem { Header = "Setup", Content = new SetupView(setupViewModel) }
             }
         };
     }

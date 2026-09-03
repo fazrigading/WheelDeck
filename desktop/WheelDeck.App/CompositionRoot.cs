@@ -65,7 +65,8 @@ public sealed class CompositionRoot
         Backend.Shutdown();
     }
 
-    private static VirtualOutputBackend CreateBackend()
+    /// <summary>Creates the virtual output backend for the current OS. Public for the setup check.</summary>
+    public static VirtualOutputBackend CreateBackend()
     {
         if (OperatingSystem.IsWindows())
         {
