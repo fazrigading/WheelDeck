@@ -19,10 +19,11 @@ public sealed class WebSocketListener : IAsyncDisposable
     private readonly int _port;
     private CancellationTokenSource? _cts;
 
-    public event Action<StateMessage>? StateReceived;
-    public event Action<ButtonMessage>? ButtonReceived;
+    public event Action<StateMessage, WebSocket>? StateReceived;
+    public event Action<ButtonMessage, WebSocket>? ButtonReceived;
     public event Action<PairRequest, WebSocket>? PairRequestReceived;
-    public event Action<Heartbeat>? HeartbeatReceived;
+    public event Action<Heartbeat, WebSocket>? HeartbeatReceived;
+    public event Action<WebSocket>? ConnectionClosed;
 
     public WebSocketListener(int port = DefaultPort)
     {
@@ -95,7 +96,11 @@ public sealed class WebSocketListener : IAsyncDisposable
         }
         finally
         {
-            socket?.Dispose();
+            if (socket is not null)
+            {
+                ConnectionClosed?.Invoke(socket);
+                socket.Dispose();
+            }
         }
     }
 
@@ -146,7 +151,7 @@ public sealed class WebSocketListener : IAsyncDisposable
                     var state = JsonSerializer.Deserialize<StateMessage>(json);
                     if (state is not null)
                     {
-                        StateReceived?.Invoke(state);
+                        StateReceived?.Invoke(state, socket);
                     }
 
                     break;
@@ -155,7 +160,7 @@ public sealed class WebSocketListener : IAsyncDisposable
                     var button = JsonSerializer.Deserialize<ButtonMessage>(json);
                     if (button is not null)
                     {
-                        ButtonReceived?.Invoke(button);
+                        ButtonReceived?.Invoke(button, socket);
                     }
 
                     break;
@@ -173,7 +178,7 @@ public sealed class WebSocketListener : IAsyncDisposable
                     var heartbeat = JsonSerializer.Deserialize<Heartbeat>(json);
                     if (heartbeat is not null)
                     {
-                        HeartbeatReceived?.Invoke(heartbeat);
+                        HeartbeatReceived?.Invoke(heartbeat, socket);
                     }
 
                     break;
