@@ -21,6 +21,7 @@ public sealed class WebSocketListener : IAsyncDisposable
 
     public event Action<StateMessage>? StateReceived;
     public event Action<ButtonMessage>? ButtonReceived;
+    public event Action<PairRequest, WebSocket>? PairRequestReceived;
 
     public WebSocketListener(int port = DefaultPort)
     {
@@ -126,12 +127,12 @@ public sealed class WebSocketListener : IAsyncDisposable
             {
                 var text = Encoding.UTF8.GetString(message.ToArray());
                 message.SetLength(0);
-                Dispatch(text);
+                Dispatch(text, socket);
             }
         }
     }
 
-    private void Dispatch(string json)
+    private void Dispatch(string json, WebSocket socket)
     {
         try
         {
@@ -154,6 +155,15 @@ public sealed class WebSocketListener : IAsyncDisposable
                     if (button is not null)
                     {
                         ButtonReceived?.Invoke(button);
+                    }
+
+                    break;
+
+                case "pair_request":
+                    var pairRequest = JsonSerializer.Deserialize<PairRequest>(json);
+                    if (pairRequest is not null)
+                    {
+                        PairRequestReceived?.Invoke(pairRequest, socket);
                     }
 
                     break;
