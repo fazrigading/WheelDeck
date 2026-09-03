@@ -14,13 +14,31 @@ public sealed class PairingManager
     private static readonly TimeSpan InactivityExpiry = TimeSpan.FromDays(30);
 
     private readonly Func<DateTimeOffset> _now;
+    private readonly IPairingStore? _store;
     private readonly Dictionary<string, PairedDevice> _devices = new();
     private readonly Dictionary<string, PairingCode> _pendingCodes = new();
     private readonly Dictionary<string, string> _sessionTokens = new();
 
-    public PairingManager(Func<DateTimeOffset>? now = null)
+    public PairingManager(IPairingStore? store = null, Func<DateTimeOffset>? now = null)
     {
         _now = now ?? (() => DateTimeOffset.UtcNow);
+        _store = store;
+
+        var state = store?.Load();
+        if (state is null)
+        {
+            return;
+        }
+
+        foreach (var device in state.Devices)
+        {
+            _devices[device.Id] = device;
+        }
+
+        foreach (var token in state.SessionTokens)
+        {
+            _sessionTokens[token.Key] = token.Value;
+        }
     }
 
     /// <summary>Issues a fresh one-time pairing code the user enters or scans on the phone.</summary>
@@ -67,6 +85,7 @@ public sealed class PairingManager
 
         _devices[deviceId] = device;
         _sessionTokens[token] = deviceId;
+        Persist();
 
         return new PairingResult(true, token);
     }
@@ -89,6 +108,7 @@ public sealed class PairingManager
 
         device.IsActive = true;
         device.LastSeenAt = _now();
+        Persist();
     }
 
     /// <summary>Revokes a device, removing it from the trusted set.</summary>
@@ -100,6 +120,8 @@ public sealed class PairingManager
             {
                 _sessionTokens.Remove(token);
             }
+
+            Persist();
         }
     }
 
@@ -132,4 +154,18 @@ public sealed class PairingManager
     }
 
     private static string NewSessionToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+    private void Persist()
+    {
+        if (_store is null)
+        {
+            return;
+        }
+
+        _store.Save(new PairingState
+        {
+            Devices = _devices.Values.ToList(),
+            SessionTokens = new Dictionary<string, string>(_sessionTokens)
+        });
+    }
 }
