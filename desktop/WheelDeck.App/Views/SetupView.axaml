@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WheelDeck.App.Views.SetupView">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock FontSize="22" FontWeight="SemiBold" Text="Setup" />
+
+    <Button Content="Check setup" Command="{Binding CheckCommand}" HorizontalAlignment="Left" />
+
+    <Border Background="#F0F0F0" Padding="12" CornerRadius="4">
+      <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+    </Border>
+  </StackPanel>
+</UserControl>
