@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wheeldeck.dev/schema/button_message.json",
+  "title": "WheelDeck button message",
+  "description": "Discrete dashboard control event. Delivered reliably over TCP.",
+  "type": "object",
+  "required": [
+    "type",
+    "control",
+    "action"
+  ],
+  "properties": {
+    "type": {
+      "const": "button"
+    },
+    "control": {
+      "$ref": "controls.json#/definitions/ControlId"
+    },
+    "action": {
+      "$ref": "controls.json#/definitions/ActionType"
+    }
+  },
+  "additionalProperties": false
+}

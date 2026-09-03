@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wheeldeck.dev/schema/state_message.json",
+  "title": "WheelDeck state message",
+  "description": "Continuous steering and pedal state sent on every sensor or touch update. Latest value wins; no acknowledgment required.",
+  "type": "object",
+  "required": [
+    "type",
+    "seq",
+    "steering",
+    "accelerator",
+    "brake",
+    "clutch"
+  ],
+  "properties": {
+    "type": {
+      "const": "state"
+    },
+    "seq": {
+      "type": "integer",
+      "description": "Monotonic sequence number used to detect and discard out-of-order packets."
+    },
+    "steering": {
+      "type": "number",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "description": "Steering angle normalized to -1.0..1.0, where 0 is centered."
+    },
+    "accelerator": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Accelerator pedal pressure, 0.0 at rest to 1.0 fully pressed."
+    },
+    "brake": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Brake pedal pressure, 0.0 at rest to 1.0 fully pressed."
+    },
+    "clutch": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Clutch pedal pressure, 0.0 at rest to 1.0 fully pressed."
+    }
+  },
+  "additionalProperties": false
+}

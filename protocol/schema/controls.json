@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wheeldeck.dev/schema/controls.json",
+  "title": "WheelDeck control enums",
+  "description": "Shared control and action identifiers for the WheelDeck wire protocol. Wire values use snake_case; code-level enum identifiers use PascalCase (for example, turn_signal_left maps to TurnSignalLeft).",
+  "definitions": {
+    "ControlId": {
+      "type": "string",
+      "enum": [
+        "parking_brake",
+        "turn_signal_left",
+        "turn_signal_right",
+        "headlight_toggle",
+        "high_beam_toggle",
+        "wipers",
+        "cruise_toggle",
+        "cruise_set_resume",
+        "engine_start"
+      ]
+    },
+    "ActionType": {
+      "type": "string",
+      "enum": [
+        "toggle",
+        "press",
+        "release",
+        "hold_confirm"
+      ]
+    }
+  }
+}

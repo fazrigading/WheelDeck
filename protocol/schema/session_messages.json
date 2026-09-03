@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wheeldeck.dev/schema/session_messages.json",
+  "title": "WheelDeck session messages",
+  "description": "Pairing, heartbeat, and device-selection messages that gate access to the input mapper.",
+  "definitions": {
+    "pair_request": {
+      "type": "object",
+      "required": [
+        "type",
+        "device_id",
+        "code"
+      ],
+      "properties": {
+        "type": {
+          "const": "pair_request"
+        },
+        "device_id": {
+          "type": "string",
+          "description": "Stable identifier for the phone requesting pairing."
+        },
+        "code": {
+          "type": "string",
+          "description": "The PIN or scanned QR token entered on the phone."
+        }
+      },
+      "additionalProperties": false
+    },
+    "pair_response": {
+      "type": "object",
+      "required": [
+        "type",
+        "device_id",
+        "accepted"
+      ],
+      "properties": {
+        "type": {
+          "const": "pair_response"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "accepted": {
+          "type": "boolean",
+          "description": "True when the pairing code matched and the device is now paired."
+        },
+        "session_token": {
+          "type": "string",
+          "description": "Issued on accepted pairing; lets the phone skip re-pairing on later sessions."
+        }
+      },
+      "additionalProperties": false
+    },
+    "heartbeat": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "heartbeat"
+        },
+        "session_token": {
+          "type": "string",
+          "description": "Optional token identifying the sending device on an active session."
+        }
+      },
+      "additionalProperties": false
+    },
+    "device_switch": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "device_switch"
+        },
+        "device_id": {
+          "type": "string",
+          "description": "Identifier of the device that is no longer active."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/definitions/pair_request"
+    },
+    {
+      "$ref": "#/definitions/pair_response"
+    },
+    {
+      "$ref": "#/definitions/heartbeat"
+    },
+    {
+      "$ref": "#/definitions/device_switch"
+    }
+  ]
+}
