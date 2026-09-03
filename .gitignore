@@ -1,0 +1,35 @@
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# --- Flutter / Dart ---
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.metadata
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/ephemeral/
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/ios/Runner/GeneratedPluginRegistrant.h
+mobile/ios/Runner/GeneratedPluginRegistrant.m
+
+# --- IDE / editor ---
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+Thumbs.db
