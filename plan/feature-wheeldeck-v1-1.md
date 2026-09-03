@@ -40,10 +40,10 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Create `protocol/schema/controls.json` with `ControlId` and `ActionType` enums. | | |
-| TASK-002 | Create `protocol/schema/state_message.json` with `type`, `seq`, `steering`, `accelerator`, `brake`, `clutch`. | | |
-| TASK-003 | Create `protocol/schema/button_message.json` with `type`, `control`, `action`. | | |
-| TASK-004 | Create `protocol/schema/session_messages.json` with `pair_request`, `pair_response`, `heartbeat`, `device_switch`. | | |
+| TASK-001 | Create `protocol/schema/controls.json` with `ControlId` and `ActionType` enums. | ✅ | 2026-09-03 |
+| TASK-002 | Create `protocol/schema/state_message.json` with `type`, `seq`, `steering`, `accelerator`, `brake`, `clutch`. | ✅ | 2026-09-03 |
+| TASK-003 | Create `protocol/schema/button_message.json` with `type`, `control`, `action`. | ✅ | 2026-09-03 |
+| TASK-004 | Create `protocol/schema/session_messages.json` with `pair_request`, `pair_response`, `heartbeat`, `device_switch`. | ✅ | 2026-09-03 |
 
 ### Implementation Phase 2: Repository scaffolding
 
@@ -51,10 +51,10 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-005 | Add git remote `origin` pointing to `https://github.com/fazrigading/WheelDeck.git`. | | |
-| TASK-006 | Write `.gitignore` covering Flutter, .NET, and IDE artifacts. | | |
-| TASK-007 | Write `README.md` with a short description and pointer to `docs/`. | | |
-| TASK-008 | Create directory layout and scaffold `mobile/pubspec.yaml` and `desktop/WheelDeck.sln`. | | |
+| TASK-005 | Add git remote `origin` pointing to `https://github.com/fazrigading/WheelDeck.git`. | ✅ | 2026-09-03 |
+| TASK-006 | Write `.gitignore` covering Flutter, .NET, and IDE artifacts. | ✅ | 2026-09-03 |
+| TASK-007 | Write `README.md` with a short description and pointer to `docs/`. | ✅ | 2026-09-03 |
+| TASK-008 | Create directory layout and scaffold `mobile/pubspec.yaml` and `desktop/WheelDeck.sln`. | ✅ | 2026-09-03 |
 
 ### Implementation Phase 3: Desktop core
 
@@ -62,10 +62,10 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-009 | Add protocol model classes in `desktop/WheelDeck.Core/` referenced from `protocol/schema/`. | | |
-| TASK-010 | Define `VirtualOutputBackend` and `AxisType` in `desktop/WheelDeck.Core/`. | | |
-| TASK-011 | Implement `PairingManager` with `generatePairingCode`, `validatePairing`, `listPairedDevices`, `setActiveDevice`, `revokeDevice`, `isExpired`, `touchLastSeen`, and `PairedDevice`. | | |
-| TASK-012 | Implement `InputMapper` to route axes and buttons per mapping mode, default simulated key presses. | | |
+| TASK-009 | Add protocol model classes in `desktop/WheelDeck.Core/` referenced from `protocol/schema/`. | ✅ | 2026-09-03 |
+| TASK-010 | Define `VirtualOutputBackend` and `AxisType` in `desktop/WheelDeck.Core/`. | ✅ | 2026-09-03 |
+| TASK-011 | Implement `PairingManager` with `generatePairingCode`, `validatePairing`, `listPairedDevices`, `setActiveDevice`, `revokeDevice`, `isExpired`, `touchLastSeen`, and `PairedDevice`. | ✅ | 2026-09-03 |
+| TASK-012 | Implement `InputMapper` to route axes and buttons per mapping mode, default simulated key presses. | ✅ | 2026-09-03 |
 
 ### Implementation Phase 4: Desktop virtual output backends
 
@@ -75,7 +75,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 |------|-------------|-----------|------|
 | TASK-013 | Implement ViGEmBus virtual Xbox controller in `desktop/WheelDeck.Backends/Windows/`. | | |
 | TASK-014 | Implement SendInput key simulation in the Windows backend. | | |
-| TASK-015 | Implement uinput virtual joystick in `desktop/WheelDeck.Backends/Linux/`. | | |
+| TASK-015 | Implement uinput virtual joystick in `desktop/WheelDeck.Backends/Linux/`. | ✅ | 2026-09-03 |
 | TASK-016 | Implement `neutralize()` on both backends to zero axes and release buttons/keys. | | |
 
 ### Implementation Phase 5: Desktop network/session layer
