@@ -1,21 +1,21 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using WheelDeck.App.ViewModels;
+using WheelDeck.Core.Pairing;
 
 namespace WheelDeck.App.Views;
 
-public sealed partial class ConnectionView : UserControl
+public sealed partial class PairingView : UserControl
 {
-    public ConnectionView()
+    public PairingView()
     {
         InitializeComponent();
-        DataContext = new ConnectionViewModel();
     }
 
-    public ConnectionView(ConnectionViewModel viewModel)
+    public PairingView(PairingManager pairingManager)
     {
         InitializeComponent();
-        DataContext = viewModel;
+        DataContext = new PairingViewModel(pairingManager);
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
