@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(ls -ld /home/fazrigading/Projects/WheelDeck/plan 2>&1; echo \"---\"; ls -la /home/fazrigading/Projects/WheelDeck/plan 2>&1)",
+      "Shell(echo:*)",
+      "Shell(sed:*)",
+      "Shell(uniq:*)",
+      "Shell(gh:*)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
