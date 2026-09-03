@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WheelDeck.Backends.Linux", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WheelDeck.App", "WheelDeck.App\WheelDeck.App.csproj", "{02D0EFFF-58C1-4416-9B67-9B4C0F800E69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WheelDeck.Tests", "WheelDeck.Tests\WheelDeck.Tests.csproj", "{4C372943-264D-4CB5-97E7-6FA4C36D3645}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,18 @@ Global
 		{02D0EFFF-58C1-4416-9B67-9B4C0F800E69}.Release|x64.Build.0 = Release|Any CPU
 		{02D0EFFF-58C1-4416-9B67-9B4C0F800E69}.Release|x86.ActiveCfg = Release|Any CPU
 		{02D0EFFF-58C1-4416-9B67-9B4C0F800E69}.Release|x86.Build.0 = Release|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Debug|x64.Build.0 = Debug|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Debug|x86.Build.0 = Debug|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Release|x64.ActiveCfg = Release|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Release|x64.Build.0 = Release|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Release|x86.ActiveCfg = Release|Any CPU
+		{4C372943-264D-4CB5-97E7-6FA4C36D3645}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

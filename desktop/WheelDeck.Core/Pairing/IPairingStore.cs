@@ -1,11 +1,11 @@
 namespace WheelDeck.Core.Pairing;
 
-/// <summary>Loads and saves pairing state so pairings survive a desktop restart.</summary>
+/// <summary>Loads and saves paired devices so pairings survive a desktop restart.</summary>
 public interface IPairingStore
 {
-    /// <summary>Returns persisted state, or null when nothing has been saved yet.</summary>
-    PairingState? Load();
+    /// <summary>Returns persisted devices, or null when nothing has been saved yet.</summary>
+    IReadOnlyList<PairedDevice>? Load();
 
-    /// <summary>Persists the given pairing state.</summary>
-    void Save(PairingState state);
+    /// <summary>Persists the given paired devices.</summary>
+    void Save(IReadOnlyList<PairedDevice> devices);
 }
