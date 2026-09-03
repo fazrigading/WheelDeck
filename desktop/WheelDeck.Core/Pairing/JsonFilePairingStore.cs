@@ -4,7 +4,7 @@ namespace WheelDeck.Core.Pairing;
 
 /// <summary>
 /// JSON-file pairing store. Writes to a caller-supplied path so the composition root can
-/// pick the OS-appropriate config location. Corrupt or missing files load as empty state.
+/// pick the OS-appropriate config location. Corrupt or missing files load as null.
 /// </summary>
 public sealed class JsonFilePairingStore : IPairingStore
 {
@@ -18,7 +18,7 @@ public sealed class JsonFilePairingStore : IPairingStore
         _path = path;
     }
 
-    public PairingState? Load()
+    public IReadOnlyList<PairedDevice>? Load()
     {
         if (!File.Exists(_path))
         {
@@ -27,7 +27,7 @@ public sealed class JsonFilePairingStore : IPairingStore
 
         try
         {
-            return JsonSerializer.Deserialize<PairingState>(File.ReadAllText(_path), Options);
+            return JsonSerializer.Deserialize<List<PairedDevice>>(File.ReadAllText(_path), Options);
         }
         catch (JsonException)
         {
@@ -39,7 +39,7 @@ public sealed class JsonFilePairingStore : IPairingStore
         }
     }
 
-    public void Save(PairingState state)
+    public void Save(IReadOnlyList<PairedDevice> devices)
     {
         var directory = Path.GetDirectoryName(_path);
         if (!string.IsNullOrEmpty(directory))
@@ -47,6 +47,6 @@ public sealed class JsonFilePairingStore : IPairingStore
             Directory.CreateDirectory(directory);
         }
 
-        File.WriteAllText(_path, JsonSerializer.Serialize(state, Options));
+        File.WriteAllText(_path, JsonSerializer.Serialize(devices, Options));
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace WheelDeck.Core.Pairing;
@@ -15,29 +16,26 @@ public sealed class PairingManager
 
     private readonly Func<DateTimeOffset> _now;
     private readonly IPairingStore? _store;
-    private readonly Dictionary<string, PairedDevice> _devices = new();
-    private readonly Dictionary<string, PairingCode> _pendingCodes = new();
-    private readonly Dictionary<string, string> _sessionTokens = new();
+    private readonly object _mutationLock = new();
+
+    private readonly ConcurrentDictionary<string, PairedDevice> _devices = new();
+    private readonly ConcurrentDictionary<string, PairingCode> _pendingCodes = new();
+    private readonly ConcurrentDictionary<string, string> _sessionTokens = new();
 
     public PairingManager(IPairingStore? store = null, Func<DateTimeOffset>? now = null)
     {
         _now = now ?? (() => DateTimeOffset.UtcNow);
         _store = store;
 
-        var state = store?.Load();
-        if (state is null)
+        var devices = store?.Load();
+        if (devices is null)
         {
             return;
         }
 
-        foreach (var device in state.Devices)
+        foreach (var device in devices)
         {
             _devices[device.Id] = device;
-        }
-
-        foreach (var token in state.SessionTokens)
-        {
-            _sessionTokens[token.Key] = token.Value;
         }
     }
 
@@ -59,69 +57,76 @@ public sealed class PairingManager
         ArgumentException.ThrowIfNullOrWhiteSpace(deviceId);
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
 
-        if (!_pendingCodes.TryGetValue(code, out var pending))
+        if (!_pendingCodes.TryRemove(code, out var pending))
         {
             return new PairingResult(false);
         }
-
-        _pendingCodes.Remove(code);
 
         if (pending.ExpiresAt <= _now())
         {
             return new PairingResult(false);
         }
 
-        var token = NewSessionToken();
-        var now = _now();
-
-        var device = new PairedDevice
+        lock (_mutationLock)
         {
-            Id = deviceId,
-            DisplayName = deviceId,
-            PairedAt = now,
-            LastSeenAt = now,
-            IsActive = false
-        };
+            var token = NewSessionToken();
+            var now = _now();
 
-        _devices[deviceId] = device;
-        _sessionTokens[token] = deviceId;
-        Persist();
+            var device = new PairedDevice
+            {
+                Id = deviceId,
+                DisplayName = deviceId,
+                PairedAt = now,
+                LastSeenAt = now,
+                IsActive = false
+            };
 
-        return new PairingResult(true, token);
+            _devices[deviceId] = device;
+            _sessionTokens[token] = deviceId;
+            Persist();
+
+            return new PairingResult(true, token);
+        }
     }
 
-    /// <summary>Returns all paired devices, including revoked ones until they are pruned.</summary>
+    /// <summary>Returns all paired devices.</summary>
     public IReadOnlyList<PairedDevice> ListPairedDevices() => _devices.Values.ToList();
 
     /// <summary>Sets the given device as the sole active device. All others become inactive.</summary>
     public void SetActiveDevice(string deviceId)
     {
-        if (!_devices.TryGetValue(deviceId, out var device))
+        lock (_mutationLock)
         {
-            throw new KeyNotFoundException($"No paired device with id '{deviceId}'.");
-        }
+            if (!_devices.TryGetValue(deviceId, out var device))
+            {
+                throw new KeyNotFoundException($"No paired device with id '{deviceId}'.");
+            }
 
-        foreach (var other in _devices.Values)
-        {
-            other.IsActive = false;
-        }
+            foreach (var other in _devices.Values)
+            {
+                other.IsActive = false;
+            }
 
-        device.IsActive = true;
-        device.LastSeenAt = _now();
-        Persist();
+            device.IsActive = true;
+            device.LastSeenAt = _now();
+            Persist();
+        }
     }
 
     /// <summary>Revokes a device, removing it from the trusted set.</summary>
     public void RevokeDevice(string deviceId)
     {
-        if (_devices.Remove(deviceId))
+        lock (_mutationLock)
         {
-            foreach (var token in _sessionTokens.Where(kvp => kvp.Value == deviceId).Select(kvp => kvp.Key).ToList())
+            if (_devices.TryRemove(deviceId, out _))
             {
-                _sessionTokens.Remove(token);
-            }
+                foreach (var token in _sessionTokens.Where(kvp => kvp.Value == deviceId).Select(kvp => kvp.Key).ToList())
+                {
+                    _sessionTokens.TryRemove(token, out _);
+                }
 
-            Persist();
+                Persist();
+            }
         }
     }
 
@@ -132,9 +137,13 @@ public sealed class PairingManager
     /// <summary>Marks a device as recently seen, called on every heartbeat.</summary>
     public void TouchLastSeen(string deviceId)
     {
-        if (_devices.TryGetValue(deviceId, out var device))
+        lock (_mutationLock)
         {
-            device.LastSeenAt = _now();
+            if (_devices.TryGetValue(deviceId, out var device))
+            {
+                device.LastSeenAt = _now();
+                Persist();
+            }
         }
     }
 
@@ -159,7 +168,7 @@ public sealed class PairingManager
         var now = _now();
         foreach (var code in _pendingCodes.Where(kvp => kvp.Value.ExpiresAt <= now).Select(kvp => kvp.Key).ToList())
         {
-            _pendingCodes.Remove(code);
+            _pendingCodes.TryRemove(code, out _);
         }
     }
 
@@ -167,15 +176,6 @@ public sealed class PairingManager
 
     private void Persist()
     {
-        if (_store is null)
-        {
-            return;
-        }
-
-        _store.Save(new PairingState
-        {
-            Devices = _devices.Values.ToList(),
-            SessionTokens = new Dictionary<string, string>(_sessionTokens)
-        });
+        _store?.Save(_devices.Values.ToList());
     }
 }
