@@ -2,7 +2,7 @@
 
 ## Overview
 
-A mobile app that turns an Android or iOS phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively. Primary target: Euro Truck Simulator 2.
+A mobile app that turns a phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively. Primary target: Euro Truck Simulator 2.
 
 ## Target user
 
@@ -14,7 +14,7 @@ Someone who owns a PC simulator game and does not have a physical wheel and peda
 - Provide analog accelerator, brake, and clutch controls alongside the wheel.
 - Provide a dashboard panel of discrete truck controls (parking brake, turn signals, lights, wipers, cruise control, engine start) styled after real truck buttons.
 - Support Windows and Linux (Fedora primary target) desktop platforms from a single codebase.
-- Support Android and iOS on the mobile side.
+- Support Android natively and iOS via a progressive web app (PWA), so the same phone-control experience reaches iOS without an Apple Developer subscription.
 - Keep input latency low enough to feel usable for real-time driving, not turn-based.
 - Support secure pairing so use in public or shared spaces does not expose the desktop to untrusted input.
 
@@ -38,14 +38,14 @@ Desktop app: C#/.NET with Avalonia UI, a cross-platform XAML UI framework. Chose
 
 Desktop output backends: platform-specific implementations behind a shared interface. ViGEmBus on Windows, uinput on Linux. See backend-interface.md.
 
-Mobile app: cross-platform framework covering Android and iOS from one codebase. See mobile-interface.md.
+Mobile app: Flutter, shipped as a native Android app and as a progressive web app for iOS. The PWA path avoids the Apple Developer Program fee while keeping the same Flutter UI and WebSocket client. See mobile-interface.md.
 
 ## Target platforms & scope (v1)
 
 | Component | Platform | Priority |
 |---|---|---|
-| Mobile app | Android | P0 |
-| Mobile app | iOS | P0 |
+| Mobile app | Android (native) | P0 |
+| Mobile app | iOS (PWA) | P0 |
 | Desktop server | Linux (Fedora) | P0 |
 | Desktop server | Windows | P0 |
 
@@ -102,6 +102,7 @@ Installation friction: Windows requires installing ViGEmBus once. Linux requires
 
 ## Technical constraints / assumptions
 
+- iOS PWA execution is suspended when Safari backgrounds or the screen locks, so the WebSocket may drop on iOS even when Android keeps the connection. The app must treat this as a normal disconnect and auto-reconnect on foreground, matching the existing lifecycle rules.
 - Fedora's default SELinux enforcement may require testing and adjusting uinput permission setup beyond a generic Linux udev rule.
 - USB tethering fallback requires OS-level driver support for tethered networking on both Windows and Linux. Generally standard, but worth explicit testing on Fedora.
 - Avalonia UI requires .NET runtime availability on the target Linux distribution. Worth confirming the packaging approach (self-contained deployment vs. requiring the user to have .NET installed) during setup.
