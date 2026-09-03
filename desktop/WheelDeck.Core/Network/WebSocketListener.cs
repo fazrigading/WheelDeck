@@ -22,6 +22,7 @@ public sealed class WebSocketListener : IAsyncDisposable
     public event Action<StateMessage>? StateReceived;
     public event Action<ButtonMessage>? ButtonReceived;
     public event Action<PairRequest, WebSocket>? PairRequestReceived;
+    public event Action<Heartbeat>? HeartbeatReceived;
 
     public WebSocketListener(int port = DefaultPort)
     {
@@ -164,6 +165,15 @@ public sealed class WebSocketListener : IAsyncDisposable
                     if (pairRequest is not null)
                     {
                         PairRequestReceived?.Invoke(pairRequest, socket);
+                    }
+
+                    break;
+
+                case "heartbeat":
+                    var heartbeat = JsonSerializer.Deserialize<Heartbeat>(json);
+                    if (heartbeat is not null)
+                    {
+                        HeartbeatReceived?.Invoke(heartbeat);
                     }
 
                     break;
