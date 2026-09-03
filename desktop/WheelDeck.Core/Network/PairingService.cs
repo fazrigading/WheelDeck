@@ -16,6 +16,8 @@ public sealed class PairingService
 
     private readonly PairingManager _pairingManager;
 
+    public event Action<WebSocket, string, string?>? PairingCompleted;
+
     public PairingService(PairingManager pairingManager)
     {
         _pairingManager = pairingManager;
@@ -31,6 +33,11 @@ public sealed class PairingService
             Accepted = result.Accepted,
             SessionToken = result.SessionToken
         };
+
+        if (result.Accepted)
+        {
+            PairingCompleted?.Invoke(socket, request.DeviceId, result.SessionToken);
+        }
 
         SendAsync(socket, response);
     }

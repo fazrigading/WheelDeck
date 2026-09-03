@@ -144,6 +144,16 @@ public sealed class PairingManager
             ? device
             : null;
 
+    /// <summary>
+    /// True when the device may reach the input mapper: it is currently active, has not
+    /// expired, and has not been revoked.
+    /// </summary>
+    public bool IsAuthorized(PairedDevice? device) =>
+        device is not null
+        && _devices.ContainsKey(device.Id)
+        && device.IsActive
+        && !IsExpired(device);
+
     private void PruneExpiredCodes()
     {
         var now = _now();

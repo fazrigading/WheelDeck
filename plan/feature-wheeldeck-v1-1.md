@@ -87,7 +87,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | TASK-017 | Implement WebSocket-over-TCP listener for `state` and `button` messages. | ✅ | 2026-09-03 |
 | TASK-018 | Implement pairing flow with `pair_request`/`pair_response` and session token persistence. | ✅ | 2026-09-03 |
 | TASK-019 | Implement heartbeat every ~2s with neutralize after 2 missed beats. | ✅ | 2026-09-03 |
-| TASK-020 | Enforce the active/non-expired/non-revoked gate before messages reach `InputMapper`. | | |
+| TASK-020 | Enforce the active/non-expired/non-revoked gate before messages reach `InputMapper`. | ✅ | 2026-09-03 |
 
 ### Implementation Phase 6: Desktop app (Avalonia UI)
 
