@@ -18,6 +18,9 @@ public sealed class SessionGate
     private readonly Action<WebSocket> _onConnectionClosed;
     private readonly Dictionary<WebSocket, string?> _connectionDevices = new();
 
+    /// <summary>Fires when an authorized device sends a heartbeat, so the monitor can reset.</summary>
+    public event Action<Heartbeat>? HeartbeatAccepted;
+
     public SessionGate(
         PairingManager pairingManager,
         Action<StateMessage> onState,
@@ -47,6 +50,7 @@ public sealed class SessionGate
 
         _pairingManager.TouchLastSeen(device.Id);
         _connectionDevices[socket] = device.Id;
+        HeartbeatAccepted?.Invoke(heartbeat);
     }
 
     /// <summary>Forwards a state message only when the sending connection is authorized.</summary>

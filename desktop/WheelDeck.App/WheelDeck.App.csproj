@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WheelDeck.Core\WheelDeck.Core.csproj" />
+    <ProjectReference Include="..\WheelDeck.Backends\Windows\WheelDeck.Backends.Windows.csproj" />
+    <ProjectReference Include="..\WheelDeck.Backends\Linux\WheelDeck.Backends.Linux.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
