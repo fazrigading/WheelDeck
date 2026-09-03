@@ -24,9 +24,10 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 - **REQ-006**: Pairing persists across sessions until the desktop's 30-day expiry; session tokens skip re-pairing.
 - **REQ-007**: Input latency targets sub-50ms round trip.
 - **CON-001**: Windows backend uses ViGEmBus and SendInput; Linux backend uses uinput.
-- **CON-002**: Desktop UI is Avalonia (C#/.NET); mobile UI is Flutter (Dart).
+- **CON-002**: Desktop UI is Avalonia (C#/.NET); mobile UI is Flutter (Dart), shipped as a native Android app and an iOS PWA.
 - **CON-003**: Primary transport is local Wi-Fi; USB tethering is the fallback.
 - **CON-004**: v1 targets ETS2 only; macOS, Bluetooth, and force feedback are post-v1.
+- **CON-005**: iOS is delivered as a PWA (Flutter web build), not a native App Store app, to avoid the Apple Developer Program fee. The `mobile/ios/` native folder is not generated.
 - **GUD-001**: Keep folder names identical to the layer names in `mobile-interface.md` and `project-structure.md`.
 - **GUD-002**: Prefer plain speech and active voice in code comments and docs, matching the unslop rewrite.
 - **PAT-001**: Separate backend projects per platform (`Windows/`, `Linux/`) behind one interface.
