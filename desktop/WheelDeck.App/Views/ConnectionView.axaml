@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WheelDeck.App.Views.ConnectionView">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock FontSize="22" FontWeight="SemiBold" Text="Connection" />
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock VerticalAlignment="Center" Text="Status:" />
+      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding StatusText}" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock VerticalAlignment="Center" Text="Active device:" />
+      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding ActiveDevice}" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock VerticalAlignment="Center" Text="Port:" />
+      <TextBlock VerticalAlignment="Center" Text="{Binding Port}" />
+    </StackPanel>
+
+    <Border Background="#FFF3CD" Padding="12" CornerRadius="4">
+      <TextBlock Text="{Binding FirewallReminder}" TextWrapping="Wrap" />
+    </Border>
+  </StackPanel>
+</UserControl>
