@@ -84,8 +84,6 @@ class WheelDeckClient {
   ConnectionTarget? _lastTarget;
   Timer? _heartbeatTimer;
   Timer? _reconnectTimer;
-  ({double steering, double accelerator, double brake, double clutch})?
-      _lastState;
 
   void Function(ConnectionStatus status)? _onConnectionStatusChanged;
   void Function(PairingChallenge challenge)? _onPairingRequired;
@@ -152,21 +150,13 @@ class WheelDeckClient {
     _setStatus(ConnectionStatus.disconnected);
   }
 
-  /// Sends a `state` frame with an incrementing sequence number. The last
-  /// values are retained so the heartbeat tick can resend them.
+  /// Sends a `state` frame with an incrementing sequence number.
   void sendState({
     required double steering,
     required double accelerator,
     required double brake,
     required double clutch,
   }) {
-    _lastState = (
-      steering: steering,
-      accelerator: accelerator,
-      brake: brake,
-      clutch: clutch,
-    );
-
     _send({
       'type': 'state',
       'seq': ++_seq,
@@ -200,18 +190,6 @@ class WheelDeckClient {
       'type': 'heartbeat',
       'session_token': ?_sessionToken,
     });
-
-    final last = _lastState;
-    if (last != null) {
-      _send({
-        'type': 'state',
-        'seq': ++_seq,
-        'steering': last.steering,
-        'accelerator': last.accelerator,
-        'brake': last.brake,
-        'clutch': last.clutch,
-      });
-    }
   }
 
   void _onMessage(dynamic data) {

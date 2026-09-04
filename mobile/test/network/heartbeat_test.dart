@@ -67,47 +67,6 @@ void main() {
     });
   });
 
-  test('resends the last state on each heartbeat tick', () {
-    fakeAsync((async) {
-      final controller = StreamChannelController<dynamic>(sync: true);
-      final sent = <dynamic>[];
-      controller.foreign.stream.listen(sent.add);
-
-      final client = WheelDeckClient(
-        deviceId: 'phone-1',
-        connect: (uri) async => controller.local,
-      );
-
-      client.connect(
-        const ConnectionTarget(
-          mode: ConnectionMode.manual,
-          ipAddress: '10.0.0.2',
-        ),
-      );
-      async.flushMicrotasks();
-
-      client.sendState(
-        steering: 0.5,
-        accelerator: 0.25,
-        brake: 0.0,
-        clutch: 0.0,
-      );
-
-      async.elapse(const Duration(seconds: 2));
-
-      final stateMessages = sent
-          .map((m) => jsonDecode(m as String) as Map<String, dynamic>)
-          .where((m) => m['type'] == 'state')
-          .toList();
-
-      expect(stateMessages, hasLength(2));
-      expect(stateMessages.last['steering'], 0.5);
-      expect(stateMessages.last['accelerator'], 0.25);
-      expect(stateMessages.last['seq'], 2);
-
-      client.disconnect();
-    });
-  });
 
   test('reconnects after the fixed interval when the socket closes', () {
     fakeAsync((async) {
