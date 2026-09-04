@@ -142,7 +142,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 |------|-------------|-----------|------|
 | TASK-037 | Lock device orientation during driving sessions. | | |
 | TASK-038 | Pause input on call/lock/background and require calibration re-confirm on resume. | | |
-| TASK-039 | Add calibration UI to set the straight-ahead center. | | |
+| TASK-039 | Add calibration UI to set the straight-ahead center. | ✅ | 2026-09-04 |
 | TASK-040 | Add onboarding and permission prompts for motion sensor and local network. | | |
 
 ### Implementation Phase 11: Setup scripts
