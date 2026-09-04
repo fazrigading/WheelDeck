@@ -63,17 +63,29 @@ class WheelDeckClient {
   WheelDeckClient({
     required this.deviceId,
     Future<StreamChannel<dynamic>> Function(Uri uri)? connect,
+    this.heartbeatInterval = defaultHeartbeatInterval,
+    this.reconnectInterval = defaultReconnectInterval,
   }) : _connect = connect ?? _defaultConnect;
 
   static const int defaultPort = 8765;
+  static const Duration defaultHeartbeatInterval = Duration(seconds: 2);
+  static const Duration defaultReconnectInterval = Duration(seconds: 3);
 
   final String deviceId;
+  final Duration heartbeatInterval;
+  final Duration reconnectInterval;
   final Future<StreamChannel<dynamic>> Function(Uri uri) _connect;
 
   StreamChannel<dynamic>? _channel;
   StreamSubscription<dynamic>? _subscription;
   ConnectionStatus _status = ConnectionStatus.disconnected;
   int _seq = 0;
+  String? _sessionToken;
+  ConnectionTarget? _lastTarget;
+  Timer? _heartbeatTimer;
+  Timer? _reconnectTimer;
+  ({double steering, double accelerator, double brake, double clutch})?
+      _lastState;
 
   void Function(ConnectionStatus status)? _onConnectionStatusChanged;
   void Function(PairingChallenge challenge)? _onPairingRequired;
@@ -100,8 +112,17 @@ class WheelDeckClient {
     _onPairingAccepted = callback;
   }
 
+  /// Sets the session token issued after a successful pairing. Heartbeats carry
+  /// it so the desktop can resolve the sending device.
+  void setSessionToken(String? token) {
+    _sessionToken = token;
+  }
+
   /// Dials [target] and switches to `connected` once the socket is ready.
   Future<void> connect(ConnectionTarget target) async {
+    _lastTarget = target;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
     _setStatus(ConnectionStatus.connecting);
 
     final uri = target.resolve(defaultPort: defaultPort);
@@ -114,25 +135,39 @@ class WheelDeckClient {
       onDone: _handleConnectionClosed,
     );
 
+    _startHeartbeat();
     _setStatus(ConnectionStatus.connected);
   }
 
   /// Closes the socket and returns to `disconnected`.
   Future<void> disconnect() async {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
     await _subscription?.cancel();
     _subscription = null;
     await _channel?.sink.close();
     _channel = null;
+    _lastTarget = null;
     _setStatus(ConnectionStatus.disconnected);
   }
 
-  /// Sends a `state` frame with an incrementing sequence number.
+  /// Sends a `state` frame with an incrementing sequence number. The last
+  /// values are retained so the heartbeat tick can resend them.
   void sendState({
     required double steering,
     required double accelerator,
     required double brake,
     required double clutch,
   }) {
+    _lastState = (
+      steering: steering,
+      accelerator: accelerator,
+      brake: brake,
+      clutch: clutch,
+    );
+
     _send({
       'type': 'state',
       'seq': ++_seq,
@@ -161,12 +196,23 @@ class WheelDeckClient {
     });
   }
 
-  /// Sends a `heartbeat` carrying the active session token, when known.
-  void sendHeartbeat({String? sessionToken}) {
+  void _sendHeartbeat() {
     _send({
       'type': 'heartbeat',
-      'session_token': ?sessionToken,
+      'session_token': ?_sessionToken,
     });
+
+    final last = _lastState;
+    if (last != null) {
+      _send({
+        'type': 'state',
+        'seq': ++_seq,
+        'steering': last.steering,
+        'accelerator': last.accelerator,
+        'brake': last.brake,
+        'clutch': last.clutch,
+      });
+    }
   }
 
   void _onMessage(dynamic data) {
@@ -191,6 +237,7 @@ class WheelDeckClient {
         if (accepted) {
           final sessionToken = decoded['session_token'];
           if (sessionToken is String) {
+            _sessionToken = sessionToken;
             _onPairingAccepted?.call(sessionToken);
           }
 
@@ -205,7 +252,30 @@ class WheelDeckClient {
   }
 
   void _handleConnectionClosed() {
-    _setStatus(ConnectionStatus.disconnected);
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+    _subscription?.cancel();
+    _subscription = null;
+    _channel = null;
+
+    final target = _lastTarget;
+    if (target == null) {
+      _setStatus(ConnectionStatus.disconnected);
+      return;
+    }
+
+    _setStatus(ConnectionStatus.reconnecting);
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(reconnectInterval, () {
+      connect(target);
+    });
+  }
+
+  void _startHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = Timer.periodic(heartbeatInterval, (_) {
+      _sendHeartbeat();
+    });
   }
 
   void _send(Map<String, dynamic> message) {

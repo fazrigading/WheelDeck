@@ -45,8 +45,4 @@ class PairingController {
 
   /// Sends the pairing code to the desktop for validation.
   void submitPairingCode(String code) => client.submitPairingCode(code);
-
-  /// Sends a heartbeat for the active session, when a token is known.
-  void sendHeartbeat(String? sessionToken) =>
-      client.sendHeartbeat(sessionToken: sessionToken);
 }

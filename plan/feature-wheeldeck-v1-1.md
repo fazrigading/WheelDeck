@@ -121,7 +121,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | TASK-029 | Implement `WheelDeckClient` in `mobile/lib/network/wheeldeck_client.dart`. | ✅ | 2026-09-04 |
 | TASK-030 | Implement mDNS discovery and manual IP fallback in `mobile/lib/network/discovery.dart`. | ✅ | 2026-09-04 |
 | TASK-031 | Implement pairing flow and session-token storage in `mobile/lib/network/pairing.dart`. | ✅ | 2026-09-04 |
-| TASK-032 | Implement heartbeat and auto-reconnect, sending `sendState()` on every tick. | | |
+| TASK-032 | Implement heartbeat and auto-reconnect, sending `sendState()` on every tick. | ✅ | 2026-09-04 |
 
 ### Implementation Phase 9: Mobile UI layer
 
