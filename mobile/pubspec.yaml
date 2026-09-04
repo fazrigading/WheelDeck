@@ -13,6 +13,7 @@ dependencies:
   stream_channel: ^2.1.4
   multicast_dns: ^0.3.3+1
   shared_preferences: ^2.5.5
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
