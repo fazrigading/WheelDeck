@@ -77,6 +77,7 @@ class WheelDeckClient {
 
   void Function(ConnectionStatus status)? _onConnectionStatusChanged;
   void Function(PairingChallenge challenge)? _onPairingRequired;
+  void Function(String sessionToken)? _onPairingAccepted;
 
   /// The most recent status, for widgets that build from state.
   ConnectionStatus get status => _status;
@@ -91,6 +92,12 @@ class WheelDeckClient {
   /// Registers the callback that fires when the desktop rejects a pairing.
   void onPairingRequired(void Function(PairingChallenge challenge) callback) {
     _onPairingRequired = callback;
+  }
+
+  /// Registers the callback that fires when the desktop accepts a pairing and
+  /// issues a session token.
+  void onPairingAccepted(void Function(String sessionToken) callback) {
+    _onPairingAccepted = callback;
   }
 
   /// Dials [target] and switches to `connected` once the socket is ready.
@@ -154,6 +161,14 @@ class WheelDeckClient {
     });
   }
 
+  /// Sends a `heartbeat` carrying the active session token, when known.
+  void sendHeartbeat({String? sessionToken}) {
+    _send({
+      'type': 'heartbeat',
+      'session_token': ?sessionToken,
+    });
+  }
+
   void _onMessage(dynamic data) {
     if (data is! String) {
       return;
@@ -174,6 +189,11 @@ class WheelDeckClient {
       case 'pair_response':
         final accepted = decoded['accepted'] == true;
         if (accepted) {
+          final sessionToken = decoded['session_token'];
+          if (sessionToken is String) {
+            _onPairingAccepted?.call(sessionToken);
+          }
+
           _setStatus(ConnectionStatus.connected);
         } else {
           _setStatus(ConnectionStatus.pairingRequired);
