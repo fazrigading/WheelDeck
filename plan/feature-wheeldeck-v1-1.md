@@ -108,9 +108,9 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-026 | Implement `SteeringSensor` in `mobile/lib/input/steering_sensor.dart`. | | |
-| TASK-027 | Implement `PedalInput` and `PedalType` in `mobile/lib/input/pedal_input.dart`. | | |
-| TASK-028 | Implement `DashboardInput` and control/action enums in `mobile/lib/input/dashboard_input.dart`. | | |
+| TASK-026 | Implement `SteeringSensor` in `mobile/lib/input/steering_sensor.dart`. | ✅ | 2026-09-04 |
+| TASK-027 | Implement `PedalInput` and `PedalType` in `mobile/lib/input/pedal_input.dart`. | ✅ | 2026-09-04 |
+| TASK-028 | Implement `DashboardInput` and control/action enums in `mobile/lib/input/dashboard_input.dart`. | ✅ | 2026-09-04 |
 
 ### Implementation Phase 8: Mobile network client layer
 
