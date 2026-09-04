@@ -129,8 +129,8 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-033 | Build the wheel view driven by `onAngleChanged`. | | |
-| TASK-034 | Build vertical draggable pedal bars with spring-back release. | | |
+| TASK-033 | Build the wheel view driven by `onAngleChanged`. | ✅ | 2026-09-04 |
+| TASK-034 | Build vertical draggable pedal bars with spring-back release. | ✅ | 2026-09-04 |
 | TASK-035 | Build the truck-styled dashboard control panel. | | |
 | TASK-036 | Build connection and pairing screens (discovery, manual entry, PIN/QR, status). | | |
 
