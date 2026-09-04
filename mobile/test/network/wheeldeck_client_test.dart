@@ -10,13 +10,14 @@ void main() {
   late List<dynamic> sent;
   late List<ConnectionStatus> statuses;
   late List<PairingChallenge> challenges;
+  late WheelDeckClient client;
 
   WheelDeckClient buildClient() {
     sent = [];
     statuses = [];
     challenges = [];
 
-    final client = WheelDeckClient(
+    client = WheelDeckClient(
       deviceId: 'phone-1',
       connect: (uri) async {
         controller.local.sink.done.then((_) {});
@@ -38,11 +39,11 @@ void main() {
   });
 
   tearDown(() async {
-    await controller.local.sink.close();
+    await client.disconnect();
   });
 
   test('connect resolves the target and reports connected', () async {
-    final client = buildClient();
+    buildClient();
 
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
@@ -56,7 +57,7 @@ void main() {
   });
 
   test('manual target without an IP address throws on connect', () async {
-    final client = buildClient();
+    buildClient();
 
     expect(
       () => client.connect(const ConnectionTarget(mode: ConnectionMode.manual)),
@@ -65,7 +66,7 @@ void main() {
   });
 
   test('sendState frames a state message with a monotonic sequence', () async {
-    final client = buildClient();
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
@@ -88,7 +89,7 @@ void main() {
   });
 
   test('sendButtonEvent frames a button message using wire values', () async {
-    final client = buildClient();
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
@@ -102,7 +103,7 @@ void main() {
   });
 
   test('submitPairingCode frames a pair_request with the device id', () async {
-    final client = buildClient();
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
@@ -116,7 +117,7 @@ void main() {
   });
 
   test('an accepted pair_response stays connected', () async {
-    final client = buildClient();
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
@@ -135,7 +136,7 @@ void main() {
   });
 
   test('a rejected pair_response requests pairing', () async {
-    final client = buildClient();
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
@@ -154,7 +155,7 @@ void main() {
   });
 
   test('disconnect closes the socket and reports disconnected', () async {
-    final client = buildClient();
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
@@ -165,14 +166,14 @@ void main() {
     expect(statuses.last, ConnectionStatus.disconnected);
   });
 
-  test('a remote close reports disconnected', () async {
-    final client = buildClient();
+  test('a remote close reports reconnecting', () async {
+    buildClient();
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
 
     await controller.foreign.sink.close();
 
-    expect(client.status, ConnectionStatus.disconnected);
+    expect(client.status, ConnectionStatus.reconnecting);
   });
 }
