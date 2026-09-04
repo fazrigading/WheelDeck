@@ -145,11 +145,10 @@ class WheelDeckClient {
     _reconnectTimer = null;
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
-    await _subscription?.cancel();
-    _subscription = null;
-    await _channel?.sink.close();
-    _channel = null;
     _lastTarget = null;
+    await _channel?.sink.close();
+    _subscription = null;
+    _channel = null;
     _setStatus(ConnectionStatus.disconnected);
   }
 

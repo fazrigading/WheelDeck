@@ -40,8 +40,16 @@ class PairingController {
   final SessionTokenStore store;
   final WheelDeckClient client;
 
-  /// Loads the session token persisted from a previous session, if any.
-  Future<String?> restoreSession() => store.load();
+  /// Loads the session token persisted from a previous session and restores it
+  /// onto the client so the next connection can skip pairing.
+  Future<String?> restoreSession() async {
+    final token = await store.load();
+    if (token != null) {
+      client.setSessionToken(token);
+    }
+
+    return token;
+  }
 
   /// Sends the pairing code to the desktop for validation.
   void submitPairingCode(String code) => client.submitPairingCode(code);
