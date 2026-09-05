@@ -92,6 +92,9 @@ class WheelDeckClient {
   /// The most recent status, for widgets that build from state.
   ConnectionStatus get status => _status;
 
+  /// The last connection target, used to reconnect after a lifecycle pause.
+  ConnectionTarget? get lastTarget => _lastTarget;
+
   /// Registers the callback that receives connection status transitions.
   void onConnectionStatusChanged(
     void Function(ConnectionStatus status) callback,

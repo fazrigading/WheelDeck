@@ -70,6 +70,7 @@ class ConnectionCoordinator extends ChangeNotifier {
   PairingChallenge? _pairingChallenge;
   bool _pairingError = false;
   bool _pairingSubmitted = false;
+  bool _isPaused = false;
 
   /// Current connection status, mirrored from [client].
   ConnectionStatus get status => _status;
@@ -82,6 +83,10 @@ class ConnectionCoordinator extends ChangeNotifier {
 
   /// True when a submitted PIN was rejected and the prompt should show an error.
   bool get pairingError => _pairingError;
+
+  /// True when the session is paused due to a lifecycle interruption (call,
+  /// screen lock, or backgrounding). Input should not be sent while paused.
+  bool get isPaused => _isPaused;
 
   /// Runs an mDNS discovery sweep and updates [servers].
   Future<void> refreshDiscovery() async {
@@ -108,6 +113,22 @@ class ConnectionCoordinator extends ChangeNotifier {
 
   /// Closes the socket and returns to `disconnected`.
   Future<void> disconnect() => client.disconnect();
+
+  /// Pauses the session due to a lifecycle interruption (call, screen lock,
+  /// or backgrounding). Disconnects from the desktop so it neutralizes output.
+  Future<void> pause() async {
+    if (_isPaused) return;
+    _isPaused = true;
+    await client.disconnect();
+    notifyListeners();
+  }
+
+  /// Resumes after a lifecycle interruption. Clears the pause flag so the UI
+  /// can re-confirm calibration before sending input.
+  void resume() {
+    _isPaused = false;
+    notifyListeners();
+  }
 
   /// Sends the pairing code entered by the user.
   void submitPairingCode(String code) {
