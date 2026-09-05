@@ -19,7 +19,7 @@
       <TextBlock VerticalAlignment="Center" Text="{Binding Port}" />
     </StackPanel>
 
-    <Border Background="#FFF3CD" Padding="12" CornerRadius="4">
+    <Border Background="#205676" Padding="12" CornerRadius="4">
       <TextBlock Text="{Binding FirewallReminder}" TextWrapping="Wrap" />
     </Border>
   </StackPanel>
