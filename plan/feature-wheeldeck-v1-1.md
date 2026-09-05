@@ -98,7 +98,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 |------|-------------|-----------|------|
 | TASK-021 | Add composition root in `desktop/WheelDeck.App/` that picks the backend by OS. | ✅ | 2026-09-03 |
 | TASK-022 | Build connection management UI (status, active device, firewall reminder). | ✅ | 2026-09-03 |
-| TASK-023 | Build pairing UI (PIN/QR, paired list, revoke, set active). | ✅ | 2026-09-03 |
+| TASK-023 | Build pairing UI (PIN, paired list, revoke, set active). | ✅ | 2026-09-03 |
 | TASK-024 | Add first-run setup check for ViGEmBus or uinput permissions. | ✅ | 2026-09-03 |
 | TASK-025 | Add manual launch default and opt-in daemon mode. | ✅ | 2026-09-03 |
 
@@ -132,7 +132,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | TASK-033 | Build the wheel view driven by `onAngleChanged`. | ✅ | 2026-09-04 |
 | TASK-034 | Build vertical draggable pedal bars with spring-back release. | ✅ | 2026-09-04 |
 | TASK-035 | Build the truck-styled dashboard control panel. | ✅ | 2026-09-04 |
-| TASK-036 | Build connection and pairing screens (discovery, manual entry, PIN/QR, status). | | |
+| TASK-036 | Build connection and pairing screens (discovery, manual entry, PIN, status). | ✅ | 2026-09-05 |
 
 ### Implementation Phase 10: Mobile lifecycle, orientation, calibration
 

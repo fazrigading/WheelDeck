@@ -1,118 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../network/discovery.dart';
-import '../../network/pairing.dart';
 import '../../network/wheeldeck_client.dart';
+import '../../state/connection_coordinator.dart';
 
 /// The entry point for getting phone and desktop onto the same WheelDeck
 /// session: discover a server, or enter its address by hand, then pair and
 /// connect.
-class ConnectionScreen extends StatefulWidget {
-  const ConnectionScreen({
-    super.key,
-    required this.discovery,
-    required this.pairing,
-  });
-
-  final ServerDiscovery discovery;
-  final PairingController pairing;
-
-  @override
-  State<ConnectionScreen> createState() => _ConnectionScreenState();
-}
-
-class _ConnectionScreenState extends State<ConnectionScreen> {
-  final TextEditingController _ip = TextEditingController();
-  final TextEditingController _pin = TextEditingController();
-
-  List<DiscoveredServer> _servers = [];
-  ConnectionStatus _status = ConnectionStatus.disconnected;
-  bool _pairingRequired = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    widget.pairing.client
-        .onConnectionStatusChanged((status) => setState(() => _status = status));
-    widget.pairing.client
-        .onPairingRequired((_) => setState(() => _pairingRequired = true));
-
-    widget.discovery.discover().then((servers) {
-      if (!mounted) return;
-      setState(() => _servers = servers);
-    });
-  }
-
-  @override
-  void dispose() {
-    _ip.dispose();
-    _pin.dispose();
-    super.dispose();
-  }
+///
+/// Reads all of its dependencies from [ConnectionCoordinator] via the provider,
+/// so it stays a pure stateless view and the coordinator owns all the
+/// subscriptions.
+class ConnectionScreen extends StatelessWidget {
+  const ConnectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 16),
-        ConnectionStatusBanner(status: _status),
-        const SizedBox(height: 24),
-        if (_pairingRequired) ..._buildPairingPrompt(),
-        if (!_pairingRequired) ..._buildDiscovery(),
-      ],
+    final coordinator = context.watch<ConnectionCoordinator>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Connect to WheelDeck'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: coordinator.refreshDiscovery,
+            tooltip: 'Refresh',
+          ),
+          if (coordinator.status != ConnectionStatus.disconnected)
+            IconButton(
+              icon: const Icon(Icons.wifi_off),
+              onPressed: coordinator.disconnect,
+              tooltip: 'Disconnect',
+            ),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 16),
+          ConnectionStatusBanner(status: coordinator.status),
+          const SizedBox(height: 16),
+          if (coordinator.pairingChallenge != null)
+            _PairingPrompt(coordinator: coordinator)
+          else
+            ..._buildDiscovery(context),
+        ],
+      ),
     );
   }
 
-  List<Widget> _buildPairingPrompt() {
-    return [
-      const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Text('Pairing Process: Enter the PIN shown on the desktop'),
-      ),
-      const SizedBox(height: 8),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: TextField(
-          key: const Key('pairing-pin'),
-          controller: _pin,
-          decoration: const InputDecoration(labelText: 'PIN'),
-          keyboardType: TextInputType.number,
-          obscureText: true,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ElevatedButton(
-          onPressed: _submitPin,
-          child: const Text('Submit'),
-        ),
-      ),
-    ];
-  }
+  List<Widget> _buildDiscovery(BuildContext context) {
+    final coordinator = context.watch<ConnectionCoordinator>();
 
-  void _submitPin() {
-    final code = _pin.text;
-    if (code.isEmpty) return;
-    widget.pairing.submitPairingCode(code);
-    _pin.clear();
-  }
-
-  List<Widget> _buildDiscovery() {
     return [
       Expanded(
-        child: _servers.isEmpty
+        child: coordinator.servers.isEmpty
             ? const _EmptyState()
             : ListView.builder(
-                itemCount: _servers.length,
+                itemCount: coordinator.servers.length,
                 itemBuilder: (context, index) {
-                  final server = _servers[index];
+                  final server = coordinator.servers[index];
                   return ListTile(
                     title: Text(server.name),
                     subtitle: Text('${server.host}:${server.port}'),
-                    onTap: () => _connect(server.toConnectionTarget()),
+                    onTap: () =>
+                        coordinator.connect(server.toConnectionTarget()),
                   );
                 },
               ),
@@ -121,20 +74,40 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
       const SizedBox(height: 16),
     ];
   }
-
-  Future<void> _connect(ConnectionTarget target) async {
-    await widget.pairing.restoreSession();
-    widget.pairing.client.connect(target);
-  }
 }
 
 /// The manual IP entry fallback; appears below the server list.
-class _ManualEntry extends StatelessWidget {
+class _ManualEntry extends StatefulWidget {
   const _ManualEntry();
 
   @override
+  State<_ManualEntry> createState() => _ManualEntryState();
+}
+
+class _ManualEntryState extends State<_ManualEntry> {
+  final _ip = TextEditingController();
+  final _port = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final coordinator = context.read<ConnectionCoordinator>();
+    _port.text = coordinator.defaultPort.toString();
+    _ip.text = coordinator.defaultHost ?? '';
+  }
+
+  @override
+  void dispose() {
+    _ip.dispose();
+    _port.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final screen = context.findAncestorStateOfType<_ConnectionScreenState>();
+    final coordinator = context.watch<ConnectionCoordinator>();
+    final canConnect =
+        coordinator.status != ConnectionStatus.pairingRequired;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -143,23 +116,109 @@ class _ManualEntry extends StatelessWidget {
           Expanded(
             child: TextField(
               key: const Key('manual-ip'),
-              controller: screen?._ip,
+              controller: _ip,
               decoration: const InputDecoration(labelText: 'IP address'),
             ),
           ),
           const SizedBox(width: 8),
+          SizedBox(
+            width: 80,
+            child: TextField(
+              key: const Key('manual-port'),
+              controller: _port,
+              decoration: const InputDecoration(labelText: 'Port'),
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: () {
-              final ip = screen?._ip.text;
-              if (ip == null || ip.isEmpty) return;
-              screen?._connect(ConnectionTarget(
-                  mode: ConnectionMode.manual, ipAddress: ip));
-            },
+            onPressed: canConnect ? _connect : null,
             child: const Text('Connect'),
           ),
         ],
       ),
     );
+  }
+
+  void _connect() {
+    final ip = _ip.text;
+    if (ip.isEmpty) return;
+    final port = int.tryParse(_port.text);
+    context.read<ConnectionCoordinator>().connectManual(
+          host: ip,
+          port: port,
+        );
+  }
+}
+
+/// PIN entry and QR-fallback prompt shown when the desktop requires pairing.
+class _PairingPrompt extends StatefulWidget {
+  const _PairingPrompt({required this.coordinator});
+
+  final ConnectionCoordinator coordinator;
+
+  @override
+  State<_PairingPrompt> createState() => _PairingPromptState();
+}
+
+class _PairingPromptState extends State<_PairingPrompt> {
+  final _pin = TextEditingController();
+
+  @override
+  void dispose() {
+    _pin.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final challenge = widget.coordinator.pairingChallenge!;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            challenge.method == PairingMethod.qrScan
+                ? 'Scan the QR code displayed on your desktop.'
+                : 'Enter the PIN shown on your desktop.',
+          ),
+          if (widget.coordinator.pairingError) ...[
+            const SizedBox(height: 8),
+            Text(
+              'PIN incorrect. Try again.',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          if (challenge.method == PairingMethod.pin) ...[
+            TextField(
+              key: const Key('pairing-pin'),
+              controller: _pin,
+              decoration: const InputDecoration(labelText: 'PIN'),
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              onSubmitted: (_) => _submit(),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _submit,
+              child: const Text('Submit'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _submit() {
+    final code = _pin.text;
+    if (code.isEmpty) return;
+    widget.coordinator.submitPairingCode(code);
+    _pin.clear();
   }
 }
 
