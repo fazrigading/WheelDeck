@@ -6,7 +6,7 @@
 
     <Button Content="Check setup" Command="{Binding CheckCommand}" HorizontalAlignment="Left" />
 
-    <Border Background="#F0F0F0" Padding="12" CornerRadius="4">
+    <Border Background="#205676" Padding="12" CornerRadius="4">
       <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
     </Border>
   </StackPanel>
