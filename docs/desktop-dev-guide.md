@@ -2,16 +2,13 @@
 
 This guide gets you set up, building, testing, and contributing to the WheelDeck desktop server. It's a C#/.NET application with an Avalonia UI that receives WebSocket input from the phone and translates it into a virtual game controller on Windows (ViGEmBus) and Linux (uinput).
 
-> **Terminology**: All component names, interface names, and message types below use the exact vocabulary from [`CONTEXT.md`](../CONTEXT.md). Folder names match the spec terminology.
-
 ## Prerequisites
 
-| Tool | Minimum | Install |
-|---|---|---|
-| .NET SDK | 8.0+ | `https://dotnet.microsoft.com/download` |
-| Avalonia templates | n/a | `dotnet tool install -g AvaloniaCli` |
-| ViGEmBus (Windows) | n/a | `https://github.com/ViGEm/ViGEm.NET` |
-| uinput (Linux) | n/a | System uinput (Fedora: `sudo dnf install kernel-modules-extra`) |
+| Tool | Minimum |
+|---|---|
+| .NET SDK | 8.0+ |
+| ViGEmBus (Windows) | [ViGEm releases](https://github.com/ViGEm/ViGEm.NET/releases) |
+| uinput (Linux) | Fedora: `sudo dnf install kernel-modules-extra` |
 
 ## Get started
 
@@ -25,50 +22,7 @@ Or open `WheelDeck.sln` in an IDE (Visual Studio, VS Code, Rider).
 
 ## Project structure
 
-```
-desktop/
-├── WheelDeck.sln                        # Solution file
-├── WheelDeck.App/                       # Avalonia UI + composition root
-│   ├── App.axaml / App.axaml.cs         # App entry point
-│   ├── Program.cs                       # Native host setup
-│   ├── CompositionRoot.cs               # Picks the right VirtualOutputBackend by OS
-│   ├── MainWindow.cs                    # Main window
-│   ├── SetupChecker.cs                  # First-run ViGEmBus/uinput check
-│   ├── Views/                           # XAML views (connection, pairing, status)
-│   └── ViewModels/                      # ViewModels for each view
-├── WheelDeck.Core/                      # Business logic (no OS dependencies)
-│   ├── Protocol/                        # Message models generated from schema
-│   │   ├── StateMessage.cs
-│   │   ├── ButtonMessage.cs
-│   │   ├── ControlId.cs
-│   │   ├── ActionType.cs
-│   │   ├── SessionMessages.cs
-│   │   └── SnakeCaseEnumConverter.cs
-│   ├── Pairing/
-│   │   ├── PairingManager.cs           # Pairing logic (generate, validate, revoke, expire)
-│   │   ├── IPairingStore.cs            # Interface for persistence
-│   │   ├── JsonFilePairingStore.cs     # File-based persistence
-│   │   ├── PairedDevice.cs
-│   │   ├── PairingCode.cs
-│   │   └── PairingResult.cs
-│   ├── Input/
-│   │   ├── InputMapper.cs              # Routes axes/buttons per mapping mode
-│   │   └── MappingMode.cs
-│   └── Network/
-│       ├── WebSocketListener.cs         # TCP listener + WebSocket handling
-│       ├── PairingService.cs            # Session-level pairing enforcement
-│       ├── SessionGate.cs              # The active/non-expired/non-revoked gate
-│       └── HeartbeatMonitor.cs         # 2s heartbeat, neutralizes on timeout
-├── WheelDeck.Backends/
-│   ├── Windows/                        # ViGEmBus implementation (ViGEm.NET)
-│   │   ├── WindowsBackend.cs           # VirtualOutputBackend impl via ViGEmBus
-│   │   └── SendInputKeySender.cs       # Simulated keypresses
-│   └── Linux/                          # uinput implementation
-│       └── LinuxBackend.cs             # VirtualOutputBackend impl via uinput
-└── WheelDeck.Tests/                     # Unit tests
-```
-
-> **PAT-001**: Backends are split per platform (Windows/, Linux/) behind one interface. `WheelDeck.Core` depends only on the `VirtualOutputBackend` interface, never on a specific backend. Adding macOS later is a new folder, not a rewrite.
+See [`project-structure.md`](./project-structure.md) for the full repository layout.
 
 ## Build & run
 
@@ -222,12 +176,4 @@ Located in `scripts/`:
 
 > The protocol schema is the single source of truth. Do not add control enums to code without adding them to the schema first.
 
-## Useful references
 
-- [`backend-interface.md`](./backend-interface.md): Full specification of the wire protocol, PairingManager interface, VirtualOutputBackend interface, and neutralize() call sites
-- [`CONTEXT.md`](../CONTEXT.md): Domain glossary and terminology
-- [`project-structure.md`](./project-structure.md): Repository layout rationale
-- [`prd.md`](./prd.md#desktop-server): Desktop feature list and requirements
-- [`../plan/feature-wheeldeck-v1-1.md`](../plan/feature-wheeldeck-v1-1.md): Implementation tasks (TASK-009 through TASK-025 for desktop)
-- [`../docs/adr/`](../docs/adr/): Architecture decisions (especially ADR-0001 for neutralize-on-switch, ADR-0004 for degraded setup check)
-- [`mobile-dev-guide.md`](./mobile-dev-guide.md): The mobile counterpart of this guide

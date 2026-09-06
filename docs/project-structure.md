@@ -10,7 +10,10 @@ WheelDeck/
 │   ├── prd.md
 │   ├── backend-interface.md
 │   ├── mobile-interface.md
-│   └── project-structure.md
+│   ├── project-structure.md
+│   ├── desktop-dev-guide.md
+│   ├── mobile-dev-guide.md
+│   └── adr/
 │
 ├── protocol/
 │   └── schema/
@@ -21,21 +24,24 @@ WheelDeck/
 │
 ├── mobile/
 │   ├── lib/
-│   │   ├── main.dart
+│   │   ├── main.dart                      # Entry point, Provider scope, routing
 │   │   ├── input/
-│   │   │   ├── steering_sensor.dart
-│   │   │   ├── pedal_input.dart
-│   │   │   └── dashboard_input.dart
+│   │   │   ├── steering_sensor.dart       # Gyroscope → -1..1 normalized value
+│   │   │   ├── pedal_input.dart           # Touch-to-pressure mapping, spring-back
+│   │   │   └── dashboard_input.dart       # ControlId/ActionType enums from schema
 │   │   ├── network/
-│   │   │   ├── wheeldeck_client.dart
-│   │   │   ├── discovery.dart
-│   │   │   └── pairing.dart
+│   │   │   ├── wheeldeck_client.dart      # WebSocket connection + message framing
+│   │   │   ├── discovery.dart             # mDNS auto-discovery + manual IP fallback
+│   │   │   └── pairing.dart               # PIN pairing + session token persistence
 │   │   ├── ui/
-│   │   │   ├── wheel/
-│   │   │   ├── pedals/
-│   │   │   ├── dashboard/
-│   │   │   └── connection/
+│   │   │   ├── connection/                # Discovery, IP entry, pairing screens
+│   │   │   ├── driving/                   # Combined driving surface
+│   │   │   ├── wheel/                     # On-screen wheel + calibration
+│   │   │   ├── pedals/                    # Vertical draggable pedal bars
+│   │   │   ├── dashboard/                 # Truck-styled control panel
+│   │   │   └── permissions.dart           # Onboarding permission prompts
 │   │   └── state/
+│   │       └── connection_coordinator.dart # Connection lifecycle state machine
 │   ├── android/
 │   ├── ios/
 │   ├── test/
@@ -43,12 +49,21 @@ WheelDeck/
 │
 ├── desktop/
 │   ├── WheelDeck.sln
-│   ├── WheelDeck.App/              # Avalonia UI project
-│   ├── WheelDeck.Core/             # PairingManager, Input Mapper, protocol models
+│   ├── WheelDeck.App/              # Avalonia UI + composition root
+│   │   ├── Program.cs              # Entry point (GUI or --daemon)
+│   │   ├── CompositionRoot.cs      # DI, picks VirtualOutputBackend by OS
+│   │   ├── SetupChecker.cs         # First-run ViGEmBus/uinput check
+│   │   ├── Views/                  # XAML views
+│   │   └── ViewModels/             # MVVM view models
+│   ├── WheelDeck.Core/             # Domain logic (no OS dependencies)
+│   │   ├── Protocol/               # Message models from protocol/schema/
+│   │   ├── Pairing/                # PairingManager, IPairingStore, session tokens
+│   │   ├── Input/                  # InputMapper, MappingMode
+│   │   └── Network/                # WebSocketListener, PairingService, SessionGate, HeartbeatMonitor
 │   ├── WheelDeck.Backends/
-│   │   ├── Windows/                # ViGEmBus implementation
-│   │   └── Linux/                  # uinput implementation
-│   └── WheelDeck.Tests/
+│   │   ├── Windows/                # ViGEmBus virtual Xbox 360 controller
+│   │   └── Linux/                  # uinput virtual joystick
+│   └── WheelDeck.Tests/            # xunit unit tests
 │
 ├── scripts/
 │   ├── linux/
