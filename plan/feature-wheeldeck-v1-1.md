@@ -160,8 +160,8 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-043 | Populate `.github/workflows/mobile-ci.yml` for Flutter build/test. | | |
-| TASK-044 | Populate `.github/workflows/desktop-ci.yml` for .NET build/test. | | |
+| TASK-043 | Populate `.github/workflows/mobile-ci.yml` for Flutter build/test. | ✅ | 2026-09-06 |
+| TASK-044 | Populate `.github/workflows/desktop-ci.yml` for .NET build/test. | ✅ | 2026-09-06 |
 
 ### Implementation Phase 13: Testing and validation
 
@@ -169,9 +169,9 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-045 | Add unit tests for protocol models, `PairingManager`, and `InputMapper`. | | |
-| TASK-046 | Add Flutter widget tests for pedals, wheel, dashboard, and connection screens. | | |
-| TASK-047 | Add .NET tests for `neutralize()` on all four call sites. | | |
+| TASK-045 | Add unit tests for protocol models, `PairingManager`, and `InputMapper`. | ✅ | 2026-09-06 |
+| TASK-046 | Add Flutter widget tests for pedals, wheel, dashboard, and connection screens. | ✅ | 2026-09-06 |
+| TASK-047 | Add .NET tests for `neutralize()` on all four call sites. | ✅ | 2026-09-06 |
 | TASK-048 | Run manual E2E in ETS2 and verify tethering fallback and sub-50ms latency. | | |
 
 ## 3. Alternatives

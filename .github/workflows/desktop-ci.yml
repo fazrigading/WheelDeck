@@ -1,0 +1,34 @@
+name: Desktop CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop-ci.yml"
+
+jobs:
+  build-and-test:
+    name: .NET build & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore desktop/WheelDeck.sln
+
+      - name: Build
+        run: dotnet build desktop/WheelDeck.sln --no-restore
+
+      - name: Test
+        run: dotnet test desktop/WheelDeck.sln --no-build --verbosity normal

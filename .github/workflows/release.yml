@@ -1,0 +1,142 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  mobile:
+    name: Flutter build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.x"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build web
+        run: flutter build web --release
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Package web
+        run: tar -czf ../wheeldeck-web.tar.gz -C build/web .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheeldeck-web
+          path: wheeldeck-web.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheeldeck-android
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: mobile/build/web
+
+  desktop-windows:
+    name: .NET publish (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish
+        run: >
+          dotnet publish desktop/WheelDeck.App/WheelDeck.App.csproj
+          -c Release -r win-x64 --self-contained -o publish/windows
+
+      - name: Zip
+        run: Compress-Archive -Path publish/windows/* -DestinationPath wheeldeck-windows-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheeldeck-windows
+          path: wheeldeck-windows-x64.zip
+
+  desktop-linux:
+    name: .NET publish (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish
+        run: >
+          dotnet publish desktop/WheelDeck.App/WheelDeck.App.csproj
+          -c Release -r linux-x64 --self-contained -o publish/linux
+
+      - name: Tar
+        run: tar -czf wheeldeck-linux-x64.tar.gz -C publish/linux .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheeldeck-linux
+          path: wheeldeck-linux-x64.tar.gz
+
+  deploy-pwa:
+    name: Deploy PWA to GitHub Pages
+    needs: [mobile]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  release:
+    name: Create GitHub Release
+    needs: [mobile, desktop-windows, desktop-linux]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Rename
+        run: |
+          mv artifacts/wheeldeck-web/wheeldeck-web.tar.gz artifacts/wheeldeck-web-${{ github.ref_name }}.tar.gz
+          mv artifacts/wheeldeck-android/app-release.apk artifacts/wheeldeck-android-${{ github.ref_name }}.apk
+          mv artifacts/wheeldeck-windows/wheeldeck-windows-x64.zip artifacts/wheeldeck-windows-x64-${{ github.ref_name }}.zip
+          mv artifacts/wheeldeck-linux/wheeldeck-linux-x64.tar.gz artifacts/wheeldeck-linux-x64-${{ github.ref_name }}.tar.gz
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/wheeldeck-web-${{ github.ref_name }}.tar.gz
+            artifacts/wheeldeck-android-${{ github.ref_name }}.apk
+            artifacts/wheeldeck-windows-x64-${{ github.ref_name }}.zip
+            artifacts/wheeldeck-linux-x64-${{ github.ref_name }}.tar.gz
