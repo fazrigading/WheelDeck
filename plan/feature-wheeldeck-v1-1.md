@@ -151,8 +151,8 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-041 | Write `scripts/linux/install-uinput-rules.sh` with Fedora SELinux handling. | | |
-| TASK-042 | Write `scripts/windows/check-vigembus.ps1`. | | |
+| TASK-041 | Write `scripts/linux/install-uinput-rules.sh` with Fedora SELinux handling. | ✅ | 2026-09-06 |
+| TASK-042 | Write `scripts/windows/check-vigembus.ps1`. | ✅ | 2026-09-06 |
 
 ### Implementation Phase 12: CI workflows
 
