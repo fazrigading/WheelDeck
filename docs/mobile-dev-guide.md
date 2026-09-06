@@ -2,16 +2,13 @@
 
 This guide gets you set up, building, testing, and contributing to the WheelDeck mobile app. It's a Flutter application that captures steering (gyroscope), pedals (touch), and dashboard controls, then streams them over WebSocket to the desktop server.
 
-> **Terminology**: All component names, layer names, and message types below use the exact vocabulary from [`CONTEXT.md`](../CONTEXT.md). Folder names match layer names, see [`project-structure.md`](./project-structure.md).
-
 ## Prerequisites
 
-| Tool | Minimum | Install |
-|---|---|---|
-| Flutter SDK | 3.13+ | `https://docs.flutter.dev/get-started/install` |
-| Android SDK | API 21+ | `flutter doctor` |
-| Android Studio (for device emulation) | n/a | `https://developer.android.com/studio` |
-| (Optional) Chrome | n/a | For testing the iOS PWA path (`flutter build web`) |
+| Tool | Minimum |
+|---|---|
+| Flutter SDK | 3.13+ |
+| Android SDK | API 21+ |
+| Chrome (optional) | For PWA/iOS testing |
 
 Run `flutter doctor` once and fix every item it flags before proceeding.
 
@@ -32,31 +29,7 @@ flutter build web
 
 ## Project structure
 
-The `mobile/lib/` layout mirrors the three-layer architecture from [`mobile-interface.md`](./mobile-interface.md):
-
-```
-lib/
-├── main.dart                      # Entry point; sets up Provider scope + initial route
-├── input/
-│   ├── steering_sensor.dart       # Gyroscope sampling, calibration, sensitivity
-│   ├── pedal_input.dart           # Touch-to-pressure mapping, spring-back curves
-│   └── dashboard_input.dart       # Control/action enums, press/toggle/hold_confirm
-├── network/
-│   ├── wheeldeck_client.dart      # WebSocket connection, message framing, heartbeat
-│   ├── discovery.dart             # mDNS auto-discovery + manual IP fallback
-│   └── pairing.dart               # Pairing flow + session-token persistence
-├── ui/
-│   ├── connection/                # Discovery, IP entry, pairing screens
-│   ├── driving/                   # Combined driving surface (wheel/pedals/dashboard)
-│   ├── wheel/                     # On-screen wheel graphic
-│   ├── pedals/                    # Vertical draggable pedal bars
-│   ├── dashboard/                 # Truck-styled control panel
-│   └── permissions.dart           # Onboarding permission prompts (motion + LAN)
-└── state/
-    └── connection_coordinator.dart  # Central state machine for connection lifecycle
-```
-
-> **GUD-001**: Folder names are identical to the layer names in the interface spec. If a bug touches the network layer, look in `lib/network/`.
+See [`project-structure.md`](./project-structure.md) for the full repository layout.
 
 ## Build & run
 
@@ -164,13 +137,4 @@ The `lib/ui/permissions.dart` screen must request:
 - **Motion sensors**: needed for gyroscope steering input
 - **Local network**: needed for mDNS discovery and WebSocket communication
 
-Both are explained with a clear rationale before the request is made, per the onboarding flow spec in [`spec/mobile-onboarding-flow.md`](../spec/mobile-onboarding-flow.md).
-
-## Useful references
-
-- [`mobile-interface.md`](./mobile-interface.md): Full interface specification for all three layers
-- [`CONTEXT.md`](../CONTEXT.md): Domain glossary and terminology
-- [`project-structure.md`](./project-structure.md): Repository layout rationale
-- [`prd.md`](./prd.md#mobile-app): Mobile feature list and requirements
-- [`../plan/feature-wheeldeck-v1-1.md`](../plan/feature-wheeldeck-v1-1.md): Implementation tasks (TASK-007 through TASK-040 for mobile)
-- [`../docs/adr/`](../docs/adr/): Architecture decisions that affect mobile behavior
+Both are explained with a clear rationale before the request is made.
