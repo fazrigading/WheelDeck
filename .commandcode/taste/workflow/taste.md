@@ -1,0 +1,30 @@
+# Workflow preferences
+
+- Commit messages MUST NOT include any `Co-authored-by` trailer (not just CommandCodeBot's; the user explicitly rejects any co-author attribution). Confidence: 0.9
+- Prefers implementation plans tracked as GitHub issues, one issue per phase. Confidence: 0.8
+- Uses the awesome-copilot skill family (create-implementation-plan, create-github-issues-feature-from-implementation-plan) for spec-to-plan-to-issues workflows. Confidence: 0.7
+- Uses the ask-matt skill ecosystem (grill-with-docs: grilling + domain-modeling, then writing-for-agents + writing-guidelines) as the preferred workflow for documentation tasks, scoping and structuring docs first then writing full guides in one session. Confidence: 0.85
+- Prefers plan mode for exploration before executing multi-step tasks (explores codebase, then asks clarifying questions, then writes a plan). Confidence: 0.7
+- Comfortable scaling back multi-phase tasks when they feel heavy; delegates judgment on how much to trim ("do first 2 phases if you think it's too heavy"). Confidence: 0.7
+- Drives work by referencing explicit task IDs (e.g. "Continue implement TASK-010") and expects the agent to pick up and implement that task autonomously. Confidence: 0.8
+- Uses todo checklists to track sub-steps of a task, marking each in_progress and then completed as work proceeds. Confidence: 0.7
+- Reads existing type/enum definitions before writing code that depends on them, to stay consistent with current shapes and naming. Confidence: 0.7
+- Works on Linux; previously expected OS-specific tasks to be skipped when not applicable to the current platform, but now implements them anyway (e.g. TASK-013 Windows ViGEmBus on Linux), compile-verifying and flagging that runtime testing requires the target OS. Confidence: 0.8
+- When implementation tasks complete, update the plan's task table "Completed" and "Date" columns to reflect done work, then commit that plan update as a chore. Confidence: 0.9
+- Verifies changes by building the solution and running throwaway end-to-end test programs (e.g. a real ClientWebSocket, multi-scenario gate tests that step through labeled cases and print a single PASS/FAIL verdict) in a scratchpad directory, then removing them. Confidence: 0.8
+- Tests time-dependent logic deterministically using fake backends and an injectable clock instead of waiting real seconds. Confidence: 0.6
+- Commits each task with a Conventional Commits message (`feat(scope): summary`) and a `Refs: TASK-###` trailer. Confidence: 0.6
+- Smoke-tests the actual runnable artifact (e.g. launching the app in `--daemon` mode) to verify runtime behavior like port binding and clean shutdown, not just a clean compile. Confidence: 0.6
+- Writes automated unit tests (xUnit) for persistence-reload behavior and for concurrency, hammering the subject with `Task.Run`/`Task.WhenAll` and asserting a consistent final state. Confidence: 0.6
+- Keeps task scope tight by explicitly deferring non-blocking follow-ups (e.g. "keep X as-is for now; separate follow-up") rather than expanding the current change. Confidence: 0.5
+- Removes platform scaffolding not currently needed, deferring future platform targets (e.g. dropping macOS because it's a future plan) rather than keeping unused platforms around. Confidence: 0.6
+- Does not want commits pushed to the remote by default; expects an explicit push instruction (writing the commit message is fine, pushing is not). Confidence: 0.9
+- Prefers lean, deliberate commits: questions whether large batches of files (e.g. a 100-file scaffold) are all necessary and wants non-essential/generated content excluded before committing. Confidence: 0.6
+- Prefers zero-cost distribution/deployment paths: avoids paid developer-program fees (e.g. Apple's $99/year App Store) when a free alternative (free sideloading, PWA) covers the need. Confidence: 0.7
+- Keeps spec/plan docs in sync with architectural decisions: when a platform or design choice changes, updates the PRD and feature-plan files (e.g. `docs/prd.md`, `plan/feature-*.md`) to match rather than leaving them stale. Confidence: 0.7
+- Verifies Flutter/Dart changes by running `flutter analyze` and `flutter test`, iterating until the analyzer reports zero issues before considering the task done. Confidence: 0.7
+- Uses throwaway `/tmp` scratch files to confirm Dart language/analyzer behavior (e.g. private named initializing formals) before applying a pattern to real code. Confidence: 0.6
+- Tracks repo-level agent config and scaffolding (e.g. `AGENTS.md`/`CLAUDE.md`, `docs/agents/`) in version control, distinct from local tool state (`.commandcode`) which stays untracked. Confidence: 0.5
+- Writes exploration/implementation plans to `~/.commandcode/plans/task-XXX-name.md` as local (unversioned) scratchpad state. Confidence: 0.7
+- Uses the `exit_plan_mode` tool to signal plan completion and explicitly await go-ahead before implementing. Confidence: 0.7
+- Batches exploration tool calls in parallel (multiple read_directory/read_file/glob calls fired together) to gather codebase context efficiently before writing code. Confidence: 0.7

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(echo:*)",
+      "Shell(sed:*)",
+      "Shell(uniq:*)",
+      "Shell(gh:*)",
+      "Shell(flutter:*)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
