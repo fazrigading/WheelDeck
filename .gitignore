@@ -33,6 +33,3 @@ mobile/ios/Runner/GeneratedPluginRegistrant.m
 # --- OS ---
 .DS_Store
 Thumbs.db
-
-# --- Command Code local state ---
-.commandcode/
