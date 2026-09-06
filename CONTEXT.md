@@ -8,7 +8,7 @@ A mobile app that turns a phone into a steering wheel and dashboard control pane
 _Avoid_: Device, mobile, client
 
 **Desktop**: The machine running the .NET/Avalonia server that receives input and drives the virtual controller.
-_Aavoid_: Server, host, PC
+_Avoid_: Server, host, PC
 
 **WheelDeckClient**: The mobile end of the WebSocket protocol. Dials the desktop, frames messages, tracks connection status, and handles pairing and heartbeat internally.
 _Avoid_: Client (alone), network layer
@@ -47,25 +47,25 @@ _Avoid_: Throttle, input, axis
 _Avoid_: Button, switch, toggle
 
 **Action**: The kind of interaction with a control: toggle, press, release, or hold_confirm.
-_Aavoid_: Event, input, click
+_Avoid_: Event, input, click
 
 **VirtualOutputBackend**: OS-specific abstraction for driving a virtual controller. Windows uses ViGEmBus; Linux uses uinput.
 _Avoid_: Backend, driver, output
 
 **InputMapper**: Routes incoming axes and buttons to the virtual controller per mapping mode (virtual-controller buttons or simulated key presses).
-_Aavoid_: Mapper, router, translator
+_Avoid_: Mapper, router, translator
 
 **PairingManager**: Manages pairing and session state. Enforces 30-day inactivity expiry and the active/non-expired/non-revoked gate before input reaches the mapper.
 _Avoid_: Pairing service, device manager
 
 **State message**: Continuous steering and pedal state sent on every sensor or touch update. Latest value wins; no acknowledgment required.
-_Aavoid_: Sensor message, axis message, input frame
+_Avoid_: Sensor message, axis message, input frame
 
 **Button message**: Discrete dashboard control event. Delivered reliably over TCP.
-_Aavoid_: Control message, event frame
+_Avoid_: Control message, event frame
 
 **Heartbeat**: Standalone keep-alive message sent every ~2s. Does not carry or resend state. Two missed beats triggers neutralize on the desktop.
-_Aavoid_: Keep-alive, ping, alive
+_Avoid_: Keep-alive, ping, alive
 
 **Auto-reconnect**: On unexpected connection drops (Wi-Fi fade, PWA suspend), the client automatically retries the last target. Manual disconnect clears the target and stops retries.
 _Avoid_: Reconnect, retry, recovery
