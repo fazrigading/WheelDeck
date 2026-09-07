@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:permission_handler/permission_handler.dart' as ph;
 
 /// Result of a permission request.
@@ -82,11 +80,7 @@ class _PlatformPermissionService implements PermissionService {
 
   @override
   Future<PermissionStatus> requestLocalNetwork() async {
-    if (Platform.isIOS) {
-      return PermissionStatus.granted;
-    }
-    final status = await ph.Permission.accessLocalNetwork.request();
-    return _map(status);
+    return PermissionStatus.granted;
   }
 
   PermissionStatus _map(ph.PermissionStatus status) {
