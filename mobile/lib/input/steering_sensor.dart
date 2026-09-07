@@ -7,9 +7,10 @@ import 'dart:math' as math;
 /// network client both consume an already-calibrated -1.0..1.0 value.
 class SteeringSensor {
   SteeringSensor({
-    required this._rawAngleStream,
+    required Stream<double> rawAngleStream,
     this.maxRotationAngle = _defaultMaxRotationAngle,
-  }) : assert(maxRotationAngle > 0, 'maxRotationAngle must be positive');
+  })  : _rawAngleStream = rawAngleStream,
+        assert(maxRotationAngle > 0, 'maxRotationAngle must be positive');
 
   /// Physical rotation, in radians, that maps to full lock at sensitivity 1.0.
   final double maxRotationAngle;
