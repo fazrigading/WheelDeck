@@ -4,7 +4,7 @@ version: 1.0
 date_created: 2026-09-07
 last_updated: 2026-09-07
 owner: fazrigading
-status: Planned
+status: Finished
 tags:
   - feature
   - ux
@@ -13,7 +13,7 @@ tags:
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Finished](https://img.shields.io/badge/status-Finished-green)
 
 The desktop app generates a 6-digit PIN for pairing, but the mobile app requires manual IP and port entry to connect. The desktop does not display its own IP address, so mobile users have no way to know where to connect without guessing. Additionally, mDNS discovery is non-functional — the mobile queries `_wheeldeck._tcp.local` but the desktop has no mDNS advertiser. This plan unifies the connection flow by having the desktop display its local IP address, port, and pairing PIN in one place, giving mobile users all the information they need.
 
@@ -37,10 +37,10 @@ The desktop app generates a 6-digit PIN for pairing, but the mobile app requires
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Create a static helper method `GetLocalIpAddress()` in `ConnectionViewModel.cs` that enumerates active, non-loopback IPv4 addresses via `NetworkInterface.GetAllNetworkInterfaces()` and returns the first suitable address (preferring addresses in 192.168.x.x or 10.x.x.x ranges). Return `"Unknown"` if no suitable address is found. | | |
-| TASK-002 | Add a `string LocalIpAddress` property with backing field and change notification to `ConnectionViewModel.cs`. Initialize it in the constructor by calling `GetLocalIpAddress()`. | | |
-| TASK-003 | Add a read-only `string ConnectionInfo` property to `ConnectionViewModel.cs` that formats the display string as `"{LocalIpAddress}:{Port}"`. Update when `Port` or `LocalIpAddress` changes. | | |
-| TASK-004 | Modify `UpdateFrom()` in `ConnectionViewModel.cs:47` to also refresh `LocalIpAddress` by calling `GetLocalIpAddress()` each time the server status updates. | | |
+| TASK-001 | Create a static helper method `GetLocalIpAddress()` in `ConnectionViewModel.cs` that enumerates active, non-loopback IPv4 addresses via `NetworkInterface.GetAllNetworkInterfaces()` and returns the first suitable address (preferring addresses in 192.168.x.x or 10.x.x.x ranges). Return `"Unknown"` if no suitable address is found. | ✅ | 2026-09-07 |
+| TASK-002 | Add a `string LocalIpAddress` property with backing field and change notification to `ConnectionViewModel.cs`. Initialize it in the constructor by calling `GetLocalIpAddress()`. | ✅ | 2026-09-07 |
+| TASK-003 | Add a read-only `string ConnectionInfo` property to `ConnectionViewModel.cs` that formats the display string as `"{LocalIpAddress}:{Port}"`. Update when `Port` or `LocalIpAddress` changes. | ✅ | 2026-09-07 |
+| TASK-004 | Modify `UpdateFrom()` in `ConnectionViewModel.cs:47` to also refresh `LocalIpAddress` by calling `GetLocalIpAddress()` each time the server status updates. | ✅ | 2026-09-07 |
 
 ### Implementation Phase 2
 
@@ -48,7 +48,7 @@ The desktop app generates a 6-digit PIN for pairing, but the mobile app requires
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-005 | Add a `StackPanel` row to `ConnectionView.axaml` between the "Status" and "Active device" rows showing `"Address: {Binding ConnectionInfo}"` with the same horizontal layout pattern as existing rows. | | |
+| TASK-005 | Add a `StackPanel` row to `ConnectionView.axaml` between the "Status" and "Active device" rows showing `"Address: {Binding ConnectionInfo}"` with the same horizontal layout pattern as existing rows. | ✅ | 2026-09-07 |
 
 ### Implementation Phase 3
 
@@ -56,9 +56,9 @@ The desktop app generates a 6-digit PIN for pairing, but the mobile app requires
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-006 | Add `string LocalIpAddress` and `string ConnectionInfo` properties to `PairingViewModel.cs` mirroring `ConnectionViewModel`. Pass the IP from `PairingView` constructor or fetch it directly in `PairingViewModel` using the same `GetLocalIpAddress()` logic. | | |
-| TASK-007 | Add a `TextBlock` to `PairingView.axaml` below the "Enter this code on the phone" line: `"Connect to {Binding ConnectionInfo} and enter the code above."` This gives the user a single screen with both the target address and the pairing code. | | |
-| TASK-008 | Move `GetLocalIpAddress()` to a shared static helper class `NetworkHelper.cs` in `WheelDeck.Core/Network/` so both `ConnectionViewModel` and `PairingViewModel` can call it without duplication. | | |
+| TASK-006 | Add `string LocalIpAddress` and `string ConnectionInfo` properties to `PairingViewModel.cs` mirroring `ConnectionViewModel`. Pass the IP from `PairingView` constructor or fetch it directly in `PairingViewModel` using the same `GetLocalIpAddress()` logic. | ✅ | 2026-09-07 |
+| TASK-007 | Add a `TextBlock` to `PairingView.axaml` below the "Enter this code on the phone" line: `"Connect to {Binding ConnectionInfo} and enter the code above."` This gives the user a single screen with both the target address and the pairing code. | ✅ | 2026-09-07 |
+| TASK-008 | Move `GetLocalIpAddress()` to a shared static helper class `NetworkHelper.cs` in `WheelDeck.Core/Network/` so both `ConnectionViewModel` and `PairingViewModel` can call it without duplication. | ✅ | 2026-09-07 |
 
 ### Implementation Phase 4
 
@@ -66,7 +66,7 @@ The desktop app generates a 6-digit PIN for pairing, but the mobile app requires
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-009 | Add a test in `desktop/WheelDeck.Tests/` verifying `NetworkHelper.GetLocalIpAddress()` returns a non-null, non-empty string (or `"Unknown"`) — confirms the method runs without throwing on the test host. | | |
+| TASK-009 | Add a test in `desktop/WheelDeck.Tests/` verifying `NetworkHelper.GetLocalIpAddress()` returns a non-null, non-empty string (or `"Unknown"`) — confirms the method runs without throwing on the test host. | ✅ | 2026-09-07 |
 
 ## 3. Alternatives
 
