@@ -5,6 +5,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../input/dashboard_input.dart';
+import '../input/input_mapping.dart';
 
 /// Where a connection attempt stands. Mirrors the states in
 /// `docs/mobile-interface.md`.
@@ -185,6 +186,14 @@ class WheelDeckClient {
       'type': 'pair_request',
       'device_id': deviceId,
       'code': code,
+    });
+  }
+
+  /// Sends the desired dashboard input mapping (`keyboard` or `gamepad`).
+  void sendMappingMode(InputMapping mapping) {
+    _send({
+      'type': 'mapping',
+      'mode': mapping.wireValue,
     });
   }
 

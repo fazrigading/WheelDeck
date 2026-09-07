@@ -15,6 +15,7 @@ public sealed class SessionGate
     private readonly PairingManager _pairingManager;
     private readonly Action<StateMessage> _onState;
     private readonly Action<ButtonMessage> _onButton;
+    private readonly Action<MappingMessage> _onMapping;
     private readonly Action<WebSocket> _onConnectionClosed;
     private readonly Dictionary<WebSocket, string?> _connectionDevices = new();
 
@@ -25,11 +26,13 @@ public sealed class SessionGate
         PairingManager pairingManager,
         Action<StateMessage> onState,
         Action<ButtonMessage> onButton,
-        Action<WebSocket>? onConnectionClosed = null)
+        Action<WebSocket>? onConnectionClosed = null,
+        Action<MappingMessage>? onMapping = null)
     {
         _pairingManager = pairingManager;
         _onState = onState;
         _onButton = onButton;
+        _onMapping = onMapping ?? (_ => { });
         _onConnectionClosed = onConnectionClosed ?? (_ => { });
     }
 
@@ -68,6 +71,15 @@ public sealed class SessionGate
         if (IsAuthorized(socket))
         {
             _onButton(button);
+        }
+    }
+
+    /// <summary>Applies a mapping change only when the sending connection is authorized.</summary>
+    public void OnMapping(MappingMessage mapping, WebSocket socket)
+    {
+        if (IsAuthorized(socket))
+        {
+            _onMapping(mapping);
         }
     }
 

@@ -5,6 +5,7 @@ using WheelDeck.Core.Input;
 using WheelDeck.Core.Network;
 using WheelDeck.Core.Output;
 using WheelDeck.Core.Pairing;
+using WheelDeck.Core.Protocol;
 
 namespace WheelDeck.App;
 
@@ -35,13 +36,15 @@ public sealed class CompositionRoot
             PairingManager,
             onState: InputMapper.ApplyState,
             onButton: InputMapper.ApplyButton,
-            onConnectionClosed: _ => Backend.Neutralize());
+            onConnectionClosed: _ => Backend.Neutralize(),
+            onMapping: ApplyMapping);
 
         Listener = new WebSocketListener(port);
         HeartbeatMonitor = new HeartbeatMonitor(Backend);
 
         Listener.StateReceived += (state, socket) => _gate.OnState(state, socket);
         Listener.ButtonReceived += (button, socket) => _gate.OnButton(button, socket);
+        Listener.MappingReceived += (mapping, socket) => _gate.OnMapping(mapping, socket);
         Listener.PairRequestReceived += (request, socket) => PairingService.Handle(request, socket);
         Listener.HeartbeatReceived += (heartbeat, socket) => _gate.OnHeartbeat(heartbeat, socket);
         Listener.ConnectionClosed += _gate.OnConnectionClosed;
@@ -63,6 +66,14 @@ public sealed class CompositionRoot
         await HeartbeatMonitor.DisposeAsync();
         Backend.Neutralize();
         Backend.Shutdown();
+    }
+
+    /// <summary>Applies the phone's dashboard mapping choice to the input mapper.</summary>
+    private void ApplyMapping(MappingMessage mapping)
+    {
+        InputMapper.Mode = mapping.Mode.Equals("gamepad", StringComparison.OrdinalIgnoreCase)
+            ? MappingMode.ControllerButton
+            : MappingMode.SimulatedKeyPress;
     }
 
     /// <summary>Creates the virtual output backend for the current OS. Public for the setup check.</summary>

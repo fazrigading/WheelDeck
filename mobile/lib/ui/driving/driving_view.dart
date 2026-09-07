@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../input/dashboard_input.dart';
+import '../../input/input_mapping.dart';
 import '../../input/pedal_input.dart';
 import '../../state/connection_coordinator.dart';
 import '../../state/lifecycle_observer.dart';
 import '../dashboard/dashboard_panel.dart';
 import '../pedals/pedal_panel.dart';
+import '../settings/settings_screen.dart';
 import '../wheel/wheel_view.dart';
 
 /// The post-connection driving view: steering wheel, pedal bars, and dashboard
@@ -57,6 +59,11 @@ class _DrivingViewState extends State<DrivingView> {
     _dashboardInput.onControlActivated((control, action) {
       widget.coordinator.client.sendButtonEvent(control, action);
     });
+
+    // Apply the persisted dashboard mapping on the desktop for this session.
+    InputMapping.load().then(
+      (mapping) => widget.coordinator.client.sendMappingMode(mapping),
+    );
   }
 
   @override
@@ -145,6 +152,16 @@ class _DrivingViewState extends State<DrivingView> {
       appBar: AppBar(
         title: const Text('Driving'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    SettingsScreen(client: widget.coordinator.client),
+              ),
+            ),
+            tooltip: 'Settings',
+          ),
           IconButton(
             icon: const Icon(Icons.wifi_off),
             onPressed: _onDisconnect,
