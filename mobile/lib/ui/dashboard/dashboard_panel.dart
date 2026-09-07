@@ -128,7 +128,11 @@ enum ControlMode { toggle, momentary, holdConfirm }
 
 class _DashboardControlState extends State<DashboardControl> {
   bool _pressed = false;
+  bool _toggled = false;
   Timer? _holdTimer;
+
+  /// Active when held down (momentary/hold) or switched on (toggle).
+  bool get _active => _pressed || _toggled;
 
   @override
   void dispose() {
@@ -141,36 +145,50 @@ class _DashboardControlState extends State<DashboardControl> {
     final isPressable = widget.mode != ControlMode.toggle;
 
     return GestureDetector(
-      onTap: widget.mode == ControlMode.toggle
-          ? () => widget.input.activate(widget.control, ActionType.toggle)
-          : null,
+      onTap: widget.mode == ControlMode.toggle ? _toggle : null,
       onTapDown: isPressable ? (_) => _pressDown() : null,
       onTapUp: isPressable ? (_) => _pressUp() : null,
       onTapCancel: isPressable ? _pressUp : null,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
         width: 84,
         height: 84,
         decoration: BoxDecoration(
-          color: _pressed ? const Color(0xFF4A2A2A) : const Color(0xFF2A2A2A),
+          color: _active ? const Color(0xFFFFB300) : const Color(0xFF455A64),
           shape: BoxShape.circle,
           border: Border.all(
-            color: _pressed
-                ? const Color(0xFFE53935)
-                : const Color(0xFF6A6A6A),
-            width: 2,
+            color: _active
+                ? const Color(0xFFFFE082)
+                : const Color(0xFF90A4AE),
+            width: _active ? 3 : 2,
           ),
+          boxShadow: _active
+              ? const [
+                  BoxShadow(
+                    color: Color(0xFFFFB300),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
         alignment: Alignment.center,
         child: Text(
           widget.label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.5,
+            color: _active ? Colors.black : Colors.white,
           ),
         ),
       ),
     );
+  }
+
+  void _toggle() {
+    setState(() => _toggled = !_toggled);
+    widget.input.activate(widget.control, ActionType.toggle);
   }
 
   void _pressDown() {
