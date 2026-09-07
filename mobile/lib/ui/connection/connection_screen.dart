@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../network/wheeldeck_client.dart';
 import '../../state/connection_coordinator.dart';
+import '../settings/settings_screen.dart';
 
 /// The entry point for getting phone and desktop onto the same WheelDeck
 /// session: discover a server, or enter its address by hand, then pair and
@@ -22,6 +23,16 @@ class ConnectionScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Connect to WheelDeck'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    SettingsScreen(client: coordinator.client),
+              ),
+            ),
+            tooltip: 'Settings',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: coordinator.refreshDiscovery,
