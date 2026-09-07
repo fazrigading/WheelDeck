@@ -105,7 +105,9 @@ public sealed class PairingViewModel : INotifyPropertyChanged
         RefreshDevices();
     }
 
-    private void RefreshDevices()
+    /// <summary>Reloads the device list from the pairing manager. Public so the
+    /// shell can refresh after a phone pairs without reopening the tab.</summary>
+    public void RefreshDevices()
     {
         Devices.Clear();
         foreach (var device in _pairingManager.ListPairedDevices())
