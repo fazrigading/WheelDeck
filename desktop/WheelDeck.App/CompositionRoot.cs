@@ -22,6 +22,7 @@ public sealed class CompositionRoot
     public PairingService PairingService { get; }
     public WebSocketListener Listener { get; }
     public HeartbeatMonitor HeartbeatMonitor { get; }
+    public MdnsAdvertiser Advertiser { get; }
 
     private readonly SessionGate _gate;
 
@@ -41,6 +42,7 @@ public sealed class CompositionRoot
 
         Listener = new WebSocketListener(port);
         HeartbeatMonitor = new HeartbeatMonitor(Backend);
+        Advertiser = new MdnsAdvertiser(port);
 
         Listener.StateReceived += (state, socket) => _gate.OnState(state, socket);
         Listener.ButtonReceived += (button, socket) => _gate.OnButton(button, socket);
@@ -57,11 +59,13 @@ public sealed class CompositionRoot
     {
         Backend.Initialize();
         HeartbeatMonitor.Start();
+        Advertiser.Start();
         Listener.StartAsync(ct);
     }
 
     public async Task StopAsync()
     {
+        Advertiser.Stop();
         Listener.Stop();
         await HeartbeatMonitor.DisposeAsync();
         Backend.Neutralize();

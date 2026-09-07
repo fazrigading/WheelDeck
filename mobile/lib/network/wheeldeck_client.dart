@@ -121,6 +121,9 @@ class WheelDeckClient {
   }
 
   /// Dials [target] and switches to `connected` once the socket is ready.
+  /// When no session token is known, the desktop cannot authorize input yet,
+  /// so the status becomes `pairingRequired` and a PIN challenge fires instead
+  /// of going straight to `connected`.
   Future<void> connect(ConnectionTarget target) async {
     _lastTarget = target;
     _reconnectTimer?.cancel();
@@ -138,7 +141,15 @@ class WheelDeckClient {
     );
 
     _startHeartbeat();
-    _setStatus(ConnectionStatus.connected);
+    _sendHeartbeat();
+    if (_sessionToken == null) {
+      _setStatus(ConnectionStatus.pairingRequired);
+      _onPairingRequired?.call(
+        const PairingChallenge(method: PairingMethod.pin),
+      );
+    } else {
+      _setStatus(ConnectionStatus.connected);
+    }
   }
 
   /// Closes the socket and returns to `disconnected`.
