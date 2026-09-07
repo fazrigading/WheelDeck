@@ -59,7 +59,9 @@ void main() {
 
     pairing.submitPairingCode('123456');
 
-    final message = jsonDecode(sent.single as String) as Map<String, dynamic>;
+    final message = sent
+        .map((m) => jsonDecode(m as String) as Map<String, dynamic>)
+        .firstWhere((m) => m['type'] == 'pair_request');
     expect(message['type'], 'pair_request');
     expect(message['device_id'], 'phone-1');
     expect(message['code'], '123456');

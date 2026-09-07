@@ -84,6 +84,7 @@ void main() {
         },
       );
       client.onConnectionStatusChanged(statuses.add);
+      client.setSessionToken('tok-123');
 
       client.connect(
         const ConnectionTarget(

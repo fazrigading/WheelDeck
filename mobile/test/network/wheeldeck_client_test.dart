@@ -44,6 +44,7 @@ void main() {
 
   test('connect resolves the target and reports connected', () async {
     buildClient();
+    client.setSessionToken('saved-token');
 
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
@@ -54,6 +55,22 @@ void main() {
       ConnectionStatus.connecting,
       ConnectionStatus.connected,
     ]);
+  });
+
+  test('connect without a session token requests pairing', () async {
+    buildClient();
+
+    await client.connect(
+      const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
+    );
+
+    expect(client.status, ConnectionStatus.pairingRequired);
+    expect(statuses, [
+      ConnectionStatus.connecting,
+      ConnectionStatus.pairingRequired,
+    ]);
+    expect(challenges, hasLength(1));
+    expect(challenges.single.method, PairingMethod.pin);
   });
 
   test('manual target without an IP address throws on connect', () async {
@@ -70,6 +87,7 @@ void main() {
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
+    sent.clear(); // Drop the immediate heartbeat.
 
     client.sendState(steering: 0.42, accelerator: 0.85, brake: 0.0, clutch: 1.0);
     client.sendState(steering: -0.1, accelerator: 0.2, brake: 0.3, clutch: 0.4);
@@ -93,6 +111,7 @@ void main() {
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
+    sent.clear(); // Drop the immediate heartbeat.
 
     client.sendButtonEvent(ControlId.turnSignalLeft, ActionType.toggle);
 
@@ -107,6 +126,7 @@ void main() {
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
+    sent.clear(); // Drop the immediate heartbeat.
 
     client.submitPairingCode('123456');
 
@@ -121,6 +141,7 @@ void main() {
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
+    challenges.clear(); // Ignore the connect-time PIN challenge.
 
     controller.foreign.sink.add(
       jsonEncode({
@@ -140,6 +161,7 @@ void main() {
     await client.connect(
       const ConnectionTarget(mode: ConnectionMode.manual, ipAddress: '10.0.0.2'),
     );
+    challenges.clear(); // Ignore the connect-time PIN challenge.
 
     controller.foreign.sink.add(
       jsonEncode({

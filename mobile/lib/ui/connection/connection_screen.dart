@@ -51,6 +51,14 @@ class ConnectionScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           ConnectionStatusBanner(status: coordinator.status),
+          if (coordinator.status == ConnectionStatus.reconnecting)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Connection unsuccessful. Check that the desktop app is running '
+                'and both devices are on the same Wi-Fi, or enter the IP manually below.',
+              ),
+            ),
           const SizedBox(height: 16),
           if (coordinator.pairingChallenge != null)
             _PairingPrompt(coordinator: coordinator)
@@ -65,6 +73,10 @@ class ConnectionScreen extends StatelessWidget {
     final coordinator = context.watch<ConnectionCoordinator>();
 
     return [
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text('Receivers on this Wi-Fi:'),
+      ),
       Expanded(
         child: coordinator.servers.isEmpty
             ? const _EmptyState()
@@ -73,13 +85,23 @@ class ConnectionScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final server = coordinator.servers[index];
                   return ListTile(
+                    leading: const Icon(Icons.desktop_windows),
                     title: Text(server.name),
-                    subtitle: Text('${server.host}:${server.port}'),
+                    subtitle: Text(
+                      '${server.host}:${server.port}\nTap to connect – PIN required',
+                    ),
+                    isThreeLine: true,
                     onTap: () =>
                         coordinator.connect(server.toConnectionTarget()),
                   );
                 },
               ),
+      ),
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          'No receiver listed? Make sure the desktop app is running on the same Wi-Fi, then enter its IP manually:',
+        ),
       ),
       const _ManualEntry(),
       const SizedBox(height: 16),
