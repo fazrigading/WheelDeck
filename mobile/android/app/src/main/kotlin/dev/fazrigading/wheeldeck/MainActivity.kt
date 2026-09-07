@@ -1,4 +1,4 @@
-package com.example.wheeldeck
+package dev.fazrigading.wheeldeck
 
 import io.flutter.embedding.android.FlutterActivity
 
