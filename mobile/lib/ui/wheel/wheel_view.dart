@@ -13,6 +13,7 @@ class WheelView extends StatelessWidget {
     super.key,
     required this.angle,
     this.maxWheelRotation = math.pi / 2,
+    this.size = 280,
   });
 
   /// Normalized steering angle, -1.0 (full left) to 1.0 (full right).
@@ -21,29 +22,34 @@ class WheelView extends StatelessWidget {
   /// Visible wheel rotation, in radians, at full lock.
   final double maxWheelRotation;
 
+  /// Diameter of the wheel graphic. Sized by the parent for landscape.
+  final double size;
+
   @override
   Widget build(BuildContext context) {
     final turns = (angle.clamp(-1.0, 1.0) * maxWheelRotation) / (2 * math.pi);
 
     return SizedBox.square(
-      dimension: 280,
+      dimension: size,
       child: AnimatedRotation(
         turns: turns,
         duration: const Duration(milliseconds: 80),
-        child: const _WheelGraphic(),
+        child: _WheelGraphic(size: size),
       ),
     );
   }
 }
 
 class _WheelGraphic extends StatelessWidget {
-  const _WheelGraphic();
+  const _WheelGraphic({required this.size});
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: _WheelPainter(),
-      size: const Size.square(280),
+      size: Size.square(size),
     );
   }
 }
