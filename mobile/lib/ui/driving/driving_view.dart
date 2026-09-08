@@ -68,6 +68,8 @@ class _DrivingViewState extends State<DrivingView> {
     _steeringSensor = SteeringSensor(
       rawAngleStream: gyroscopeEventStream().map((e) {
         // Integrate Z-axis angular velocity (rad/s) into a raw angle.
+        // Negated: positive gyro-z is counterclockwise on screen, but a
+        // right (clockwise) turn must read as positive steering.
         // setCenter() recenters drift; ±pi range leaves headroom around the
         // pi/4 full-lock angle.
         final now = DateTime.now();
@@ -75,7 +77,7 @@ class _DrivingViewState extends State<DrivingView> {
             ? 0.016
             : now.difference(_lastGyroAt!).inMicroseconds / 1000000.0;
         _lastGyroAt = now;
-        _rawGyroAngle += e.z * dt.clamp(0.0, 0.1);
+        _rawGyroAngle -= e.z * dt.clamp(0.0, 0.1);
         return _rawGyroAngle.clamp(-math.pi, math.pi);
       }),
     );
