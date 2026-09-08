@@ -151,7 +151,7 @@ class _DrivingViewState extends State<DrivingView> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) =>
-                    SettingsScreen(client: widget.coordinator.client),
+                    SettingsScreen(coordinator: widget.coordinator),
               ),
             ),
             tooltip: 'Settings',
