@@ -5,6 +5,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../input/dashboard_input.dart';
+import '../input/input_mapping.dart';
 
 /// Where a connection attempt stands. Mirrors the states in
 /// `docs/mobile-interface.md`.
@@ -120,6 +121,9 @@ class WheelDeckClient {
   }
 
   /// Dials [target] and switches to `connected` once the socket is ready.
+  /// When no session token is known, the desktop cannot authorize input yet,
+  /// so the status becomes `pairingRequired` and a PIN challenge fires instead
+  /// of going straight to `connected`.
   Future<void> connect(ConnectionTarget target) async {
     _lastTarget = target;
     _reconnectTimer?.cancel();
@@ -137,7 +141,15 @@ class WheelDeckClient {
     );
 
     _startHeartbeat();
-    _setStatus(ConnectionStatus.connected);
+    _sendHeartbeat();
+    if (_sessionToken == null) {
+      _setStatus(ConnectionStatus.pairingRequired);
+      _onPairingRequired?.call(
+        const PairingChallenge(method: PairingMethod.pin),
+      );
+    } else {
+      _setStatus(ConnectionStatus.connected);
+    }
   }
 
   /// Closes the socket and returns to `disconnected`.
@@ -185,6 +197,14 @@ class WheelDeckClient {
       'type': 'pair_request',
       'device_id': deviceId,
       'code': code,
+    });
+  }
+
+  /// Sends the desired dashboard input mapping (`keyboard` or `gamepad`).
+  void sendMappingMode(InputMapping mapping) {
+    _send({
+      'type': 'mapping',
+      'mode': mapping.wireValue,
     });
   }
 

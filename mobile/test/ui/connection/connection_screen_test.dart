@@ -309,6 +309,30 @@ void main() {
 
   group('connection status', () {
     testWidgets('reports the connection status as Connected', (tester) async {
+      final store = _MemoryStore().._token = 'saved-token';
+      final coordinator = _buildCoordinator(
+        connect: (uri) async {
+          final controller = StreamChannelController<dynamic>(sync: false);
+          controller.foreign.stream.listen((_) {});
+          return controller.local;
+        },
+        store: store,
+      );
+      await _pumpScreen(tester, coordinator);
+
+      await coordinator.connect(const ConnectionTarget(
+        mode: ConnectionMode.manual,
+        ipAddress: '10.0.0.1',
+      ));
+      await tester.pump();
+
+      expect(find.text('Connected'), findsOneWidget);
+
+      await coordinator.disconnect();
+    });
+
+    testWidgets('asks for a PIN after connecting without a session',
+        (tester) async {
       final coordinator = _buildCoordinator(
         connect: (uri) async {
           final controller = StreamChannelController<dynamic>(sync: false);
@@ -324,7 +348,8 @@ void main() {
       ));
       await tester.pump();
 
-      expect(find.text('Connected'), findsOneWidget);
+      expect(find.byKey(const Key('pairing-pin')), findsOneWidget);
+      expect(find.textContaining('Enter the PIN'), findsOneWidget);
 
       await coordinator.disconnect();
     });

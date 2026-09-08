@@ -9,7 +9,7 @@ class SteeringSensor {
   SteeringSensor({
     required this._rawAngleStream,
     this.maxRotationAngle = _defaultMaxRotationAngle,
-  }) : assert(maxRotationAngle > 0, 'maxRotationAngle must be positive');
+  })  : assert(maxRotationAngle > 0, 'maxRotationAngle must be positive');
 
   /// Physical rotation, in radians, that maps to full lock at sensitivity 1.0.
   final double maxRotationAngle;

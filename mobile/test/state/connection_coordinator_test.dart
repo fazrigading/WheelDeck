@@ -67,11 +67,12 @@ void main() {
     test('disconnect returns to disconnected', () async {
       final channel = StreamChannelController<dynamic>(sync: true);
       channel.foreign.stream.listen((_) {});
+      final store = _MemoryStore().._token = 'existing-token';
 
       final coordinator = ConnectionCoordinator(
         deviceId: 'phone-1',
         connect: (uri) async => channel.local,
-        store: _MemoryStore(),
+        store: store,
       );
 
       await coordinator.connect(
@@ -91,10 +92,11 @@ void main() {
       final channel = StreamChannelController<dynamic>(sync: true);
       channel.foreign.stream.listen((_) {});
       final statuses = <ConnectionStatus>[];
+      final store = _MemoryStore().._token = 'existing-token';
       final coordinator = ConnectionCoordinator(
         deviceId: 'phone-1',
         connect: (uri) async => channel.local,
-        store: _MemoryStore(),
+        store: store,
       );
       coordinator.addListener(() => statuses.add(coordinator.status));
 
@@ -110,7 +112,7 @@ void main() {
       expect(statuses, contains(ConnectionStatus.disconnected));
     });
 
-    test('pairing challenge is set when desktop requires pairing', () async {
+    test('tapping a receiver without a session asks for a PIN', () async {
       final channel = StreamChannelController<dynamic>(sync: true);
       channel.foreign.stream.listen((_) {});
 
@@ -127,7 +129,8 @@ void main() {
         ),
       );
 
-      expect(coordinator.pairingChallenge, isNull);
+      expect(coordinator.pairingChallenge, isNotNull);
+      expect(coordinator.pairingChallenge!.method, PairingMethod.pin);
 
       channel.foreign.sink.add(
         jsonEncode({'type': 'pair_response', 'accepted': false}),
@@ -198,8 +201,7 @@ void main() {
       expect(coordinator.pairingChallenge, isNotNull);
 
       // Submit code and get accepted.
-      coordinator.submitPairingCode('123456');
-      channel.foreign.sink.add(jsonEncode({
+      coordinator.submitPairingCode('123456');      channel.foreign.sink.add(jsonEncode({
         'type': 'pair_response',
         'accepted': true,
         'session_token': 'tok-1',

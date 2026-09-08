@@ -36,6 +36,7 @@ public sealed class PairingService
 
         if (result.Accepted)
         {
+            _pairingManager.SetActiveDevice(request.DeviceId);
             PairingCompleted?.Invoke(socket, request.DeviceId, result.SessionToken);
         }
 

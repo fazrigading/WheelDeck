@@ -21,8 +21,11 @@ class WheelDeckApp extends StatelessWidget {
       create: (_) => ConnectionCoordinator(
         deviceId: UniqueKey().toString(),
       )..refreshDiscovery(),
-      child: const MaterialApp(
-        home: _Routing(),
+      child: MaterialApp(
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
+        home: const _Routing(),
       ),
     );
   }
