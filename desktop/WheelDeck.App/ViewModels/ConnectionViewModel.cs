@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using WheelDeck.Core.Network;
 using WheelDeck.Core.Pairing;
 
 namespace WheelDeck.App.ViewModels;
@@ -14,6 +15,7 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
     private string _statusText = "Stopped";
     private string _activeDevice = "None";
     private int _port;
+    private string _localIpAddress = NetworkHelper.GetLocalIpAddress();
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -38,8 +40,24 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
     public int Port
     {
         get => _port;
-        set => SetField(ref _port, value);
+        set
+        {
+            SetField(ref _port, value);
+            OnPropertyChanged(nameof(ConnectionInfo));
+        }
     }
+
+    public string LocalIpAddress
+    {
+        get => _localIpAddress;
+        set
+        {
+            SetField(ref _localIpAddress, value);
+            OnPropertyChanged(nameof(ConnectionInfo));
+        }
+    }
+
+    public string ConnectionInfo => $"{LocalIpAddress}:{Port}";
 
     public string FirewallReminder =>
         "If a phone cannot connect, allow WheelDeck through the firewall and confirm both devices are on the same local network.";
@@ -49,6 +67,7 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
         IsRunning = isRunning;
         Port = port;
         StatusText = isRunning ? $"Listening on port {port}" : "Stopped";
+        LocalIpAddress = NetworkHelper.GetLocalIpAddress();
 
         var active = pairingManager.ListPairedDevices().FirstOrDefault(d => d.IsActive);
         ActiveDevice = active is null ? "None" : active.DisplayName;
@@ -64,4 +83,7 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
