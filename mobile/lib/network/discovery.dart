@@ -1,36 +1,15 @@
 import 'package:multicast_dns/multicast_dns.dart';
 
+import '../domain/models/discovered_server.dart';
 import 'wheeldeck_client.dart';
+
+export '../domain/models/discovered_server.dart';
 
 /// The DNS-SD service type the desktop advertises under.
 ///
 /// Discovery (TASK-030) queries this name; the desktop's advertiser will
 /// register the same string so both sides stay in sync.
 const String wheelDeckServiceType = '_wheeldeck._tcp.local';
-
-/// A desktop server resolved through mDNS or entered manually.
-class DiscoveredServer {
-  const DiscoveredServer({
-    required this.host,
-    required this.port,
-    required this.name,
-  });
-
-  /// IP address the WebSocket listener is reachable at.
-  final String host;
-
-  /// WebSocket port the desktop server listens on.
-  final int port;
-
-  /// Human-readable service instance name, for the selection UI.
-  final String name;
-
-  ConnectionTarget toConnectionTarget() => ConnectionTarget(
-        mode: ConnectionMode.autoDiscover,
-        ipAddress: host,
-        port: port,
-      );
-}
 
 /// Resolves advertised WheelDeck servers to dialable targets.
 typedef ServerResolver = Future<List<DiscoveredServer>> Function();

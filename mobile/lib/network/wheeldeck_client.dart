@@ -4,57 +4,20 @@ import 'dart:convert';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../domain/models/connection_status.dart';
+import '../domain/models/connection_target.dart'
+    show ConnectionTarget, defaultWheelDeckPort;
+import '../domain/models/pairing_challenge.dart';
+import '../domain/models/pairing_method.dart';
 import '../input/dashboard_input.dart';
 import '../input/input_mapping.dart';
 
-/// Where a connection attempt stands. Mirrors the states in
-/// `docs/mobile-interface.md`.
-enum ConnectionStatus {
-  disconnected,
-  discovering,
-  connecting,
-  pairingRequired,
-  connected,
-  reconnecting,
-}
-
-/// How the phone resolves the desktop server.
-enum ConnectionMode { autoDiscover, manual }
-
-/// How a pairing challenge is answered.
-enum PairingMethod { pin, qrScan }
-
-/// The endpoint a [WheelDeckClient] should dial. Discovery (TASK-030) produces
-/// `autoDiscover` targets with a resolved [ipAddress]; manual entry sets
-/// [ipAddress] and [port] directly.
-class ConnectionTarget {
-  const ConnectionTarget({
-    required this.mode,
-    this.ipAddress,
-    this.port,
-  });
-
-  final ConnectionMode mode;
-  final String? ipAddress;
-  final int? port;
-
-  /// Resolves to a `ws://` URI. Throws when no host is available yet.
-  Uri resolve({int defaultPort = 8765}) {
-    final host = ipAddress;
-    if (host == null) {
-      throw StateError('ConnectionTarget has no IP address to resolve.');
-    }
-
-    return Uri.parse('ws://$host:${port ?? defaultPort}/');
-  }
-}
-
-/// A prompt for the user to enter a PIN or scan a QR code.
-class PairingChallenge {
-  const PairingChallenge({required this.method});
-
-  final PairingMethod method;
-}
+export '../domain/models/connection_mode.dart';
+export '../domain/models/connection_status.dart';
+export '../domain/models/connection_target.dart'
+    show ConnectionTarget, defaultWheelDeckPort;
+export '../domain/models/pairing_challenge.dart';
+export '../domain/models/pairing_method.dart';
 
 /// The mobile end of the WheelDeck WebSocket protocol: dials the desktop,
 /// frames `state` and `button` messages, tracks a monotonic sequence number,
@@ -68,7 +31,7 @@ class WheelDeckClient {
     this.reconnectInterval = defaultReconnectInterval,
   }) : _connect = connect ?? _defaultConnect;
 
-  static const int defaultPort = 8765;
+  static const int defaultPort = defaultWheelDeckPort;
   static const Duration defaultHeartbeatInterval = Duration(seconds: 2);
   static const Duration defaultReconnectInterval = Duration(seconds: 3);
 
