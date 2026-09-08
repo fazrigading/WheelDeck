@@ -18,9 +18,15 @@ public sealed class SessionGate
     private readonly Action<MappingMessage> _onMapping;
     private readonly Action<WebSocket> _onConnectionClosed;
     private readonly Dictionary<WebSocket, string?> _connectionDevices = new();
+    private readonly HashSet<WebSocket> _staleTokenNotified = new();
 
     /// <summary>Fires when an authorized device sends a heartbeat, so the monitor can reset.</summary>
     public event Action<Heartbeat>? HeartbeatAccepted;
+
+    /// <summary>Fires once per connection when a heartbeat carries a token the
+    /// desktop does not know (restart with an old store, revoke, or expiry), so
+    /// the shell can tell the phone to re-pair instead of dropping input silently.</summary>
+    public event Action<WebSocket>? UnknownSessionToken;
 
     public SessionGate(
         PairingManager pairingManager,
@@ -48,6 +54,11 @@ public sealed class SessionGate
         var device = ResolveDevice(heartbeat.SessionToken);
         if (device is null)
         {
+            if (heartbeat.SessionToken is not null && _staleTokenNotified.Add(socket))
+            {
+                UnknownSessionToken?.Invoke(socket);
+            }
+
             return;
         }
 
@@ -87,6 +98,7 @@ public sealed class SessionGate
     public void OnConnectionClosed(WebSocket socket)
     {
         _connectionDevices.Remove(socket);
+        _staleTokenNotified.Remove(socket);
         _onConnectionClosed(socket);
     }
 

@@ -1,4 +1,6 @@
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using WheelDeck.Backends.Linux;
 using WheelDeck.Backends.Windows;
 using WheelDeck.Core.Input;
@@ -53,6 +55,7 @@ public sealed class CompositionRoot
 
         PairingService.PairingCompleted += (socket, deviceId, _) => _gate.OnPairingCompleted(socket, deviceId, _);
         _gate.HeartbeatAccepted += HeartbeatMonitor.OnHeartbeat;
+        _gate.UnknownSessionToken += RejectStaleSession;
     }
 
     public void Start(CancellationToken ct = default)
@@ -78,6 +81,23 @@ public sealed class CompositionRoot
         InputMapper.Mode = mapping.Mode.Equals("gamepad", StringComparison.OrdinalIgnoreCase)
             ? MappingMode.ControllerButton
             : MappingMode.SimulatedKeyPress;
+    }
+
+    /// <summary>Tells a phone with a stale token to re-pair. Fire-and-forget:
+    /// a dropped socket just means the phone already reconnected.</summary>
+    private static async void RejectStaleSession(WebSocket socket)
+    {
+        try
+        {
+            var json = """{"type":"pair_response","accepted":false}""";
+            var bytes = Encoding.UTF8.GetBytes(json);
+            await socket.SendAsync(
+                new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+        catch (Exception)
+        {
+            // Socket already gone; the next heartbeat on the new socket retries.
+        }
     }
 
     /// <summary>Creates the virtual output backend for the current OS. Public for the setup check.</summary>

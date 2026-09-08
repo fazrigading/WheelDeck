@@ -20,7 +20,6 @@ public sealed class PairingManager
 
     private readonly ConcurrentDictionary<string, PairedDevice> _devices = new();
     private readonly ConcurrentDictionary<string, PairingCode> _pendingCodes = new();
-    private readonly ConcurrentDictionary<string, string> _sessionTokens = new();
 
     public PairingManager(IPairingStore? store = null, Func<DateTimeOffset>? now = null)
     {
@@ -78,11 +77,11 @@ public sealed class PairingManager
                 DisplayName = deviceId,
                 PairedAt = now,
                 LastSeenAt = now,
-                IsActive = false
+                IsActive = false,
+                SessionToken = token
             };
 
             _devices[deviceId] = device;
-            _sessionTokens[token] = deviceId;
             Persist();
 
             return new PairingResult(true, token);
@@ -120,11 +119,6 @@ public sealed class PairingManager
         {
             if (_devices.TryRemove(deviceId, out _))
             {
-                foreach (var token in _sessionTokens.Where(kvp => kvp.Value == deviceId).Select(kvp => kvp.Key).ToList())
-                {
-                    _sessionTokens.TryRemove(token, out _);
-                }
-
                 Persist();
             }
         }
@@ -147,11 +141,10 @@ public sealed class PairingManager
         }
     }
 
-    /// <summary>Returns the device a session token belongs to, or null when unknown.</summary>
+    /// <summary>Returns the device a session token belongs to, or null when unknown.
+    /// Tokens live on the device record so they survive a desktop restart.</summary>
     public PairedDevice? FindDeviceBySessionToken(string sessionToken) =>
-        _sessionTokens.TryGetValue(sessionToken, out var deviceId) && _devices.TryGetValue(deviceId, out var device)
-            ? device
-            : null;
+        _devices.Values.FirstOrDefault(d => d.SessionToken == sessionToken);
 
     /// <summary>
     /// True when the device may reach the input mapper: it is currently active, has not
