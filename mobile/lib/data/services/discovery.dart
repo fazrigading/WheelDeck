@@ -1,9 +1,9 @@
 import 'package:multicast_dns/multicast_dns.dart';
 
-import '../domain/models/discovered_server.dart';
+import '../../domain/models/connection_mode.dart';
+import '../../domain/models/connection_target.dart';
+import '../../domain/models/discovered_server.dart';
 import 'wheeldeck_client.dart';
-
-export '../domain/models/discovered_server.dart';
 
 /// The DNS-SD service type the desktop advertises under.
 ///

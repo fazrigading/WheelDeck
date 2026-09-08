@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wheeldeck/input/pedal_input.dart';
-import 'package:wheeldeck/ui/pedals/pedal_panel.dart';
+import 'package:wheeldeck/data/services/pedal_input.dart';
+import 'package:wheeldeck/ui/features/driving/views/pedal_panel.dart';
 
 void main() {
   testWidgets('drags down to increase pressure and releases on drag end',

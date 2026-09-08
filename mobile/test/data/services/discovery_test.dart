@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wheeldeck/network/discovery.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/discovery.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/domain/models/connection_mode.dart';
+import 'package:wheeldeck/domain/models/discovered_server.dart';
 
 void main() {
   group('DiscoveredServer', () {

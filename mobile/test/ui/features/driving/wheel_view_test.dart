@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wheeldeck/ui/wheel/wheel_view.dart';
+import 'package:wheeldeck/ui/features/driving/views/wheel_view.dart';
 
 void main() {
   testWidgets('maps a normalized angle to wheel rotation in turns', (tester) async {

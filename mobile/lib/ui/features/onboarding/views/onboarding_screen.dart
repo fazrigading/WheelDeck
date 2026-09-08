@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../data/repositories/onboarding_repository.dart';
-import '../../data/services/permission_service.dart';
-import '../features/onboarding/view_models/onboarding_view_model.dart';
+import '../../../../data/repositories/onboarding_repository.dart';
+import '../../../../data/services/permission_service.dart';
+import '../view_models/onboarding_view_model.dart';
 
 /// First-run onboarding screen that explains why motion sensor and local
 /// network permissions are needed, then requests them.

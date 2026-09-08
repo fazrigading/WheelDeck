@@ -1,4 +1,4 @@
-import '../../input/steering_sensor.dart';
+import '../services/steering_sensor.dart';
 
 /// Single source of truth for the normalized steering angle (-1.0..1.0).
 ///

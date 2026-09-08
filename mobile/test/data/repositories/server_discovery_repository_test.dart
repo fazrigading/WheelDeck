@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wheeldeck/data/repositories/server_discovery_repository.dart';
 import 'package:wheeldeck/domain/models/connection_mode.dart';
-import 'package:wheeldeck/network/discovery.dart';
+import 'package:wheeldeck/domain/models/discovered_server.dart';
+import 'package:wheeldeck/data/services/discovery.dart';
 
 void main() {
   group('ServerDiscoveryRepository', () {

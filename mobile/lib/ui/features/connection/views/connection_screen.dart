@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../network/wheeldeck_client.dart';
-import '../../state/connection_coordinator.dart';
-import '../settings/settings_screen.dart';
+import '../../../../data/services/wheeldeck_client.dart';
+import '../../../../domain/models/connection_status.dart';
+import '../../../../domain/models/pairing_method.dart';
+import '../../../../ui/core/connection_coordinator.dart';
+import '../../settings/views/settings_screen.dart';
 
 /// The entry point for getting phone and desktop onto the same WheelDeck
 /// session: discover a server, or enter its address by hand, then pair and

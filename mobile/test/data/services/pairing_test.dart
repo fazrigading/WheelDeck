@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:wheeldeck/network/pairing.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/pairing.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/domain/models/connection_mode.dart';
+import 'package:wheeldeck/domain/models/connection_target.dart';
 
 class _MemoryTokenStore implements SessionTokenStore {
   String? _token;

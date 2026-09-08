@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:wheeldeck/network/discovery.dart';
-import 'package:wheeldeck/network/pairing.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
-import 'package:wheeldeck/state/connection_coordinator.dart';
-import 'package:wheeldeck/ui/connection/connection_screen.dart';
+import 'package:wheeldeck/data/services/discovery.dart';
+import 'package:wheeldeck/data/services/pairing.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/domain/models/connection_mode.dart';
+import 'package:wheeldeck/domain/models/connection_target.dart';
+import 'package:wheeldeck/domain/models/discovered_server.dart';
+import 'package:wheeldeck/ui/core/connection_coordinator.dart';
+import 'package:wheeldeck/ui/features/connection/views/connection_screen.dart';
 
 /// A session-token store that lives only in memory so tests stay hermetic.
 class _MemoryStore implements SessionTokenStore {

@@ -6,9 +6,9 @@ import '../../../../data/repositories/sensor_repository.dart';
 import '../../../../domain/models/connection_target.dart';
 import '../../../../domain/models/pedal_state.dart';
 import '../../../../domain/models/steering_state.dart';
-import '../../../../input/dashboard_input.dart';
-import '../../../../input/input_mapping.dart';
-import '../../../../input/pedal_input.dart';
+import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/input_mapping.dart';
+import '../../../../data/services/pedal_input.dart';
 
 /// Presentation state for the driving view: steering angle, pedal pressures,
 /// calibration gate, and wheel-drag fallback.

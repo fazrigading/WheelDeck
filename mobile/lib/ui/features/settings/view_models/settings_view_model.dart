@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../data/repositories/connection_repository.dart';
 import '../../../../data/repositories/settings_repository.dart';
-import '../../../../input/input_mapping.dart';
+import '../../../../data/services/input_mapping.dart';
 
 /// Presentation state for the settings page.
 ///

@@ -2,8 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:wheeldeck/input/dashboard_input.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/dashboard_input.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/domain/models/connection_mode.dart';
+import 'package:wheeldeck/domain/models/connection_status.dart';
+import 'package:wheeldeck/domain/models/connection_target.dart';
+import 'package:wheeldeck/domain/models/pairing_challenge.dart';
+import 'package:wheeldeck/domain/models/pairing_method.dart';
 
 void main() {
   late StreamChannelController<dynamic> controller;

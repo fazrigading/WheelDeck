@@ -7,10 +7,12 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:wheeldeck/data/repositories/connection_repository.dart';
 import 'package:wheeldeck/data/repositories/pedal_repository.dart';
 import 'package:wheeldeck/data/repositories/sensor_repository.dart';
-import 'package:wheeldeck/input/dashboard_input.dart';
-import 'package:wheeldeck/input/pedal_input.dart';
-import 'package:wheeldeck/input/steering_sensor.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/dashboard_input.dart';
+import 'package:wheeldeck/data/services/pedal_input.dart';
+import 'package:wheeldeck/data/services/steering_sensor.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/domain/models/connection_mode.dart';
+import 'package:wheeldeck/domain/models/connection_target.dart';
 import 'package:wheeldeck/ui/features/driving/view_models/driving_view_model.dart';
 
 class _Harness {

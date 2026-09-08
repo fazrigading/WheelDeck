@@ -1,4 +1,4 @@
-import '../../network/pairing.dart';
+import '../services/pairing.dart';
 
 /// Single source of truth for the pairing session.
 ///

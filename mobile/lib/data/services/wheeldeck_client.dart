@@ -4,20 +4,13 @@ import 'dart:convert';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../domain/models/connection_status.dart';
-import '../domain/models/connection_target.dart'
+import '../../domain/models/connection_status.dart';
+import '../../domain/models/connection_target.dart'
     show ConnectionTarget, defaultWheelDeckPort;
-import '../domain/models/pairing_challenge.dart';
-import '../domain/models/pairing_method.dart';
-import '../input/dashboard_input.dart';
-import '../input/input_mapping.dart';
-
-export '../domain/models/connection_mode.dart';
-export '../domain/models/connection_status.dart';
-export '../domain/models/connection_target.dart'
-    show ConnectionTarget, defaultWheelDeckPort;
-export '../domain/models/pairing_challenge.dart';
-export '../domain/models/pairing_method.dart';
+import '../../domain/models/pairing_challenge.dart';
+import '../../domain/models/pairing_method.dart';
+import 'dashboard_input.dart';
+import 'input_mapping.dart';
 
 /// The mobile end of the WheelDeck WebSocket protocol: dials the desktop,
 /// frames `state` and `button` messages, tracks a monotonic sequence number,

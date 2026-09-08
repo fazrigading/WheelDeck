@@ -5,8 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:wheeldeck/data/repositories/connection_repository.dart';
 import 'package:wheeldeck/data/repositories/settings_repository.dart';
-import 'package:wheeldeck/input/input_mapping.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/input_mapping.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/domain/models/connection_mode.dart';
+import 'package:wheeldeck/domain/models/connection_target.dart';
 import 'package:wheeldeck/ui/features/settings/view_models/settings_view_model.dart';
 
 void main() {

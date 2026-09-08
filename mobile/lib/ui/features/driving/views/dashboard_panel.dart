@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../input/dashboard_input.dart';
+import '../../../../data/services/dashboard_input.dart';
 
 /// The truck-styled dashboard control panel.
 ///

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wheeldeck/input/steering_sensor.dart';
-import 'package:wheeldeck/ui/wheel/calibration_view.dart';
+import 'package:wheeldeck/data/services/steering_sensor.dart';
+import 'package:wheeldeck/ui/features/driving/views/calibration_view.dart';
 
 class _CountingSensor extends SteeringSensor {
   _CountingSensor() : super(rawAngleStream: const Stream.empty());

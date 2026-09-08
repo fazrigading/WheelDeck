@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wheeldeck/input/dashboard_input.dart';
-import 'package:wheeldeck/ui/dashboard/dashboard_panel.dart';
+import 'package:wheeldeck/data/services/dashboard_input.dart';
+import 'package:wheeldeck/ui/features/driving/views/dashboard_panel.dart';
 
 void main() {
   late DashboardInput input;

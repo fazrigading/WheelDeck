@@ -1,4 +1,4 @@
-import '../../input/input_mapping.dart';
+import '../services/input_mapping.dart';
 
 /// Single source of truth for the dashboard input mapping choice.
 ///
