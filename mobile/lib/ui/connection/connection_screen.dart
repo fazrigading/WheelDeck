@@ -28,7 +28,7 @@ class ConnectionScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) =>
-                    SettingsScreen(client: coordinator.client),
+                    SettingsScreen(coordinator: coordinator),
               ),
             ),
             tooltip: 'Settings',

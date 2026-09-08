@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wheeldeck/ui/permissions.dart';
+import 'package:wheeldeck/data/services/permission_service.dart';
 
 class _FakePermissionService implements PermissionService {
   _FakePermissionService({

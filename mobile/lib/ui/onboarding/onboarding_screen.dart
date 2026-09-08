@@ -1,52 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../permissions.dart';
+import '../../data/repositories/onboarding_repository.dart';
+import '../../data/services/permission_service.dart';
+import '../features/onboarding/view_models/onboarding_view_model.dart';
 
 /// First-run onboarding screen that explains why motion sensor and local
 /// network permissions are needed, then requests them.
 ///
-/// Stores a completion flag in [SharedPreferences] so it only appears once.
+/// Lean widget: permission state lives in [OnboardingViewModel] and the body
+/// rebuilds via `ListenableBuilder`. Completion is persisted through
+/// [OnboardingRepository] so this screen only appears once.
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key, required this.onComplete});
+  const OnboardingScreen({super.key, required this.onComplete, this.viewModel});
 
   /// Called when onboarding completes (permissions requested or skipped).
   final VoidCallback onComplete;
+
+  /// Override for tests. When omitted, the state builds a live view model.
+  final OnboardingViewModel? viewModel;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  bool _requesting = false;
-  PermissionStatus? _motionSensorStatus;
-  PermissionStatus? _localNetworkStatus;
+  late final OnboardingViewModel _viewModel;
+  late final bool _ownsViewModel;
 
-  Future<void> _requestPermissions() async {
-    setState(() => _requesting = true);
-
-    final prompts = PermissionPrompts();
-    final results = await prompts.requestAll();
-
-    setState(() {
-      _requesting = false;
-      for (final result in results) {
-        switch (result.type) {
-          case PermissionType.motionSensor:
-            _motionSensorStatus = result.status;
-          case PermissionType.localNetwork:
-            _localNetworkStatus = result.status;
-        }
-      }
-    });
-
-    await _complete();
+  @override
+  void initState() {
+    super.initState();
+    final override = widget.viewModel;
+    if (override != null) {
+      _viewModel = override;
+      _ownsViewModel = false;
+    } else {
+      _viewModel = OnboardingViewModel(
+        permissions: PermissionPrompts(),
+        onboardingRepository: const OnboardingRepository(),
+      );
+      _ownsViewModel = true;
+    }
   }
 
-  Future<void> _complete() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('wheeldeck.onboarding_complete', true);
-    widget.onComplete();
+  @override
+  void dispose() {
+    if (_ownsViewModel) {
+      _viewModel.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _requestPermissions() async {
+    await _viewModel.requestAndComplete();
+    if (mounted) {
+      widget.onComplete();
+    }
+  }
+
+  Future<void> _skip() async {
+    await _viewModel.complete();
+    if (mounted) {
+      widget.onComplete();
+    }
   }
 
   @override
@@ -55,61 +71,67 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-              Icon(
-                Icons.sports_motorsports,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Welcome to WheelDeck',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Turn your phone into a steering wheel\nand dashboard for PC simulators.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 48),
-              _PermissionTile(
-                icon: Icons.screen_rotation,
-                title: 'Motion sensor',
-                description: 'Reads your phone\'s gyroscope to map '
-                    'steering rotation.',
-                status: _motionSensorStatus,
-              ),
-              const SizedBox(height: 16),
-              _PermissionTile(
-                icon: Icons.wifi,
-                title: 'Local network',
-                description: 'Discovers and connects to the WheelDeck '
-                    'desktop server.',
-                status: _localNetworkStatus,
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _requesting ? null : _requestPermissions,
-                  child: _requesting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Continue'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: _requesting ? null : _complete,
-                child: const Text('Skip for now'),
-              ),
-            ],
+          child: ListenableBuilder(
+            listenable: _viewModel,
+            builder: (context, _) {
+              final requesting = _viewModel.requesting;
+              return Column(
+                children: [
+                  const Spacer(),
+                  Icon(
+                    Icons.sports_motorsports,
+                    size: 80,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Welcome to WheelDeck',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Turn your phone into a steering wheel\nand dashboard for PC simulators.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 48),
+                  _PermissionTile(
+                    icon: Icons.screen_rotation,
+                    title: 'Motion sensor',
+                    description: 'Reads your phone\'s gyroscope to map '
+                        'steering rotation.',
+                    status: _viewModel.motionSensorStatus,
+                  ),
+                  const SizedBox(height: 16),
+                  _PermissionTile(
+                    icon: Icons.wifi,
+                    title: 'Local network',
+                    description: 'Discovers and connects to the WheelDeck '
+                        'desktop server.',
+                    status: _viewModel.localNetworkStatus,
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: requesting ? null : _requestPermissions,
+                      child: requesting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Continue'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: requesting ? null : _skip,
+                    child: const Text('Skip for now'),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
