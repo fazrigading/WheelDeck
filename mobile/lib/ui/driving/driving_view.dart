@@ -3,10 +3,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 
+import '../../data/repositories/pedal_repository.dart';
+import '../../data/repositories/sensor_repository.dart';
+import '../../data/services/gyroscope_service.dart';
 import '../../input/dashboard_input.dart';
-import '../../input/input_mapping.dart';
 import '../../input/pedal_input.dart';
 import '../../input/steering_sensor.dart';
 import '../../state/connection_coordinator.dart';
@@ -15,43 +16,39 @@ import '../dashboard/dashboard_panel.dart';
 import '../pedals/pedal_panel.dart';
 import '../settings/settings_screen.dart';
 import '../wheel/wheel_view.dart';
+import '../features/driving/view_models/driving_view_model.dart';
+import 'calibration_overlay.dart';
 
 /// The post-connection driving view: steering wheel, pedal bars, and dashboard
 /// controls in a landscape row layout.
 ///
-/// Shown only after [ConnectionStatus] reaches `connected`. Sends pedal and
-/// dashboard events through the [ConnectionCoordinator]'s client as they
-/// arrive, satisfying the PRD latency target of sub-50ms round trip.
-///
-/// Steering comes from the gyroscope Z-axis (roll around the screen normal,
-/// the axis the phone rotates around when held like a wheel) integrated into
-/// an angle via [SteeringSensor], with a horizontal-drag fallback on the
-/// wheel for desks/emulators without sensors.
+/// Shown only after the connection reaches `connected`. Lean widget: all input
+/// state lives in [DrivingViewModel] and the body rebuilds via
+/// `ListenableBuilder`. Sends pedal and dashboard events through the
+/// coordinator's connection repository as they arrive, satisfying the PRD
+/// latency target of sub-50ms round trip.
 ///
 /// Pauses input and disconnects on lifecycle interruptions (call, screen lock,
 /// backgrounding). On resume, the user must re-confirm steering calibration
 /// before input resumes.
 class DrivingView extends StatefulWidget {
-  const DrivingView({super.key, required this.coordinator});
+  const DrivingView({super.key, required this.coordinator, this.viewModel});
 
   final ConnectionCoordinator coordinator;
+
+  /// Override for tests. When omitted, the state builds a live view model
+  /// from the coordinator's connection repository and the platform gyroscope.
+  final DrivingViewModel? viewModel;
 
   @override
   State<DrivingView> createState() => _DrivingViewState();
 }
 
 class _DrivingViewState extends State<DrivingView> {
-  double _steeringAngle = 0.0;
-  late final PedalInput _pedalInput;
-  late final DashboardInput _dashboardInput;
-  late final SteeringSensor _steeringSensor;
+  late final DrivingViewModel _viewModel;
+  late final bool _ownsViewModel;
   late final LifecycleObserver _lifecycleObserver;
   List<DeviceOrientation>? _previousOrientations;
-  bool _awaitingCalibration = false;
-  bool _draggingWheel = false;
-  double _dragBase = 0.0;
-  double _rawGyroAngle = 0.0;
-  DateTime? _lastGyroAt;
 
   @override
   void initState() {
@@ -65,37 +62,25 @@ class _DrivingViewState extends State<DrivingView> {
     _lockOrientation();
     _hideSystemUI();
 
-    _steeringSensor = SteeringSensor(
-      rawAngleStream: gyroscopeEventStream().map((e) {
-        // Integrate Z-axis angular velocity (rad/s) into a raw angle.
-        // Negated: positive gyro-z is counterclockwise on screen, but a
-        // right (clockwise) turn must read as positive steering.
-        // setCenter() recenters drift; ±pi range leaves headroom around the
-        // pi/4 full-lock angle.
-        final now = DateTime.now();
-        final dt = _lastGyroAt == null
-            ? 0.016
-            : now.difference(_lastGyroAt!).inMicroseconds / 1000000.0;
-        _lastGyroAt = now;
-        _rawGyroAngle -= e.z * dt.clamp(0.0, 0.1);
-        return _rawGyroAngle.clamp(-math.pi, math.pi);
-      }),
-    );
-    _steeringSensor.onAngleChanged(_onSteeringChanged);
-    _steeringSensor.start();
-
-    _pedalInput = PedalInput();
-    _pedalInput.onPressureChanged(_onPedalChanged);
-
-    _dashboardInput = DashboardInput();
-    _dashboardInput.onControlActivated((control, action) {
-      widget.coordinator.client.sendButtonEvent(control, action);
-    });
-
-    // Apply the persisted dashboard mapping on the desktop for this session.
-    InputMapping.load().then(
-      (mapping) => widget.coordinator.client.sendMappingMode(mapping),
-    );
+    final override = widget.viewModel;
+    if (override != null) {
+      _viewModel = override;
+      _ownsViewModel = false;
+    } else {
+      _viewModel = DrivingViewModel(
+        connectionRepository: widget.coordinator.connectionRepository,
+        sensorRepository: SensorRepository(
+          sensor: SteeringSensor(
+            rawAngleStream: GyroscopeService().rawAngles,
+          ),
+        ),
+        pedalRepository: PedalRepository(input: PedalInput()),
+        dashboardInput: DashboardInput(),
+        initialAwaitingCalibration: widget.coordinator.isPaused,
+      );
+      _ownsViewModel = true;
+      _viewModel.init();
+    }
   }
 
   @override
@@ -103,83 +88,28 @@ class _DrivingViewState extends State<DrivingView> {
     WidgetsBinding.instance.removeObserver(_lifecycleObserver);
     _restoreOrientation();
     _restoreSystemUI();
-    _steeringSensor.stop();
-    _pedalInput.dispose();
+    if (_ownsViewModel) {
+      _viewModel.dispose();
+    }
     super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant DrivingView oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (widget.coordinator.isPaused && !_awaitingCalibration) {
-      _awaitingCalibration = true;
-    }
-
-    if (!widget.coordinator.isPaused && _awaitingCalibration) {
-      _awaitingCalibration = false;
-    }
+    _viewModel.setAwaitingCalibration(widget.coordinator.isPaused);
   }
 
-  void _onSteeringChanged(double angle) {
-    if (_awaitingCalibration || _draggingWheel) return;
-    if ((_steeringAngle - angle).abs() < 0.002) return;
-    setState(() => _steeringAngle = angle);
-    _sendState();
-  }
+  Future<void> _onCalibrationConfirmed() async {
+    _viewModel.confirmCalibration();
 
-  void _onPedalChanged(PedalType pedal, double pressure) {
-    if (_awaitingCalibration) return;
-    setState(() {});
-    _sendState();
-  }
-
-  void _sendState() {
-    widget.coordinator.client.sendState(
-      steering: _steeringAngle,
-      accelerator: _pedalInput.pressureOf(PedalType.accelerator),
-      brake: _pedalInput.pressureOf(PedalType.brake),
-      clutch: _pedalInput.pressureOf(PedalType.clutch),
-    );
-  }
-
-  void _onWheelDragStart(DragStartDetails details) {
-    _draggingWheel = true;
-    _dragBase = _steeringAngle;
-  }
-
-  void _onWheelDragUpdate(DragUpdateDetails details) {
-    // ~200 logical px of horizontal drag = full lock. Works without sensors
-    // (emulators, desks) and gives immediate visual + network feedback.
-    final angle = (_dragBase + details.delta.dx / 200).clamp(-1.0, 1.0);
-    setState(() => _steeringAngle = angle);
-    _sendState();
-  }
-
-  void _onWheelDragEnd() {
-    _draggingWheel = false;
-    _dragBase = _steeringAngle;
-    _steeringSensor.setCenter();
-  }
-
-  void _onCalibrationConfirmed() async {
-    _steeringSensor.setCenter();
-    setState(() {
-      _awaitingCalibration = false;
-    });
-
-    final target = widget.coordinator.client.lastTarget;
+    final target = _viewModel.lastTarget;
     if (target != null) {
       await widget.coordinator.connect(target);
     }
   }
 
-  void _onDisconnect() {
-    setState(() {
-      _awaitingCalibration = false;
-    });
-    widget.coordinator.disconnect();
-  }
+  Future<void> _onDisconnect() => _viewModel.disconnect();
 
   void _lockOrientation() {
     _previousOrientations = null;
@@ -234,12 +164,18 @@ class _DrivingViewState extends State<DrivingView> {
         ],
       ),
       body: SafeArea(
-        child: _awaitingCalibration
-            ? CalibrationOverlay(
-                angle: _steeringAngle,
+        child: ListenableBuilder(
+          listenable: _viewModel,
+          builder: (context, _) {
+            if (_viewModel.awaitingCalibration) {
+              return CalibrationOverlay(
+                angle: _viewModel.steering.angle,
                 onConfirmed: _onCalibrationConfirmed,
-              )
-            : _buildDrivingContent(),
+              );
+            }
+            return _buildDrivingContent();
+          },
+        ),
       ),
     );
   }
@@ -259,11 +195,16 @@ class _DrivingViewState extends State<DrivingView> {
               flex: 5,
               child: Center(
                 child: GestureDetector(
-                  onHorizontalDragStart: _onWheelDragStart,
-                  onHorizontalDragUpdate: _onWheelDragUpdate,
-                  onHorizontalDragEnd: (_) => _onWheelDragEnd(),
-                  onDoubleTap: () => _onWheelDragEnd(),
-                  child: WheelView(angle: _steeringAngle, size: wheelSize),
+                  onHorizontalDragStart: (_) =>
+                      _viewModel.onWheelDragStart(),
+                  onHorizontalDragUpdate: (details) =>
+                      _viewModel.onWheelDragUpdate(details.delta.dx),
+                  onHorizontalDragEnd: (_) => _viewModel.onWheelDragEnd(),
+                  onDoubleTap: () => _viewModel.onWheelDragEnd(),
+                  child: WheelView(
+                    angle: _viewModel.steering.angle,
+                    size: wheelSize,
+                  ),
                 ),
               ),
             ),
@@ -275,13 +216,14 @@ class _DrivingViewState extends State<DrivingView> {
                   children: [
                     Expanded(
                       flex: 5,
-                      child: PedalPanel(input: _pedalInput),
+                      child: PedalPanel(input: _viewModel.pedalInput),
                     ),
                     const SizedBox(height: 8),
                     Expanded(
                       flex: 4,
                       child: SingleChildScrollView(
-                        child: DashboardPanel(input: _dashboardInput),
+                        child:
+                            DashboardPanel(input: _viewModel.dashboardInput),
                       ),
                     ),
                   ],
@@ -291,56 +233,6 @@ class _DrivingViewState extends State<DrivingView> {
           ],
         );
       },
-    );
-  }
-}
-
-/// Overlay shown after a lifecycle interruption, requiring the user to
-/// re-confirm the steering center before input resumes.
-class CalibrationOverlay extends StatelessWidget {
-  const CalibrationOverlay({
-    super.key,
-    required this.angle,
-    required this.onConfirmed,
-  });
-
-  final double angle;
-  final VoidCallback onConfirmed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.screen_lock_rotation,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Session interrupted',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'The connection was paused. Please re-confirm\nyour steering center before resuming.',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'Current steering angle: ${angle.toStringAsFixed(2)}',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: onConfirmed,
-            child: const Text('Resume driving'),
-          ),
-        ],
-      ),
     );
   }
 }
