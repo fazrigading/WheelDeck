@@ -1,28 +1,43 @@
 import 'package:flutter/foundation.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import '../data/repositories/connection_repository.dart';
+import '../data/repositories/server_discovery_repository.dart';
+import '../data/repositories/session_repository.dart';
+import '../domain/models/connection_status.dart';
+import '../domain/models/connection_target.dart';
+import '../domain/models/discovered_server.dart';
+import '../domain/models/pairing_challenge.dart';
 import '../network/discovery.dart';
 import '../network/pairing.dart';
 import '../network/wheeldeck_client.dart';
+import '../ui/features/connection/view_models/connection_view_model.dart';
 
-/// App-level state that owns the network layer and exposes reactive
+/// App-level facade that owns the network layer and exposes reactive
 /// connection state to the UI.
 ///
-/// Wires together [WheelDeckClient], [ServerDiscovery], and
-/// [PairingController] into a single [ChangeNotifier] so the UI can react to
-/// status changes, discovery results, and pairing challenges without each
-/// screen holding its own subscriptions.
+/// The layered stack lives underneath: stateless services
+/// ([WheelDeckClient], [ServerDiscovery], [PairingController]), repositories
+/// ([ServerDiscoveryRepository], [ConnectionRepository], [SessionRepository]),
+/// and [ConnectionViewModel]. This class keeps the pre-refactor public API so
+/// existing screens and tests keep working while new code binds to
+/// [viewModel] directly via `ListenableBuilder`.
 class ConnectionCoordinator extends ChangeNotifier {
   ConnectionCoordinator._({
     required this.deviceId,
     required this.defaultHost,
-    required this.defaultPort,
     required this.client,
     required this.discovery,
     required this.pairing,
-  }) : _status = client.status {
-    client.onConnectionStatusChanged(_onStatusChanged);
-    client.onPairingRequired(_onPairingRequired);
+    required ServerDiscoveryRepository discoveryRepository,
+    required ConnectionRepository connectionRepository,
+    required SessionRepository sessionRepository,
+    required ConnectionViewModel viewModel,
+  })  : _discoveryRepository = discoveryRepository,
+        _connectionRepository = connectionRepository,
+        _sessionRepository = sessionRepository,
+        _viewModel = viewModel {
+    _viewModel.addListener(notifyListeners);
   }
 
   factory ConnectionCoordinator({
@@ -42,14 +57,28 @@ class ConnectionCoordinator extends ChangeNotifier {
       store: store ?? SharedPreferencesSessionTokenStore(),
       client: client,
     );
+    final discoveryRepository =
+        ServerDiscoveryRepository(discovery: discovery);
+    final connectionRepository = ConnectionRepository(client: client);
+    final sessionRepository = SessionRepository(pairing: pairing);
+    final resolvedPort = defaultPort ?? WheelDeckClient.defaultPort;
+    final viewModel = ConnectionViewModel(
+      discoveryRepository: discoveryRepository,
+      connectionRepository: connectionRepository,
+      sessionRepository: sessionRepository,
+      defaultPort: resolvedPort,
+    );
 
     return ConnectionCoordinator._(
       deviceId: deviceId,
       defaultHost: defaultHost,
-      defaultPort: defaultPort ?? WheelDeckClient.defaultPort,
       client: client,
       discovery: discovery,
       pairing: pairing,
+      discoveryRepository: discoveryRepository,
+      connectionRepository: connectionRepository,
+      sessionRepository: sessionRepository,
+      viewModel: viewModel,
     );
   }
 
@@ -59,41 +88,41 @@ class ConnectionCoordinator extends ChangeNotifier {
   final String? defaultHost;
 
   /// Default port shown in the manual entry field.
-  final int defaultPort;
+  int get defaultPort => _viewModel.defaultPort;
 
   final WheelDeckClient client;
   final ServerDiscovery discovery;
   final PairingController pairing;
 
-  List<DiscoveredServer> _servers = [];
-  ConnectionStatus _status = ConnectionStatus.disconnected;
-  PairingChallenge? _pairingChallenge;
-  bool _pairingError = false;
-  bool _pairingSubmitted = false;
-  bool _isPaused = false;
+  final ServerDiscoveryRepository _discoveryRepository;
+  final ConnectionRepository _connectionRepository;
+  final SessionRepository _sessionRepository;
+  final ConnectionViewModel _viewModel;
 
-  /// Current connection status, mirrored from [client].
-  ConnectionStatus get status => _status;
+  /// Layered stack for new code: bind with `ListenableBuilder`.
+  ConnectionViewModel get viewModel => _viewModel;
+  ServerDiscoveryRepository get discoveryRepository => _discoveryRepository;
+  ConnectionRepository get connectionRepository => _connectionRepository;
+  SessionRepository get sessionRepository => _sessionRepository;
+
+  /// Current connection status, mirrored from [viewModel].
+  ConnectionStatus get status => _viewModel.status;
 
   /// Servers found during the most recent discovery sweep.
-  List<DiscoveredServer> get servers => List.unmodifiable(_servers);
+  List<DiscoveredServer> get servers => _viewModel.servers;
 
   /// The active pairing challenge, if the desktop is waiting for a code.
-  PairingChallenge? get pairingChallenge => _pairingChallenge;
+  PairingChallenge? get pairingChallenge => _viewModel.pairingChallenge;
 
   /// True when a submitted PIN was rejected and the prompt should show an error.
-  bool get pairingError => _pairingError;
+  bool get pairingError => _viewModel.pairingError;
 
   /// True when the session is paused due to a lifecycle interruption (call,
   /// screen lock, or backgrounding). Input should not be sent while paused.
-  bool get isPaused => _isPaused;
+  bool get isPaused => _viewModel.isPaused;
 
   /// Runs an mDNS discovery sweep and updates [servers].
-  Future<void> refreshDiscovery() async {
-    final servers = await discovery.discover();
-    _servers = servers;
-    notifyListeners();
-  }
+  Future<void> refreshDiscovery() => _viewModel.refreshDiscovery();
 
   /// Builds a manual target from user-entered host and optional port, then
   /// connects (restoring a prior session token first to skip re-pairing).
@@ -101,60 +130,29 @@ class ConnectionCoordinator extends ChangeNotifier {
     required String host,
     int? port,
   }) =>
-      connect(
-        ServerDiscovery.manualTarget(host: host, port: port ?? defaultPort),
-      );
+      _viewModel.connectManual(host: host, port: port);
 
   /// Connects to [target], restoring any persisted session token first.
-  Future<void> connect(ConnectionTarget target) async {
-    await pairing.restoreSession();
-    await client.connect(target);
-  }
+  Future<void> connect(ConnectionTarget target) => _viewModel.connect(target);
 
   /// Closes the socket and returns to `disconnected`.
-  Future<void> disconnect() => client.disconnect();
+  Future<void> disconnect() => _viewModel.disconnect();
 
   /// Pauses the session due to a lifecycle interruption (call, screen lock,
   /// or backgrounding). Disconnects from the desktop so it neutralizes output.
-  Future<void> pause() async {
-    if (_isPaused) return;
-    _isPaused = true;
-    await client.disconnect();
-    notifyListeners();
-  }
+  Future<void> pause() => _viewModel.pause();
 
   /// Resumes after a lifecycle interruption. Clears the pause flag so the UI
   /// can re-confirm calibration before sending input.
-  void resume() {
-    _isPaused = false;
-    notifyListeners();
-  }
+  void resume() => _viewModel.resume();
 
   /// Sends the pairing code entered by the user.
-  void submitPairingCode(String code) {
-    _pairingSubmitted = true;
-    _pairingError = false;
-    pairing.submitPairingCode(code);
-  }
+  void submitPairingCode(String code) => _viewModel.submitPairingCode(code);
 
-  void _onStatusChanged(ConnectionStatus status) {
-    if (status == _status) {
-      return;
-    }
-
-    _status = status;
-    if (status == ConnectionStatus.connected) {
-      _pairingChallenge = null;
-      _pairingError = false;
-      _pairingSubmitted = false;
-    }
-
-    notifyListeners();
-  }
-
-  void _onPairingRequired(PairingChallenge challenge) {
-    _pairingChallenge = challenge;
-    _pairingError = _pairingSubmitted;
-    notifyListeners();
+  @override
+  void dispose() {
+    _viewModel.removeListener(notifyListeners);
+    _viewModel.dispose();
+    super.dispose();
   }
 }
