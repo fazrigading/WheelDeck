@@ -85,7 +85,7 @@ class ConnectionScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final server = coordinator.servers[index];
                   return ListTile(
-                    leading: const Icon(Icons.desktop_windows),
+                    leading: const Icon(Icons.computer),
                     title: Text(server.name),
                     subtitle: Text(
                       '${server.host}:${server.port}\nTap to connect – PIN required',
