@@ -10,10 +10,9 @@ import '../../../../data/services/permission_service.dart';
 /// or [complete] finishes.
 class OnboardingViewModel extends ChangeNotifier {
   OnboardingViewModel({
-    required PermissionPrompts permissions,
-    required OnboardingRepository onboardingRepository,
-  })  : _permissions = permissions,
-        _onboardingRepository = onboardingRepository;
+    required this._permissions,
+    required this._onboardingRepository,
+  });
 
   final PermissionPrompts _permissions;
   final OnboardingRepository _onboardingRepository;

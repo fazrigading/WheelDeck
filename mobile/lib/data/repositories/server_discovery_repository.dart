@@ -7,8 +7,7 @@ import '../services/discovery.dart';
 /// Wraps the stateless [ServerDiscovery] service, caches the last sweep, and
 /// exposes domain models to ViewModels.
 class ServerDiscoveryRepository {
-  ServerDiscoveryRepository({required ServerDiscovery discovery})
-      : _discovery = discovery;
+  ServerDiscoveryRepository({required this._discovery});
 
   final ServerDiscovery _discovery;
   List<DiscoveredServer> _cached = const [];

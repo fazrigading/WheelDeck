@@ -6,7 +6,7 @@ import '../services/pedal_input.dart';
 /// Wraps the [PedalInput] service (drag mapping, spring-back release) and
 /// exposes immutable [PedalState] snapshots to ViewModels.
 class PedalRepository {
-  PedalRepository({required PedalInput input}) : _input = input {
+  PedalRepository({required this._input}) {
     _input.onPressureChanged(_onPressureChanged);
   }
 

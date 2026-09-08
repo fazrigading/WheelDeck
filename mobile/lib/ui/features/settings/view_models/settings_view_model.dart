@@ -11,10 +11,9 @@ import '../../../../data/services/input_mapping.dart';
 /// `ListenableBuilder`.
 class SettingsViewModel extends ChangeNotifier {
   SettingsViewModel({
-    required SettingsRepository settingsRepository,
-    required ConnectionRepository connectionRepository,
-  })  : _settingsRepository = settingsRepository,
-        _connectionRepository = connectionRepository;
+    required this._settingsRepository,
+    required this._connectionRepository,
+  });
 
   final SettingsRepository _settingsRepository;
   final ConnectionRepository _connectionRepository;

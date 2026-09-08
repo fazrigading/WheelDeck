@@ -29,14 +29,11 @@ class ConnectionCoordinator extends ChangeNotifier {
     required this.client,
     required this.discovery,
     required this.pairing,
-    required ServerDiscoveryRepository discoveryRepository,
-    required ConnectionRepository connectionRepository,
-    required SessionRepository sessionRepository,
-    required ConnectionViewModel viewModel,
-  })  : _discoveryRepository = discoveryRepository,
-        _connectionRepository = connectionRepository,
-        _sessionRepository = sessionRepository,
-        _viewModel = viewModel {
+    required this._discoveryRepository,
+    required this._connectionRepository,
+    required this._sessionRepository,
+    required this._viewModel,
+  }) {
     _viewModel.addListener(notifyListeners);
   }
 

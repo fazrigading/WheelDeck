@@ -10,7 +10,7 @@ import '../services/wheeldeck_client.dart';
 /// Thin pass-through over the [WheelDeckClient] service so ViewModels never
 /// touch transport framing directly.
 class ConnectionRepository {
-  ConnectionRepository({required WheelDeckClient client}) : _client = client;
+  ConnectionRepository({required this._client});
 
   final WheelDeckClient _client;
 
