@@ -20,4 +20,8 @@ public sealed record PairedDevice
 
     /// <summary>True when this is the device currently allowed to reach the input mapper.</summary>
     public bool IsActive { get; set; }
+
+    /// <summary>Token issued at pairing, persisted so heartbeats still bind
+    /// after a desktop restart. Null until the device has paired.</summary>
+    public string? SessionToken { get; set; }
 }

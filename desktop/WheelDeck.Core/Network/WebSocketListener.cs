@@ -21,6 +21,7 @@ public sealed class WebSocketListener : IAsyncDisposable
 
     public event Action<StateMessage, WebSocket>? StateReceived;
     public event Action<ButtonMessage, WebSocket>? ButtonReceived;
+    public event Action<MappingMessage, WebSocket>? MappingReceived;
     public event Action<PairRequest, WebSocket>? PairRequestReceived;
     public event Action<Heartbeat, WebSocket>? HeartbeatReceived;
     public event Action<WebSocket>? ConnectionClosed;
@@ -161,6 +162,15 @@ public sealed class WebSocketListener : IAsyncDisposable
                     if (button is not null)
                     {
                         ButtonReceived?.Invoke(button, socket);
+                    }
+
+                    break;
+
+                case "mapping":
+                    var mapping = JsonSerializer.Deserialize<MappingMessage>(json);
+                    if (mapping is not null)
+                    {
+                        MappingReceived?.Invoke(mapping, socket);
                     }
 
                     break;
