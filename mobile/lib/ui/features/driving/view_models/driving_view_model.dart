@@ -19,16 +19,12 @@ import '../../../../data/services/pedal_input.dart';
 /// `ListenableBuilder` and delegates gestures to the command methods.
 class DrivingViewModel extends ChangeNotifier {
   DrivingViewModel({
-    required ConnectionRepository connectionRepository,
-    required SensorRepository sensorRepository,
-    required PedalRepository pedalRepository,
-    required DashboardInput dashboardInput,
+    required this._connectionRepository,
+    required this._sensorRepository,
+    required this._pedalRepository,
+    required this._dashboardInput,
     bool initialAwaitingCalibration = false,
-  })  : _connectionRepository = connectionRepository,
-        _sensorRepository = sensorRepository,
-        _pedalRepository = pedalRepository,
-        _dashboardInput = dashboardInput,
-        _awaitingCalibration = initialAwaitingCalibration {
+  })  : _awaitingCalibration = initialAwaitingCalibration {
     _sensorRepository.onAngleChanged(_onSensorAngle);
     _sensorRepository.start();
     _pedalRepository.onStateChanged(_onPedals);

@@ -5,7 +5,7 @@ import '../services/steering_sensor.dart';
 /// Wraps the [SteeringSensor] service (centering, sensitivity, clamping) so
 /// ViewModels never touch sensor sampling directly.
 class SensorRepository {
-  SensorRepository({required SteeringSensor sensor}) : _sensor = sensor;
+  SensorRepository({required this._sensor});
 
   final SteeringSensor _sensor;
 

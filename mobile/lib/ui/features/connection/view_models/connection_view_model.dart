@@ -16,13 +16,11 @@ import '../../../../data/services/wheeldeck_client.dart';
 /// snapshots; the View renders via `ListenableBuilder`.
 class ConnectionViewModel extends ChangeNotifier {
   ConnectionViewModel({
-    required ServerDiscoveryRepository discoveryRepository,
+    required this._discoveryRepository,
     required ConnectionRepository connectionRepository,
-    required SessionRepository sessionRepository,
+    required this._sessionRepository,
     int? defaultPort,
-  })  : _discoveryRepository = discoveryRepository,
-        _connectionRepository = connectionRepository,
-        _sessionRepository = sessionRepository,
+  })  : _connectionRepository = connectionRepository,
         defaultPort = defaultPort ?? WheelDeckClient.defaultPort,
         _status = connectionRepository.status {
     _connectionRepository.onStatusChanged(_onStatusChanged);

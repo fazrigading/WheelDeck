@@ -5,7 +5,7 @@ import '../services/pairing.dart';
 /// Reuses [PairingController] (raw token store + client wiring) so ViewModels
 /// depend on a repository, not on the service directly.
 class SessionRepository {
-  SessionRepository({required PairingController pairing}) : _pairing = pairing;
+  SessionRepository({required this._pairing});
 
   final PairingController _pairing;
 
