@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using WheelDeck.Core.Network;
 using WheelDeck.Core.Pairing;
 
 namespace WheelDeck.App.ViewModels;
@@ -47,6 +48,8 @@ public sealed class PairingViewModel : INotifyPropertyChanged
 {
     private readonly PairingManager _pairingManager;
     private string _pairingCode = string.Empty;
+    private readonly string _localIpAddress = NetworkHelper.GetLocalIpAddress();
+    private const int DefaultPort = 8765;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -57,6 +60,8 @@ public sealed class PairingViewModel : INotifyPropertyChanged
         get => _pairingCode;
         private set => SetField(ref _pairingCode, value);
     }
+
+    public string ConnectionInfo => $"{_localIpAddress}:{DefaultPort}";
 
     public RelayCommand GenerateCodeCommand { get; }
     public RelayCommand SetActiveCommand { get; }

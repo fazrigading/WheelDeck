@@ -11,6 +11,9 @@
 
     <TextBlock Text="Enter this code on the phone, or scan its QR equivalent." />
 
+    <TextBlock TextWrapping="Wrap"
+               Text="{Binding ConnectionInfo, StringFormat='Connect to {0} and enter the code above.'}" />
+
     <TextBlock FontWeight="SemiBold" Text="Paired devices" />
 
     <ListBox ItemsSource="{Binding Devices}">
