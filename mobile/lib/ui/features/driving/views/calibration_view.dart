@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../input/steering_sensor.dart';
+import '../../../../data/services/steering_sensor.dart';
 
 /// Calibration screen for the steering sensor.
 ///

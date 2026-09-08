@@ -1,17 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../data/repositories/connection_repository.dart';
-import '../data/repositories/server_discovery_repository.dart';
-import '../data/repositories/session_repository.dart';
-import '../domain/models/connection_status.dart';
-import '../domain/models/connection_target.dart';
-import '../domain/models/discovered_server.dart';
-import '../domain/models/pairing_challenge.dart';
-import '../network/discovery.dart';
-import '../network/pairing.dart';
-import '../network/wheeldeck_client.dart';
-import '../ui/features/connection/view_models/connection_view_model.dart';
+import '../../data/repositories/connection_repository.dart';
+import '../../data/repositories/server_discovery_repository.dart';
+import '../../data/repositories/session_repository.dart';
+import '../../domain/models/connection_status.dart';
+import '../../domain/models/connection_target.dart';
+import '../../domain/models/discovered_server.dart';
+import '../../domain/models/pairing_challenge.dart';
+import '../../data/services/discovery.dart';
+import '../../data/services/pairing.dart';
+import '../../data/services/wheeldeck_client.dart';
+import '../features/connection/view_models/connection_view_model.dart';
 
 /// App-level facade that owns the network layer and exposes reactive
 /// connection state to the UI.

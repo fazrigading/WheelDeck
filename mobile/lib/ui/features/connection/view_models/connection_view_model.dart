@@ -7,7 +7,7 @@ import '../../../../domain/models/connection_status.dart';
 import '../../../../domain/models/connection_target.dart';
 import '../../../../domain/models/discovered_server.dart';
 import '../../../../domain/models/pairing_challenge.dart';
-import '../../../../network/wheeldeck_client.dart';
+import '../../../../data/services/wheeldeck_client.dart';
 
 /// Presentation state for the connection/pairing flow.
 ///

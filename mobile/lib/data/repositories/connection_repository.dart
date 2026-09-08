@@ -1,6 +1,9 @@
-import '../../input/dashboard_input.dart';
-import '../../input/input_mapping.dart';
-import '../../network/wheeldeck_client.dart';
+import '../../domain/models/connection_status.dart';
+import '../../domain/models/connection_target.dart';
+import '../../domain/models/pairing_challenge.dart';
+import '../services/dashboard_input.dart';
+import '../services/input_mapping.dart';
+import '../services/wheeldeck_client.dart';
 
 /// Single source of truth for the WebSocket connection.
 ///

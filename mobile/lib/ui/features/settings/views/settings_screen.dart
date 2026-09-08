@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../data/repositories/settings_repository.dart';
-import '../../input/input_mapping.dart';
-import '../../state/connection_coordinator.dart';
-import '../features/settings/view_models/settings_view_model.dart';
+import '../../../../data/repositories/settings_repository.dart';
+import '../../../../data/services/input_mapping.dart';
+import '../../../../ui/core/connection_coordinator.dart';
+import '../view_models/settings_view_model.dart';
 
 /// Options page: dashboard input mapping (keyboard or gamepad).
 ///

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../input/pedal_input.dart';
+import '../../../../data/services/pedal_input.dart';
 
 /// Three vertical draggable pedal bars: accelerator, brake, and clutch.
 ///

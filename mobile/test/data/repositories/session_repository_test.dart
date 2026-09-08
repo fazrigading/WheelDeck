@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:wheeldeck/data/repositories/session_repository.dart';
-import 'package:wheeldeck/network/pairing.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/pairing.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
 
 class _MemoryStore implements SessionTokenStore {
   String? token;

@@ -171,7 +171,7 @@ Located in `scripts/`:
 
 1. Add the enum value to `protocol/schema/controls.json`
 2. Add the same value to `ControlId` in `WheelDeck.Core/Protocol/ControlId.cs`
-3. Add the same value to the `ControlId` enum in `mobile/lib/input/dashboard_input.dart`
+3. Add the same value to the `ControlId` enum in `mobile/lib/data/services/dashboard_input.dart`
 4. Map the control in `InputMapper.cs` (which `setButton` or `sendKey` line to use)
 
 > The protocol schema is the single source of truth. Do not add control enums to code without adding them to the schema first.

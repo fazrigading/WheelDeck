@@ -4,20 +4,20 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../data/repositories/pedal_repository.dart';
-import '../../data/repositories/sensor_repository.dart';
-import '../../data/services/gyroscope_service.dart';
-import '../../input/dashboard_input.dart';
-import '../../input/pedal_input.dart';
-import '../../input/steering_sensor.dart';
-import '../../state/connection_coordinator.dart';
-import '../../state/lifecycle_observer.dart';
-import '../dashboard/dashboard_panel.dart';
-import '../pedals/pedal_panel.dart';
-import '../settings/settings_screen.dart';
-import '../wheel/wheel_view.dart';
-import '../features/driving/view_models/driving_view_model.dart';
+import '../../../../data/repositories/pedal_repository.dart';
+import '../../../../data/repositories/sensor_repository.dart';
+import '../../../../data/services/gyroscope_service.dart';
+import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/pedal_input.dart';
+import '../../../../data/services/steering_sensor.dart';
+import '../../../../ui/core/connection_coordinator.dart';
+import '../../../../ui/core/lifecycle_observer.dart';
+import '../../settings/views/settings_screen.dart';
+import '../view_models/driving_view_model.dart';
 import 'calibration_overlay.dart';
+import 'dashboard_panel.dart';
+import 'pedal_panel.dart';
+import 'wheel_view.dart';
 
 /// The post-connection driving view: steering wheel, pedal bars, and dashboard
 /// controls in a landscape row layout.

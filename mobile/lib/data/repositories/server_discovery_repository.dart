@@ -1,6 +1,6 @@
 import '../../domain/models/connection_target.dart';
 import '../../domain/models/discovered_server.dart';
-import '../../network/discovery.dart';
+import '../services/discovery.dart';
 
 /// Single source of truth for discovered servers.
 ///

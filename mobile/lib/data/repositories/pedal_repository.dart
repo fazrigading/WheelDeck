@@ -1,5 +1,5 @@
 import '../../domain/models/pedal_state.dart';
-import '../../input/pedal_input.dart';
+import '../services/pedal_input.dart';
 
 /// Single source of truth for analog pedal pressures.
 ///

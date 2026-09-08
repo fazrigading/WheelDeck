@@ -8,10 +8,11 @@ import 'package:wheeldeck/data/repositories/session_repository.dart';
 import 'package:wheeldeck/domain/models/connection_mode.dart';
 import 'package:wheeldeck/domain/models/connection_status.dart';
 import 'package:wheeldeck/domain/models/connection_target.dart';
+import 'package:wheeldeck/domain/models/discovered_server.dart';
 import 'package:wheeldeck/domain/models/pairing_method.dart';
-import 'package:wheeldeck/network/discovery.dart';
-import 'package:wheeldeck/network/pairing.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/discovery.dart';
+import 'package:wheeldeck/data/services/pairing.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
 import 'package:wheeldeck/ui/features/connection/view_models/connection_view_model.dart';
 
 class _MemoryStore implements SessionTokenStore {

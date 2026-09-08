@@ -6,8 +6,8 @@ import 'package:wheeldeck/data/repositories/connection_repository.dart';
 import 'package:wheeldeck/domain/models/connection_mode.dart';
 import 'package:wheeldeck/domain/models/connection_status.dart';
 import 'package:wheeldeck/domain/models/connection_target.dart';
-import 'package:wheeldeck/input/dashboard_input.dart';
-import 'package:wheeldeck/network/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/dashboard_input.dart';
+import 'package:wheeldeck/data/services/wheeldeck_client.dart';
 
 void main() {
   group('ConnectionRepository', () {
