@@ -1,0 +1,109 @@
+name: Bug Report
+description: Report a bug in WheelDeck
+labels: ["needs-triage"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which area of WheelDeck does this bug affect?
+      options:
+        - Mobile (Flutter app)
+        - Desktop (.NET/Avalonia server)
+        - Protocol (JSON schema / WebSocket messages)
+        - CI/CD (GitHub Actions)
+        - Documentation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: On which platform did you encounter this bug?
+      options:
+        - Windows
+        - Linux
+        - Android
+        - iOS
+        - Multiple / Not platform-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Launch desktop server
+        2. Open mobile app and connect to '...'
+        3. Perform action '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: connection_state
+    attributes:
+      label: Connection State
+      description: What was the connection state when the bug occurred?
+      options:
+        - Not applicable
+        - Disconnected
+        - Discovering / Connecting
+        - Pairing (PIN entry)
+        - Connected (active session)
+        - Reconnecting
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Messages
+      description: Paste any relevant logs, stack traces, or error messages.
+      render: shell
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Additional context about your setup
+      placeholder: |
+        - WheelDeck version:
+        - OS version:
+        - Simulator (if applicable):
+        - Network (LAN/WiFi):
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided sufficient information to reproduce the bug
+          required: false
