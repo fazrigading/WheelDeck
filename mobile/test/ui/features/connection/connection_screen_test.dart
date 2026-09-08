@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:wheeldeck/data/services/discovery.dart';
 import 'package:wheeldeck/data/services/pairing.dart';
-import 'package:wheeldeck/data/services/wheeldeck_client.dart';
 import 'package:wheeldeck/domain/models/connection_mode.dart';
 import 'package:wheeldeck/domain/models/connection_target.dart';
 import 'package:wheeldeck/domain/models/discovered_server.dart';

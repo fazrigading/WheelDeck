@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../data/services/wheeldeck_client.dart';
 import '../../../../domain/models/connection_status.dart';
 import '../../../../domain/models/pairing_method.dart';
 import '../../../../ui/core/connection_coordinator.dart';
