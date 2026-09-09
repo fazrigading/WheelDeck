@@ -21,12 +21,12 @@
 - [x] **Manual recalibration/zeroing button** — FAB + AppBar `Icons.center_focus_strong` → `DrivingViewModel.recalibrate()` → `sensorRepository.setCenter()` even when not `awaitingCalibration`
 - [x] **Fix notification-pane disconnect bug** — `LifecycleObserver.dart:16`: `inactive` (notification shade) now no-op; only `paused`/`detached` triggers `pause()`. `resumed` retains `lastTarget` auto-reconnect via `CalibrationOverlay`.
 
-### Phase 3 — Settings page
-- [ ] **Per-control bindings** — editable list for both `keyboard` and `gamepad` mappings (`SettingsScreen.dart:56`, `input_mapping.dart:4`)
-  - [ ] ETS2 preset + extensible `GamePreset` (mirrors `desktop/WheelDeck.Core/Input/InputMapper.cs:13`)
-- [ ] **Controller type selector** — steering only / +3 pedals / +2 pedals / +dashboard / full
-- [ ] **Controller layout** — a) Acc R/Brake R/Clutch L  b) Acc R/Brake L/Clutch L  c) A w/o clutch  d) B w/o clutch → drives `PedalPanel` order/visibility
-- [ ] **Reset to default** — confirm dialog + `SnackBar`, resets mapping+type+layout
+### Phase 3 — Settings page ✅
+- [x] **Per-control bindings** — editable list for both `keyboard` and `gamepad` mappings (`SettingsScreen.dart:56`, `input_mapping.dart:4`) — preset list with chip + tap-to-edit dialog
+  - [x] ETS2 preset + extensible `GamePreset` (mirrors `desktop/WheelDeck.Core/Input/InputMapper.cs:13`)
+- [x] **Controller type selector** — steering only / +3 pedals / +2 pedals / +dashboard / full (`ControllerType` + `RadioGroup`)
+- [x] **Controller layout** — a) Acc R/Brake R/Clutch L  b) Acc R/Brake L/Clutch L  c) A w/o clutch  d) B w/o clutch → drives `PedalPanel` order/visibility (`PedalLayout` + `DrivingViewModel.pedalLayout`)
+- [x] **Reset to default** — confirm dialog + `SnackBar`, resets mapping+type+layout
 
 ### Phase 4 — About & Donation
 - [ ] **About** — developer credit, source code link, GitHub Stars button + badge (`shields.io` or `api.github.com/repos/fazrigading/WheelDeck`) → `ui/features/about/views/about_screen.dart`

@@ -238,7 +238,10 @@ class _DrivingViewState extends State<DrivingView> {
                   children: [
                     Expanded(
                       flex: 5,
-                      child: PedalPanel(input: _viewModel.pedalInput),
+                      child: PedalPanel(
+                        input: _viewModel.pedalInput,
+                        layout: _viewModel.pedalLayout.order,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Expanded(
