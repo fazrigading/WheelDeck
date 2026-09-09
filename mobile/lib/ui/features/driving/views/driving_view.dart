@@ -112,6 +112,7 @@ class _DrivingViewState extends State<DrivingView> {
   Future<void> _onDisconnect() => _viewModel.disconnect();
 
   void _onRecalibrate() {
+    HapticFeedback.lightImpact();
     _viewModel.recalibrate();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Steering re-centered'), duration: Duration(seconds: 1)),

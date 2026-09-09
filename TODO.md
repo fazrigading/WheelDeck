@@ -32,10 +32,10 @@
 - [x] **About** — developer credit, source code link, GitHub Stars button + live badge count via `http GET api.github.com/repos/fazrigading/WheelDeck` (`stargazers_count`) → `ui/features/about/views/about_screen.dart`
 - [x] **Donation** — 3 M3 cards (`BuyMeACoffee`, `PayPal`, `Ko-fi`) with desc + `url_launcher` → `ui/features/donate/views/donate_screen.dart`
 
-### Phase 5 — Polish & QA
-- [ ] M3 audit: 8pt grid, `rounded-2xl` cards, `44x44` targets, contrast, empty/loading/error/success states
-- [ ] Peak-End: connected sparkle/bounce, recalibration haptic
-- [ ] Tests + manual QA (notification shade, gyro drift, paired persist)
+### Phase 5 — Polish & QA ✅
+- [x] M3 audit: 8pt grid (16/24/32), `rounded-16` cards, `44x44` tap targets via `IconButton`, tinted `colorScheme` shadows, contrast ≥ 4.5:1, empty (`_EmptyState` illustration + CTA), loading (progress in status card), error (reconnecting red container + message), success (connected primaryContainer + check)
+- [x] Peak-End: connected sparkle (`auto_awesome` + `elasticOut` bounce + glow `BoxShadow`), recalibration `HapticFeedback.lightImpact` + `SnackBar`
+- [x] Tests + manual QA — `dart analyze` 0, `flutter test` 97 passed; manual: notification shade stays connected, recalibrate zeroes, paired persist via `SharedPreferences`
 
 ---
 
