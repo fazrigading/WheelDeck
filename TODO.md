@@ -1,36 +1,43 @@
-branch: `feature/revamp-mobile-ui`
-- [ ] Create a menu page that has the logo, title, and buttons; place Connect, Settings, About, and Donate buttons. The whole UI design should follow Material Design 3 Guidelines.
+# TODO — Mobile UI Revamp
 
-- [ ] On the Connect page: 
-  - [ ] there should be a card for showing the status of the connection
-  - [ ] list of devices that were paired previously
-  - [ ] unpaired new devices are separated 
-  - [ ] Replace the input field to a plus button that will show popup or modal of input fields (manual add button)
-  - [ ] Change the ip address and port input fields can only write number and dot only.
-  - [ ] PIN should not be censored
+> Detailed plan: `plan/feature-revamp-mobile-ui-1.md`
 
-- [ ] On the Driving page:
-  - [ ] Create a manual recalibration or zeroing button for mitigating the phone moved too much or the gyro drifted
-  - [ ] There's a bug that when user opened the notification pane in Android, the connection closes after getting back on the app (closes/swipe back up the pane). It should be stay connected, if not possible, it should be resuming and reestablishing the connection. 
+## branch: `feature/revamp-mobile-ui` — M3 revamp (5 phases)
 
-- [ ] On the Settings page:
-  - [ ] User can manage the buttons configuration for both keyboard type and gamepad type
-    - [ ] Developer will create ETS2 preset and other games 
-  - [ ] User can choose the controller type (steering only, steering + 3 pedals, steering + 2 pedals, steering + dashboard, or full preset)
-  - [ ] User can choose the controller layout
-    - a) Accelerate (R), Brake (R), Clutch (L)
-    - b) Accelerate (R), Brake (L), Clutch (L)
-    - c) A without Clutch
-    - d) B without Clutch
-  - [ ] Reset to default button
+### Phase 0 — Foundation (M3 + Menu shell)
+- [ ] **Menu page** — logo, title, Connect/Settings/About/Donate buttons. M3 (`ThemeData(useMaterial3:true, ColorScheme.fromSeed)`), 8pt grid, thumb-zone CTAs. → `mobile/lib/ui/features/menu/views/menu_screen.dart`, `mobile/lib/ui/core/theme/app_theme.dart`, `mobile/lib/main.dart` routing
+- [ ] Extract M3 tokens (colorScheme, textTheme max 4 sizes/2 weights, 60/30/10) to `app_theme.dart`
+- [ ] Stub About/Donate so Menu navigates
 
-- [ ] On the About page:
-  - [ ] Show me as the Developer, Source Code, Add Github Stars button + the counts on a badge
+### Phase 1 — Connect page
+- [ ] **Status card** — M3 `Card` with icon+label+progress for `ConnectionStatus` (tinted via `colorScheme`). Replaces `ConnectionStatusBanner` (`connection_screen.dart:269`)
+- [ ] **Paired list** — previously paired devices section (persist `host:port` via `PairedDeviceRepository`)
+- [ ] **Unpaired separated** — new/discovered devices in distinct section below paired
+- [ ] **Manual add FAB → modal** — replace inline `_ManualEntry` row (`connection_screen.dart:114`) with `FAB(Icons.add)` → `showModalBottomSheet(ManualAddSheet)`
+- [ ] **IP/Port filtering** — `FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))` for IP, `digitsOnly` for Port + validation
+- [ ] **PIN not censored** — `obscureText: false` on `_PairingPrompt` (`connection_screen.dart:237`)
 
-- [ ] On the Donation page:
-  - [ ] `https://buymeacoffee.com/fazrigading`
-  - [ ] `https://paypal.me/fazrigading`
-  - [ ] `https://ko-fi.com/fazrigading`
+### Phase 2 — Driving page
+- [ ] **Manual recalibration/zeroing button** — FAB or AppBar `Icons.center_focus_strong` → `DrivingViewModel.recalibrate()` → `sensorRepository.setCenter()` even when not `awaitingCalibration`
+- [ ] **Fix notification-pane disconnect bug** — `LifecycleObserver.dart:16`: `inactive` (notification shade) must NOT call `pause()`; only `paused`/`detached`. On `resumed` auto-reconnect via `lastTarget` if needed. See plan TASK-014/015 for debounce alternative.
+
+### Phase 3 — Settings page
+- [ ] **Per-control bindings** — editable list for both `keyboard` and `gamepad` mappings (`SettingsScreen.dart:56`, `input_mapping.dart:4`)
+  - [ ] ETS2 preset + extensible `GamePreset` (mirrors `desktop/WheelDeck.Core/Input/InputMapper.cs:13`)
+- [ ] **Controller type selector** — steering only / +3 pedals / +2 pedals / +dashboard / full
+- [ ] **Controller layout** — a) Acc R/Brake R/Clutch L  b) Acc R/Brake L/Clutch L  c) A w/o clutch  d) B w/o clutch → drives `PedalPanel` order/visibility
+- [ ] **Reset to default** — confirm dialog + `SnackBar`, resets mapping+type+layout
+
+### Phase 4 — About & Donation
+- [ ] **About** — developer credit, source code link, GitHub Stars button + badge (`shields.io` or `api.github.com/repos/fazrigading/WheelDeck`) → `ui/features/about/views/about_screen.dart`
+- [ ] **Donation** — 3 M3 cards linking via `url_launcher`: `https://buymeacoffee.com/fazrigading`, `https://paypal.me/fazrigading`, `https://ko-fi.com/fazrigading` → `ui/features/donate/views/donate_screen.dart`
+
+### Phase 5 — Polish & QA
+- [ ] M3 audit: 8pt grid, `rounded-2xl` cards, `44x44` targets, contrast, empty/loading/error/success states
+- [ ] Peak-End: connected sparkle/bounce, recalibration haptic
+- [ ] Tests + manual QA (notification shade, gyro drift, paired persist)
+
+---
 
 
 branch: feature/revamp-desktop-ui
