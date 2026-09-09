@@ -4,10 +4,10 @@
 
 ## branch: `feature/revamp-mobile-ui` — M3 revamp (5 phases)
 
-### Phase 0 — Foundation (M3 + Menu shell)
-- [ ] **Menu page** — logo, title, Connect/Settings/About/Donate buttons. M3 (`ThemeData(useMaterial3:true, ColorScheme.fromSeed)`), 8pt grid, thumb-zone CTAs. → `mobile/lib/ui/features/menu/views/menu_screen.dart`, `mobile/lib/ui/core/theme/app_theme.dart`, `mobile/lib/main.dart` routing
-- [ ] Extract M3 tokens (colorScheme, textTheme max 4 sizes/2 weights, 60/30/10) to `app_theme.dart`
-- [ ] Stub About/Donate so Menu navigates
+### Phase 0 — Foundation (M3 + Menu shell) ✅
+- [x] **Menu page** — logo, title, Connect/Settings/About/Donate buttons. M3 (`ThemeData(useMaterial3:true, ColorScheme.fromSeed)`), 8pt grid, thumb-zone CTAs. → `mobile/lib/ui/features/menu/views/menu_screen.dart`, `mobile/lib/ui/core/theme/app_theme.dart`, `mobile/lib/main.dart` routing
+- [x] Extract M3 tokens (colorScheme, textTheme max 4 sizes/2 weights, 60/30/10) to `app_theme.dart`
+- [x] Stub About/Donate so Menu navigates
 
 ### Phase 1 — Connect page
 - [ ] **Status card** — M3 `Card` with icon+label+progress for `ConnectionStatus` (tinted via `colorScheme`). Replaces `ConnectionStatusBanner` (`connection_screen.dart:269`)

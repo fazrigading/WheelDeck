@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 import 'data/repositories/onboarding_repository.dart';
 import 'domain/models/connection_status.dart';
 import 'ui/core/connection_coordinator.dart';
-import 'ui/features/connection/views/connection_screen.dart';
+import 'ui/core/theme/app_theme.dart';
 import 'ui/features/driving/views/driving_view.dart';
+import 'ui/features/menu/views/menu_screen.dart';
 import 'ui/features/onboarding/views/onboarding_screen.dart';
 
 void main() {
@@ -22,9 +23,9 @@ class WheelDeckApp extends StatelessWidget {
         deviceId: UniqueKey().toString(),
       )..refreshDiscovery(),
       child: MaterialApp(
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        ),
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
         home: const _Routing(),
       ),
     );
@@ -77,10 +78,6 @@ class _RoutingState extends State<_Routing> {
       );
     }
 
-    return const Scaffold(
-      body: SafeArea(
-        child: ConnectionScreen(),
-      ),
-    );
+    return const MenuScreen();
   }
 }
