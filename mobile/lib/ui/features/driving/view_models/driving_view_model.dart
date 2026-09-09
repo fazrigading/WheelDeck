@@ -115,6 +115,13 @@ class DrivingViewModel extends ChangeNotifier {
     setAwaitingCalibration(false);
   }
 
+  /// Manual zeroing for drift/phone-move — does not touch calibration gate.
+  void recalibrate() {
+    _sensorRepository.setCenter();
+    _steering = SteeringState.centered;
+    notifyListeners();
+  }
+
   /// Clears the calibration gate and disconnects.
   Future<void> disconnect() async {
     setAwaitingCalibration(false);

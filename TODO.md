@@ -17,9 +17,9 @@
 - [x] **IP/Port filtering** — `FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))` for IP, `digitsOnly` for Port + validation
 - [x] **PIN not censored** — `obscureText: false` on `_PairingPrompt` (`connection_screen.dart:237`)
 
-### Phase 2 — Driving page
-- [ ] **Manual recalibration/zeroing button** — FAB or AppBar `Icons.center_focus_strong` → `DrivingViewModel.recalibrate()` → `sensorRepository.setCenter()` even when not `awaitingCalibration`
-- [ ] **Fix notification-pane disconnect bug** — `LifecycleObserver.dart:16`: `inactive` (notification shade) must NOT call `pause()`; only `paused`/`detached`. On `resumed` auto-reconnect via `lastTarget` if needed. See plan TASK-014/015 for debounce alternative.
+### Phase 2 — Driving page ✅
+- [x] **Manual recalibration/zeroing button** — FAB + AppBar `Icons.center_focus_strong` → `DrivingViewModel.recalibrate()` → `sensorRepository.setCenter()` even when not `awaitingCalibration`
+- [x] **Fix notification-pane disconnect bug** — `LifecycleObserver.dart:16`: `inactive` (notification shade) now no-op; only `paused`/`detached` triggers `pause()`. `resumed` retains `lastTarget` auto-reconnect via `CalibrationOverlay`.
 
 ### Phase 3 — Settings page
 - [ ] **Per-control bindings** — editable list for both `keyboard` and `gamepad` mappings (`SettingsScreen.dart:56`, `input_mapping.dart:4`)
