@@ -28,9 +28,9 @@
 - [x] **Controller layout** — a) Acc R/Brake R/Clutch L  b) Acc R/Brake L/Clutch L  c) A w/o clutch  d) B w/o clutch → drives `PedalPanel` order/visibility (`PedalLayout` + `DrivingViewModel.pedalLayout`)
 - [x] **Reset to default** — confirm dialog + `SnackBar`, resets mapping+type+layout
 
-### Phase 4 — About & Donation
-- [ ] **About** — developer credit, source code link, GitHub Stars button + badge (`shields.io` or `api.github.com/repos/fazrigading/WheelDeck`) → `ui/features/about/views/about_screen.dart`
-- [ ] **Donation** — 3 M3 cards linking via `url_launcher`: `https://buymeacoffee.com/fazrigading`, `https://paypal.me/fazrigading`, `https://ko-fi.com/fazrigading` → `ui/features/donate/views/donate_screen.dart`
+### Phase 4 — About & Donation ✅
+- [x] **About** — developer credit, source code link, GitHub Stars button + live badge count via `http GET api.github.com/repos/fazrigading/WheelDeck` (`stargazers_count`) → `ui/features/about/views/about_screen.dart`
+- [x] **Donation** — 3 M3 cards (`BuyMeACoffee`, `PayPal`, `Ko-fi`) with desc + `url_launcher` → `ui/features/donate/views/donate_screen.dart`
 
 ### Phase 5 — Polish & QA
 - [ ] M3 audit: 8pt grid, `rounded-2xl` cards, `44x44` targets, contrast, empty/loading/error/success states
