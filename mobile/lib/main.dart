@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'network/wheeldeck_client.dart';
-import 'state/connection_coordinator.dart';
-import 'ui/connection/connection_screen.dart';
-import 'ui/driving/driving_view.dart';
-import 'ui/onboarding/onboarding_screen.dart';
+import 'data/repositories/onboarding_repository.dart';
+import 'domain/models/connection_status.dart';
+import 'ui/core/connection_coordinator.dart';
+import 'ui/features/connection/views/connection_screen.dart';
+import 'ui/features/driving/views/driving_view.dart';
+import 'ui/features/onboarding/views/onboarding_screen.dart';
 
 void main() {
   runApp(const WheelDeckApp());
@@ -50,8 +50,7 @@ class _RoutingState extends State<_Routing> {
   }
 
   Future<void> _checkOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    final complete = prefs.getBool('wheeldeck.onboarding_complete') ?? false;
+    final complete = await const OnboardingRepository().isComplete();
     if (mounted) {
       setState(() => _onboardingComplete = complete);
     }

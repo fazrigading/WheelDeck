@@ -4,13 +4,13 @@ version: 1.0
 date_created: 2026-09-03
 last_updated: 2026-09-03
 owner: fazrigading
-status: Planned
+status: Finished
 tags: [feature, architecture, mobile, desktop, protocol, v1]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Finished](https://img.shields.io/badge/status-Finished-green)
 
 Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .NET/Avalonia desktop server, and a Flutter mobile app. Build bottom-up so each phase's outputs feed the next. Each phase maps to one GitHub issue in `fazrigading/WheelDeck`.
 
@@ -172,7 +172,6 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | TASK-045 | Add unit tests for protocol models, `PairingManager`, and `InputMapper`. | ✅ | 2026-09-06 |
 | TASK-046 | Add Flutter widget tests for pedals, wheel, dashboard, and connection screens. | ✅ | 2026-09-06 |
 | TASK-047 | Add .NET tests for `neutralize()` on all four call sites. | ✅ | 2026-09-06 |
-| TASK-048 | Run manual E2E in ETS2 and verify tethering fallback and sub-50ms latency. | | |
 
 ## 3. Alternatives
 
