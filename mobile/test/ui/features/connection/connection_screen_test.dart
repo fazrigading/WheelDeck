@@ -76,7 +76,7 @@ void main() {
       await coordinator.refreshDiscovery();
       await _pumpScreen(tester, coordinator);
 
-      expect(find.textContaining('No servers'), findsOneWidget);
+      expect(find.textContaining('No receivers'), findsOneWidget);
     });
 
     testWidgets('refresh button re-discovers servers', (tester) async {
@@ -93,9 +93,9 @@ void main() {
       await coordinator.refreshDiscovery();
       await _pumpScreen(tester, coordinator);
 
-      expect(find.textContaining('No servers'), findsOneWidget);
+      expect(find.textContaining('No receivers'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.tap(find.byTooltip('Refresh'));
       await tester.pumpAndSettle();
 
       expect(find.text('Workshop'), findsOneWidget);
@@ -104,10 +104,13 @@ void main() {
   });
 
   group('manual entry', () {
-    testWidgets('shows a manual IP entry field, port field, and connect button',
-        (tester) async {
+    testWidgets('shows FAB that opens manual IP sheet', (tester) async {
       final coordinator = _buildCoordinator(resolve: () async => []);
       await _pumpScreen(tester, coordinator);
+
+      expect(find.byKey(const Key('manual-add-fab')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('manual-add-fab')));
+      await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('manual-ip')), findsOneWidget);
       expect(find.byKey(const Key('manual-port')), findsOneWidget);
@@ -118,6 +121,9 @@ void main() {
         (tester) async {
       final coordinator = _buildCoordinator(resolve: () async => []);
       await _pumpScreen(tester, coordinator);
+
+      await tester.tap(find.byKey(const Key('manual-add-fab')));
+      await tester.pumpAndSettle();
 
       final portField =
           tester.widget<TextField>(find.byKey(const Key('manual-port')));
@@ -136,9 +142,11 @@ void main() {
       );
       await _pumpScreen(tester, coordinator);
 
+      await tester.tap(find.byKey(const Key('manual-add-fab')));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('manual-ip')), '192.168.1.10');
       await tester.enterText(find.byKey(const Key('manual-port')), '9000');
-      await tester.tap(find.text('Connect'));
+      await tester.tap(find.text('Connect').last);
       await tester.pump(const Duration(milliseconds: 10));
 
       expect(dialed, hasLength(1));
@@ -160,8 +168,10 @@ void main() {
       );
       await _pumpScreen(tester, coordinator);
 
+      await tester.tap(find.byKey(const Key('manual-add-fab')));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('manual-ip')), '10.0.0.99');
-      await tester.tap(find.text('Connect'));
+      await tester.tap(find.text('Connect').last);
       await tester.pump(const Duration(milliseconds: 10));
 
       expect(dialed.single, Uri.parse('ws://10.0.0.99:8765/'));
@@ -385,8 +395,8 @@ void main() {
       final coordinator = _buildCoordinator(resolve: () async => []);
       await _pumpScreen(tester, coordinator);
 
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-      expect(find.byIcon(Icons.wifi_off), findsNothing);
+      expect(find.byTooltip('Refresh'), findsOneWidget);
+      expect(find.byTooltip('Disconnect'), findsNothing);
     });
 
     testWidgets('tapping a discovered server connects to it', (tester) async {

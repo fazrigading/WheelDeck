@@ -9,13 +9,13 @@
 - [x] Extract M3 tokens (colorScheme, textTheme max 4 sizes/2 weights, 60/30/10) to `app_theme.dart`
 - [x] Stub About/Donate so Menu navigates
 
-### Phase 1 — Connect page
-- [ ] **Status card** — M3 `Card` with icon+label+progress for `ConnectionStatus` (tinted via `colorScheme`). Replaces `ConnectionStatusBanner` (`connection_screen.dart:269`)
-- [ ] **Paired list** — previously paired devices section (persist `host:port` via `PairedDeviceRepository`)
-- [ ] **Unpaired separated** — new/discovered devices in distinct section below paired
-- [ ] **Manual add FAB → modal** — replace inline `_ManualEntry` row (`connection_screen.dart:114`) with `FAB(Icons.add)` → `showModalBottomSheet(ManualAddSheet)`
-- [ ] **IP/Port filtering** — `FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))` for IP, `digitsOnly` for Port + validation
-- [ ] **PIN not censored** — `obscureText: false` on `_PairingPrompt` (`connection_screen.dart:237`)
+### Phase 1 — Connect page ✅
+- [x] **Status card** — M3 `Card` with icon+label+progress for `ConnectionStatus` (tinted via `colorScheme`). Replaces `ConnectionStatusBanner` (`connection_screen.dart:269`) → `ConnectionStatusCard`
+- [x] **Paired list** — previously paired devices section (persist `host:port` via `PairedDeviceRepository`)
+- [x] **Unpaired separated** — new/discovered devices in distinct section below paired
+- [x] **Manual add FAB → modal** — replace inline `_ManualEntry` row (`connection_screen.dart:114`) with `FAB(Icons.add)` → `showModalBottomSheet(ManualAddSheet)`
+- [x] **IP/Port filtering** — `FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))` for IP, `digitsOnly` for Port + validation
+- [x] **PIN not censored** — `obscureText: false` on `_PairingPrompt` (`connection_screen.dart:237`)
 
 ### Phase 2 — Driving page
 - [ ] **Manual recalibration/zeroing button** — FAB or AppBar `Icons.center_focus_strong` → `DrivingViewModel.recalibrate()` → `sensorRepository.setCenter()` even when not `awaitingCalibration`
