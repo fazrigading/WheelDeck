@@ -191,6 +191,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 /// M3 status card — tinted by status role, progress for transient states.
+/// Peak-end: connected shows bounce + sparkle.
 class ConnectionStatusCard extends StatelessWidget {
   const ConnectionStatusCard({super.key, required this.status});
   final ConnectionStatus status;
@@ -264,33 +265,78 @@ class ConnectionStatusCard extends StatelessWidget {
         iconBg = cs.secondary;
     }
 
-    return Card(
-      color: bg,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
+    final isConnected = status == ConnectionStatus.connected;
+
+    Widget leading = Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(color: iconBg.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+      child: Icon(icon, color: fg, size: 22),
+    );
+    if (isConnected) {
+      leading = TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.85, end: 1.0),
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.elasticOut,
+        builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(color: iconBg.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-              child: Icon(icon, color: fg, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: fg)),
-                  Text(_subtitle(status), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: fg.withValues(alpha: 0.8))),
-                ],
+            leading,
+            Positioned(
+              right: -4,
+              top: -4,
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+                child: Icon(Icons.auto_awesome, size: 8, color: bg),
               ),
             ),
-            if (isTransient) SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: fg)),
-            if (status == ConnectionStatus.connected) Icon(Icons.check_circle, color: fg, size: 22),
           ],
+        ),
+      );
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: isConnected
+            ? [BoxShadow(color: iconBg.withValues(alpha: 0.25), blurRadius: 16, spreadRadius: 1)]
+            : null,
+      ),
+      child: Card(
+        color: bg,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              leading,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: fg)),
+                    Text(_subtitle(status), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: fg.withValues(alpha: 0.8))),
+                  ],
+                ),
+              ),
+              if (isTransient) SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: fg)),
+              if (isConnected)
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+                  child: Icon(Icons.check_circle, color: fg, size: 22),
+                ),
+            ],
+          ),
         ),
       ),
     );
