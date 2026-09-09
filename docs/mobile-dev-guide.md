@@ -60,32 +60,29 @@ Test files mirror the `lib/` structure under `test/`:
 
 ```
 test/
-├── input/
-│   ├── steering_sensor_test.dart
-│   ├── pedal_input_test.dart
-│   └── dashboard_input_test.dart
-├── network/
-│   ├── wheeldeck_client_test.dart
-│   ├── discovery_test.dart
-│   └── pairing_test.dart
+├── data/
+│   ├── repositories/
+│   └── services/
 └── ui/
-    ├── wheel/
-    ├── pedals/
-    ├── dashboard/
-    └── connection/
+    ├── core/
+    └── features/
+        ├── connection/
+        ├── driving/
+        ├── onboarding/
+        └── settings/
 ```
 
 Widget tests use `fake_async` to control simulated time for spring-back animations and reconnect intervals.
 
 ## Key concepts
 
-### Input Capture Layer (`lib/input/`)
+### Input Capture Layer (`lib/data/services/`)
 
 - **`SteeringSensor`**: Samples the gyroscope, normalizes to `-1.0..1.0` (0 = straight ahead), and applies user-adjustable sensitivity. Call `setCenter()` for calibration. The UI layer and network layer both consume the already-calibrated value.
 - **`PedalInput`**: Each pedal bar owns its drag-to-pressure mapping (`0.0` at rest, `1.0` at full drag) and its own spring-back release animation. `setReleaseCurve()` makes the curve tunable later.
 - **`DashboardInput`**: Exposes `ControlId` and `ActionType` enums matching `protocol/schema/controls.json`. Actions: `Toggle`, `Press`, `Release`, `HoldConfirm` (used for engine start).
 
-### Network Client Layer (`lib/network/`)
+### Network Client Layer (`lib/data/services/`)
 
 - **`WheelDeckClient`**: The single entry point for all network communication. Manages the WebSocket connection, sends `state` and `button` messages, and handles pairing. Exposes `ConnectionStatus` (`Disconnected`, `Discovering`, `Connecting`, `PairingRequired`, `Connected`, `Reconnecting`).
 - **`Discovery`**: Auto-discovers desktop servers via mDNS broadcast. Falls back to manual IP entry when broadcast is blocked (public Wi-Fi with client isolation).
@@ -95,9 +92,9 @@ Widget tests use `fake_async` to control simulated time for spring-back animatio
 
 **Heartbeat**: Sent every ~2s internally by `WheelDeckClient`. Two missed beats make the desktop neutralize output. The client auto-reconnects and transitions to `Reconnecting` status.
 
-### State coordination (`lib/state/`)
+### State coordination (`lib/ui/core/`)
 
-- **`ConnectionCoordinator`**: Central state machine that manages the connection lifecycle: discovery, connect, pairing, connected, reconnect. Holds the single source of truth for `ConnectionStatus` and exposes it to the UI via `provider`.
+- **`ConnectionCoordinator`**: Facade over the layered stack (services, repositories, `ConnectionViewModel`) that preserves the app-level API: discovery, connect, pairing, connected, reconnect. Forwards state to the UI via `provider`; new code binds to `coordinator.viewModel` with `ListenableBuilder`.
 
 ### App lifecycle handling
 
@@ -124,9 +121,9 @@ Pairing/session messages (`pair_request`, `pair_response`, `heartbeat`, `device_
 ## Adding a new dashboard control
 
 1. Add the enum value to `protocol/schema/controls.json`
-2. Add the same value to `ControlId` in `mobile/lib/input/dashboard_input.dart`
+2. Add the same value to `ControlId` in `mobile/lib/data/services/dashboard_input.dart`
 3. Add the same value to `ControlId` in `desktop/WheelDeck.Core/Protocol/ControlId.cs`
-4. Add the UI widget in `lib/ui/dashboard/`
+4. Add the UI widget in `lib/ui/features/driving/views/`
 5. Map the control to a key press or virtual button in the desktop `InputMapper`
 
 > The protocol schema is the single source of truth. Do not add control enums to code without adding them to the schema first.

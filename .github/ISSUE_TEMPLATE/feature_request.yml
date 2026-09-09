@@ -1,0 +1,66 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for WheelDeck
+labels: ["needs-triage"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which area of WheelDeck does this feature target?
+      options:
+        - Mobile (Flutter app)
+        - Desktop (.NET/Avalonia server)
+        - Protocol (JSON schema / WebSocket messages)
+        - CI/CD (GitHub Actions)
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: How does this feature align with WheelDeck's goals? Who would benefit?
+      placeholder: |
+        - Does this affect the protocol schema?
+        - Does this change the pairing/session flow?
+        - Does this impact cross-platform support?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, or references about the feature request.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: This feature aligns with WheelDeck's PRD goals
+          required: false
