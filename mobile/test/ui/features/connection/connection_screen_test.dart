@@ -114,7 +114,7 @@ void main() {
 
       expect(find.byKey(const Key('manual-ip')), findsOneWidget);
       expect(find.byKey(const Key('manual-port')), findsOneWidget);
-      expect(find.text('Connect'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Connect'), findsOneWidget);
     });
 
     testWidgets('port field is pre-filled with the default port',
