@@ -90,12 +90,11 @@ class ConnectionViewModel extends ChangeNotifier {
   /// Closes the socket and returns to `disconnected`.
   Future<void> disconnect() => _connectionRepository.disconnect();
 
-  /// Pauses the session on lifecycle interruption. Disconnects so the desktop
-  /// neutralizes output.
+  /// Pauses the session on lifecycle interruption. Keeps the WebSocket open
+  /// for fast reconnect — the driving view stops sending input instead.
   Future<void> pause() async {
     if (_isPaused) return;
     _isPaused = true;
-    await _connectionRepository.disconnect();
     notifyListeners();
   }
 
