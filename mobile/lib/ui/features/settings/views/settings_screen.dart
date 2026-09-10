@@ -77,8 +77,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final cs = Theme.of(context).colorScheme;
           final isGamepad = _viewModel.mapping == InputMapping.gamepad;
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          return SafeArea(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 24 + MediaQuery.of(context).padding.bottom),
             children: [
               // Input mapping
               Text('Input mode', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
@@ -156,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Card(
                 child: Column(
                   children: ControlId.values.map((c) {
-                    final binding = _viewModel.preset.bindingFor(c, isGamepad);
+                    final binding = _viewModel.bindingFor(c);
                     return ListTile(
                       dense: true,
                       title: Text(_controlLabel(c), style: const TextStyle(fontSize: 14)),
@@ -184,7 +185,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 ),
               ),
+              const SizedBox(height: 24),
             ],
+            ),
           );
         },
       ),
@@ -228,11 +231,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
+              final value = ctrl.text.trim();
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${_controlLabel(c)} → ${ctrl.text} (preset; custom save in future)')),
-              );
+              await _viewModel.setBinding(c, value);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${_controlLabel(c)} → $value')),
+                );
+              }
             },
             child: const Text('Save'),
           ),
