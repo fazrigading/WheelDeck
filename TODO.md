@@ -1,6 +1,6 @@
 # TODO — Mobile & Desktop UI Revamp
 
-> Detailed plan: `To be added`
+> Detailed plan: `plan/fix-mobile-revamp-followup-1.md` (followup fixes) · prior `plan/feature-revamp-mobile-ui-1.md` (ALL PHASES DONE)
 
 ## branch: feature/revamp-desktop-ui
 - [ ] connection tab showing active when it's not connected
@@ -19,7 +19,7 @@
 - [ ] Changing Controller Type and Pedal Layout doesn't do anything, no changes on the Driving page.
 - [ ] Editing "Button bindings" on Settings Page does not change the shown keys/buttons.
 - [ ] "Reset to Default" on Setting page is shown half / 50% vertically in Portrait mode.
-- [ ] (Special request) Create a guide page for the Steam setup, which it needs the user to press each button on the virtual joystick, so just add pressable buttons exactly how XBOX 360 controllers .
+- [ ] (Special request) Create a guide page for the Steam setup in settings page, which it needs the user to press each button on the virtual joystick, so just add pressable buttons exactly how XBOX 360 controllers .
 
 ### new feature for branch `feature/revamp-dashboard` (after problem above solved):
 - [ ] Light modes actually has 2 modes (Parking Lights & Low Beam), so toggling it would change the the text and the button visually
