@@ -16,9 +16,9 @@
 - [x] After status connected, pressing the "Ready to Drive" should open the Driving page, not when pressing the "Back" button on top-left.
 - [x] Disconnecting from the Driving page should go back to "Connect" page, not to the "Menu"
 - [x] "Open" button on Donate page is not working.
-- [ ] Changing Controller Type and Pedal Layout doesn't do anything, no changes on the Driving page.
-- [ ] Editing "Button bindings" on Settings Page does not change the shown keys/buttons.
-- [ ] "Reset to Default" on Setting page is shown half / 50% vertically in Portrait mode.
+- [x] Changing Controller Type and Pedal Layout doesn't do anything, no changes on the Driving page.
+- [x] Editing "Button bindings" on Settings Page does not change the shown keys/buttons.
+- [x] "Reset to Default" on Setting page is shown half / 50% vertically in Portrait mode.
 - [ ] (Special request) Create a guide page for the Steam setup in settings page, which it needs the user to press each button on the virtual joystick, so just add pressable buttons exactly how XBOX 360 controllers .
 
 ### new feature for branch `feature/revamp-dashboard` (after problem above solved):
