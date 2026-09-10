@@ -136,7 +136,7 @@ class ConnectionCoordinator extends ChangeNotifier {
   Future<void> disconnect() => _viewModel.disconnect();
 
   /// Pauses the session due to a lifecycle interruption (call, screen lock,
-  /// or backgrounding). Disconnects from the desktop so it neutralizes output.
+  /// or backgrounding). Keeps the WebSocket open for fast reconnect.
   Future<void> pause() => _viewModel.pause();
 
   /// Resumes after a lifecycle interruption. Clears the pause flag so the UI
