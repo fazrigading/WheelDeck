@@ -13,8 +13,8 @@
 ---
 
 ### new problems (found in 2026-09-10):
-- [ ] After status connected, pressing the "Ready to Drive" should open the Driving page, not when pressing the "Back" button on top-left.
-- [ ] Disconnecting from the Driving page should go back to "Connect" page, not to the "Menu"
+- [x] After status connected, pressing the "Ready to Drive" should open the Driving page, not when pressing the "Back" button on top-left.
+- [x] Disconnecting from the Driving page should go back to "Connect" page, not to the "Menu"
 - [ ] "Open" button on Donate page is not working.
 - [ ] Changing Controller Type and Pedal Layout doesn't do anything, no changes on the Driving page.
 - [ ] Editing "Button bindings" on Settings Page does not change the shown keys/buttons.
