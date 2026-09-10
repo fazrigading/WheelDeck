@@ -12,6 +12,7 @@ import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/steering_sensor.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../../../../ui/core/lifecycle_observer.dart';
+import '../../connection/views/connection_screen.dart';
 import '../../settings/views/settings_screen.dart';
 import '../view_models/driving_view_model.dart';
 import 'calibration_overlay.dart';
@@ -109,7 +110,14 @@ class _DrivingViewState extends State<DrivingView> {
     }
   }
 
-  Future<void> _onDisconnect() => _viewModel.disconnect();
+  Future<void> _onDisconnect() async {
+    await _viewModel.disconnect();
+    if (!mounted) return;
+    // _Routing will switch to Menu on disconnected; push Connect so user lands on Connect, not Menu
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ConnectionScreen()),
+    );
+  }
 
   void _onRecalibrate() {
     HapticFeedback.lightImpact();
