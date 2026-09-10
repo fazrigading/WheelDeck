@@ -113,10 +113,9 @@ class _DrivingViewState extends State<DrivingView> {
 
   void _lockOrientation() {
     _previousOrientations = null;
-    final size = WidgetsBinding.instance.platformDispatcher.views.first.physicalSize;
-    final isPortrait = size.height > size.width;
     SystemChrome.setPreferredOrientations([
-      isPortrait ? DeviceOrientation.portraitUp : DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
     ]);
   }
 
