@@ -7,13 +7,13 @@ This document specifies the internal interfaces on the mobile app side: how sens
 ## Architecture
 
 ```
-UI Layer (Wheel view, Pedal bars, Dashboard panel, Connection/Pairing screens)
+UI Layer (Menu → Connection/ManualAddSheet + Pairing, Driving (Wheel + PedalPanel + Dashboard + CalibrationOverlay), Settings (mapping/type/layout/presets), Onboarding, About, Donate)
    ^
-   |  (state updates, connection status, calibration events)
+   |  (state updates, connection status, calibration events, theme via AppTheme)
    v
-Input Capture Layer   -> gyroscope sampling, touch-to-pressure mapping, calibration
+Input Capture Layer   -> gyroscope sampling, touch-to-pressure mapping, calibration (SteeringSensor, PedalInput, DashboardInput)
    v
-Network Client Layer  -> WebSocket connection, message framing, pairing, heartbeat
+Network Client Layer  -> WebSocket connection, message framing, pairing, heartbeat, paired-device persistence (WheelDeckClient, Discovery, PairingController, PairedDeviceRepository)
    v
 Transport (Wi-Fi / USB tethering)
 ```
@@ -116,20 +116,31 @@ Handled internally by WheelDeckClient, not exposed to the UI layer beyond Connec
 
 ## 3. App lifecycle handling
 
-The network client must respond to OS-level lifecycle events without the UI layer managing this explicitly.
+The network client must respond to OS-level lifecycle events without the UI layer managing this explicitly. `LifecycleObserver` (`lib/ui/core/lifecycle_observer.dart`) implements this.
 
 | Event | Behavior |
 |---|---|
-| Incoming call | Pause input send, hold last-known state locally, do not transmit until resumed |
-| Screen lock | Disconnect gracefully (send explicit "input paused" signal if possible, else let heartbeat timeout trigger desktop-side neutralize) |
-| App backgrounded | Same as screen lock |
-| App foregrounded / call ended | Require calibration re-confirm before resuming input, since phone orientation may have changed while paused |
+| Incoming call / `paused`/`detached` | `coordinator.pause()` — disconnect, hold last-known state, do not transmit until resumed |
+| Notification shade / `inactive` (transient) | **No-op** — stay connected (Android notification pane must not disconnect; fixed in v0.1.0 revamp) |
+| Screen lock / backgrounded (`paused`) | Disconnect gracefully (let heartbeat timeout trigger desktop-side neutralize) |
+| App foregrounded (`resumed`) / call ended | `coordinator.resume()` — require calibration re-confirm before resuming input, since phone orientation may have changed while paused; `lastTarget` retained for auto-reconnect via `CalibrationOverlay` |
+| `hidden` (Android 14+) | No-op (handled separately from `paused`) |
+| Manual recalibration | `DrivingViewModel.recalibrate()` / `SteeringSensor.setCenter()` — zeroes drift without toggling the calibration gate; exposed as FAB + AppBar `center_focus_strong` with haptic feedback |
 
 This satisfies the PRD's requirement that lifecycle interruptions neutralize input rather than send stale or frozen values, without pushing that logic into every screen that touches the wheel or pedals.
 
 ## 4. Orientation lock
 
-The UI layer should lock device orientation during an active driving session (wheel view, pedal view, dashboard view) so the SteeringSensor calibration stays valid. Device rotation for steering must not be conflated with UI orientation changes.
+The UI layer should lock device orientation during an active driving session (wheel view, pedal view, dashboard view) so the SteeringSensor calibration stays valid. Device rotation for steering must not be conflated with UI orientation changes. `DrivingView` enforces `landscapeLeft/Right` via `SystemChrome` and uses `immersiveSticky` on Android.
+
+## 5. UI shell & theming (M3 revamp v0.1.0)
+
+- **Routing**: `main.dart` ` _Routing` → `OnboardingScreen` (once) → `MenuScreen` (hub) → `ConnectionScreen` (or `DrivingView` when `connected || isPaused`). `MenuScreen` is the post-onboarding entry point with 4 M3 CTAs (Connect/Settings/About/Donate) + logo.
+- **Theme**: `lib/ui/core/theme/app_theme.dart` — `ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue))` light/dark, `ThemeMode.system`, 60/30/10 + 8pt grid, `rounded-16` cards, tinted shadows, 44×44 targets.
+- **Connection**: `ConnectionStatusCard` (tinted by `colorScheme`, progress for transient, bounce+sparkle on `connected`), paired vs unpaired split via `PairedDeviceRepository` (`SharedPreferences` `host:port` on `connected`), `ManualAddSheet` bottom sheet with `FilteringTextInputFormatter` (IP `[0-9.]`, port digits only) and octet validation, PIN `obscureText:false`.
+- **Driving**: `DrivingViewModel.recalibrate()` + `DrivingView` FAB/AppBar `center_focus_strong` for manual zeroing (haptic + SnackBar).
+- **Settings**: `ControllerType` (5 modes), `PedalLayout` a-d (order wiring to `PedalPanel`), `GamePreset.ets2` (mirrors `desktop/WheelDeck.Core/Input/InputMapper.cs` bindings), per-`ControlId` list with `Chip` + edit dialog, reset-to-defaults with confirm.
+- **About/Donate**: `AboutScreen` fetches `stargazers_count` via `GET api.github.com/repos/fazrigading/WheelDeck` + badge; `DonateScreen` 3 external links via `url_launcher` (BuyMeACoffee/PayPal/Ko-fi).
 
 ## Known simplification (v1)
 

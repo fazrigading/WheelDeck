@@ -4,6 +4,23 @@
 
 ## branch: `feature/revamp-mobile-ui` — M3 revamp (5 phases)
 
+### new problems (found in 2026-09-10):
+- [ ] After status connected, pressing the "Ready to Drive" should open the Driving page, not when pressing the "Back" button on top-left.
+- [ ] Disconnecting from the Driving page should go back to "Connect" page, not to the "Menu"
+- [ ] "Open" button on Donate page is not working.
+- [ ] Changing Controller Type and Pedal Layout doesn't do anything, no changes on the Driving page.
+- [ ] Editing "Button bindings" on Settings Page does not change the shown keys/buttons.
+- [ ] "Reset to Default" on Setting page is shown half / 50% vertically in Portrait mode.
+- [ ] 
+
+### new feature for branch `feature/revamp-dashboard` (after problem above solved):
+- [ ] Add "Horn" button in the center of the Steering Wheel
+- [ ] Blinking button in 
+- [ ] Add additional settings section:
+  - [ ] Create option for "Start" button on dashboard can be hold or just press, also make it visually toggled ON in both option.
+  - [ ] 
+  - [ ] 
+
 ### Phase 0 — Foundation (M3 + Menu shell) ✅
 - [x] **Menu page** — logo, title, Connect/Settings/About/Donate buttons. M3 (`ThemeData(useMaterial3:true, ColorScheme.fromSeed)`), 8pt grid, thumb-zone CTAs. → `mobile/lib/ui/features/menu/views/menu_screen.dart`, `mobile/lib/ui/core/theme/app_theme.dart`, `mobile/lib/main.dart` routing
 - [x] Extract M3 tokens (colorScheme, textTheme max 4 sizes/2 weights, 60/30/10) to `app_theme.dart`
