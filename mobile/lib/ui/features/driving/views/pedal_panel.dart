@@ -8,40 +8,36 @@ import '../../../../data/services/pedal_input.dart';
 /// bottom) and drives [PedalInput] while dragging, releasing to spring back on
 /// drag end.
 class PedalPanel extends StatelessWidget {
-  const PedalPanel({super.key, required this.input});
+  const PedalPanel({super.key, required this.input, this.layout});
 
   final PedalInput input;
+  final List<PedalType>? layout;
 
   @override
   Widget build(BuildContext context) {
+    final order = layout ?? const [PedalType.clutch, PedalType.brake, PedalType.accelerator];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        PedalBar(
-          key: const ValueKey('pedal-clutch'),
-          pedal: PedalType.clutch,
-          label: 'CLT',
-          pressure: input.pressureOf(PedalType.clutch),
+      children: order.map((pedal) {
+        final label = switch (pedal) {
+          PedalType.clutch => 'CLT',
+          PedalType.brake => 'BRK',
+          PedalType.accelerator => 'ACC',
+        };
+        final keyName = switch (pedal) {
+          PedalType.clutch => 'pedal-clutch',
+          PedalType.brake => 'pedal-brake',
+          PedalType.accelerator => 'pedal-accelerator',
+        };
+        return PedalBar(
+          key: ValueKey(keyName),
+          pedal: pedal,
+          label: label,
+          pressure: input.pressureOf(pedal),
           onDrag: input.setPressure,
           onRelease: input.release,
-        ),
-        PedalBar(
-          key: const ValueKey('pedal-brake'),
-          pedal: PedalType.brake,
-          label: 'BRK',
-          pressure: input.pressureOf(PedalType.brake),
-          onDrag: input.setPressure,
-          onRelease: input.release,
-        ),
-        PedalBar(
-          key: const ValueKey('pedal-accelerator'),
-          pedal: PedalType.accelerator,
-          label: 'ACC',
-          pressure: input.pressureOf(PedalType.accelerator),
-          onDrag: input.setPressure,
-          onRelease: input.release,
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 }
