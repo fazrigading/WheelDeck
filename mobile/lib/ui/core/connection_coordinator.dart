@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../../data/repositories/connection_repository.dart';
+import '../../data/repositories/paired_device_repository.dart';
 import '../../data/repositories/server_discovery_repository.dart';
 import '../../data/repositories/session_repository.dart';
 import '../../domain/models/connection_status.dart';
@@ -44,6 +45,7 @@ class ConnectionCoordinator extends ChangeNotifier {
     Future<StreamChannel<dynamic>> Function(Uri uri)? connect,
     ServerResolver? resolver,
     SessionTokenStore? store,
+    PairedDeviceRepository? pairedDeviceRepository,
   }) {
     final client = WheelDeckClient(
       deviceId: deviceId,
@@ -63,6 +65,7 @@ class ConnectionCoordinator extends ChangeNotifier {
       discoveryRepository: discoveryRepository,
       connectionRepository: connectionRepository,
       sessionRepository: sessionRepository,
+      pairedDeviceRepository: pairedDeviceRepository,
       defaultPort: resolvedPort,
     );
 
@@ -107,6 +110,9 @@ class ConnectionCoordinator extends ChangeNotifier {
 
   /// Servers found during the most recent discovery sweep.
   List<DiscoveredServer> get servers => _viewModel.servers;
+  List<DiscoveredServer> get pairedServers => _viewModel.pairedServers;
+  List<DiscoveredServer> get unpairedServers => _viewModel.unpairedServers;
+  Set<String> get pairedIds => _viewModel.pairedIds;
 
   /// The active pairing challenge, if the desktop is waiting for a code.
   PairingChallenge? get pairingChallenge => _viewModel.pairingChallenge;
