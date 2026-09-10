@@ -24,28 +24,26 @@ WheelDeck/
 │
 ├── mobile/
 │   ├── lib/
-│   │   ├── main.dart                      # Entry point, Provider scope, routing
-│   │   ├── input/
-│   │   │   ├── steering_sensor.dart       # Gyroscope → -1..1 normalized value
-│   │   │   ├── pedal_input.dart           # Touch-to-pressure mapping, spring-back
-│   │   │   └── dashboard_input.dart       # ControlId/ActionType enums from schema
-│   │   ├── network/
-│   │   │   ├── wheeldeck_client.dart      # WebSocket connection + message framing
-│   │   │   ├── discovery.dart             # mDNS auto-discovery + manual IP fallback
-│   │   │   └── pairing.dart               # PIN pairing + session token persistence
-│   │   ├── ui/
-│   │   │   ├── connection/                # Discovery, IP entry, pairing screens
-│   │   │   ├── driving/                   # Combined driving surface
-│   │   │   ├── wheel/                     # On-screen wheel + calibration
-│   │   │   ├── pedals/                    # Vertical draggable pedal bars
-│   │   │   ├── dashboard/                 # Truck-styled control panel
-│   │   │   └── permissions.dart           # Onboarding permission prompts
-│   │   └── state/
-│   │       └── connection_coordinator.dart # Connection lifecycle state machine
+│   │   ├── main.dart                      # Entry point, Provider + Material 3 theme (AppTheme), routing (Onboarding → Menu → Driving)
+│   │   ├── data/
+│   │   │   ├── repositories/              # Connection, discovery, session, paired devices, settings, pedal/sensor/onboarding
+│   │   │   └── services/                  # WheelDeckClient, discovery, pairing, gyroscope, steering/pedal/dashboard input, controller presets & layouts, permissions
+│   │   ├── domain/
+│   │   │   └── models/                    # ConnectionStatus/Target, DiscoveredServer, PairingChallenge, Steering/Pedal state (freezed)
+│   │   └── ui/
+│   │       ├── core/                      # connection_coordinator.dart, lifecycle_observer.dart, theme/app_theme.dart (ColorScheme.fromSeed)
+│   │       └── features/
+│   │           ├── menu/                  # MenuScreen — M3 hub (logo, title, Connect/Settings/About/Donate) post-onboarding
+│   │           ├── connection/            # ConnectionScreen + ManualAddSheet (FAB modal), view_models/connection_view_model.dart + PairedDeviceRepository split
+│   │           ├── driving/               # DrivingView (wheel + PedalPanel + Dashboard, recalibrate FAB), calibration_overlay/view, view_models/driving_view_model.dart
+│   │           ├── onboarding/            # OnboardingScreen + permissions
+│   │           ├── settings/              # SettingsScreen (mapping, controller type, pedal layout, presets, reset) + view_models/settings_view_model.dart
+│   │           ├── about/                 # AboutScreen — developer, source, GitHub stars badge (http)
+│   │           └── donate/                # DonateScreen — BuyMeACoffee/PayPal/Ko-fi via url_launcher
 │   ├── android/
 │   ├── ios/
-│   ├── test/
-│   └── pubspec.yaml
+│   ├── test/                              # mirrors lib/ui/features + data/ with widget/unit tests
+│   └── pubspec.yaml                       # url_launcher, http, provider, shared_preferences, etc.
 │
 ├── desktop/
 │   ├── WheelDeck.sln
@@ -96,7 +94,7 @@ First-run setup friction is called out as a non-functional requirement in the PR
 
 ### mobile/lib/ internal layout
 
-Mirrors the three-layer structure from mobile-interface.md directly: input/ is the Input Capture Layer, network/ is the Network Client Layer, ui/ is the UI Layer. Keeping the folder structure and the interface doc's layer names identical means you can go from "which layer does this bug belong to" straight to "which folder".
+Current layout is `data/` (repositories + services) / `domain/` (freezed models) / `ui/` (core + features), which refines the original three-layer model from mobile-interface.md: `data/services` = Input Capture + Network Client layers, `ui/features` = UI layer. `ConnectionCoordinator` + `LifecycleObserver` live in `ui/core`; theming in `ui/core/theme`. The previous `input/`/`network/`/`state/` sketch is superseded — see tree above for authoritative layout.
 
 ### CI split
 

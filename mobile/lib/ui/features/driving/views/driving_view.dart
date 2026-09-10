@@ -111,6 +111,14 @@ class _DrivingViewState extends State<DrivingView> {
 
   Future<void> _onDisconnect() => _viewModel.disconnect();
 
+  void _onRecalibrate() {
+    HapticFeedback.lightImpact();
+    _viewModel.recalibrate();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Steering re-centered'), duration: Duration(seconds: 1)),
+    );
+  }
+
   void _lockOrientation() {
     _previousOrientations = null;
     SystemChrome.setPreferredOrientations([
@@ -142,41 +150,56 @@ class _DrivingViewState extends State<DrivingView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Driving'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) =>
-                    SettingsScreen(coordinator: widget.coordinator),
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        final calibrating = _viewModel.awaitingCalibration;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Driving'),
+            actions: [
+              if (!calibrating)
+                IconButton(
+                  key: const Key('recalibrate-button'),
+                  icon: const Icon(Icons.center_focus_strong),
+                  onPressed: _onRecalibrate,
+                  tooltip: 'Recalibrate',
+                ),
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        SettingsScreen(coordinator: widget.coordinator),
+                  ),
+                ),
+                tooltip: 'Settings',
               ),
-            ),
-            tooltip: 'Settings',
+              IconButton(
+                icon: const Icon(Icons.wifi_off),
+                onPressed: _onDisconnect,
+                tooltip: 'Disconnect',
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.wifi_off),
-            onPressed: _onDisconnect,
-            tooltip: 'Disconnect',
+          floatingActionButton: calibrating
+              ? null
+              : FloatingActionButton.small(
+                  key: const Key('recalibrate-fab'),
+                  onPressed: _onRecalibrate,
+                  tooltip: 'Recalibrate',
+                  child: const Icon(Icons.center_focus_strong),
+                ),
+          body: SafeArea(
+            child: calibrating
+                ? CalibrationOverlay(
+                    angle: _viewModel.steering.angle,
+                    onConfirmed: _onCalibrationConfirmed,
+                  )
+                : _buildDrivingContent(),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: _viewModel,
-          builder: (context, _) {
-            if (_viewModel.awaitingCalibration) {
-              return CalibrationOverlay(
-                angle: _viewModel.steering.angle,
-                onConfirmed: _onCalibrationConfirmed,
-              );
-            }
-            return _buildDrivingContent();
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -216,7 +239,10 @@ class _DrivingViewState extends State<DrivingView> {
                   children: [
                     Expanded(
                       flex: 5,
-                      child: PedalPanel(input: _viewModel.pedalInput),
+                      child: PedalPanel(
+                        input: _viewModel.pedalInput,
+                        layout: _viewModel.pedalLayout.order,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Expanded(
