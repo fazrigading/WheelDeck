@@ -9,6 +9,7 @@ import '../../../../domain/models/steering_state.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
+import '../../../../data/services/pedal_layout.dart';
 
 /// Presentation state for the driving view: steering angle, pedal pressures,
 /// calibration gate, and wheel-drag fallback.
@@ -43,6 +44,7 @@ class DrivingViewModel extends ChangeNotifier {
   bool _awaitingCalibration;
   bool _draggingWheel = false;
   double _dragBase = 0.0;
+  PedalLayout _pedalLayout = PedalLayout.layoutA;
 
   /// Normalized steering angle snapshot (-1.0..1.0).
   SteeringState get steering => _steering;
@@ -62,15 +64,26 @@ class DrivingViewModel extends ChangeNotifier {
   /// Dashboard event forwarder for the dashboard panel.
   DashboardInput get dashboardInput => _dashboardInput;
 
+  PedalLayout get pedalLayout => _pedalLayout;
+
   /// Applies the persisted dashboard mapping on the desktop. Best-effort:
   /// never throws, so driving still works when storage is unavailable.
   Future<void> init() async {
     try {
       final mapping = await InputMapping.load();
       _connectionRepository.sendMappingMode(mapping);
-    } catch (_) {
-      // Ignore: mapping hint is a session nicety, not required for input.
-    }
+    } catch (_) {}
+    try {
+      _pedalLayout = await PedalLayout.load();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> refreshPedalLayout() async {
+    try {
+      _pedalLayout = await PedalLayout.load();
+      notifyListeners();
+    } catch (_) {}
   }
 
   /// Syncs the calibration gate with the lifecycle pause flag.
@@ -113,6 +126,13 @@ class DrivingViewModel extends ChangeNotifier {
   void confirmCalibration() {
     _sensorRepository.setCenter();
     setAwaitingCalibration(false);
+  }
+
+  /// Manual zeroing for drift/phone-move — does not touch calibration gate.
+  void recalibrate() {
+    _sensorRepository.setCenter();
+    _steering = SteeringState.centered;
+    notifyListeners();
   }
 
   /// Clears the calibration gate and disconnects.

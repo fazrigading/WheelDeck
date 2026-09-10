@@ -16,6 +16,8 @@ class LifecycleObserver extends WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.inactive:
+        // Notification shade / transient overlay — stay connected
+        break;
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
         coordinator.pause();
