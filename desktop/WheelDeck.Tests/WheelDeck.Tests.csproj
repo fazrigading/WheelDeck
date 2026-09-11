@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WheelDeck.Core\WheelDeck.Core.csproj" />
+    <ProjectReference Include="..\WheelDeck.App\WheelDeck.App.csproj" />
   </ItemGroup>
 
 </Project>

@@ -12,8 +12,9 @@ public sealed class MainWindow : Window
     public MainWindow()
     {
         Title = "WheelDeck";
-        Width = 520;
-        Height = 420;
+        Width = 880;
+        Height = 600;
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
         _root = new CompositionRoot();
         _root.Start();
@@ -22,17 +23,22 @@ public sealed class MainWindow : Window
         var connectionViewModel = new ConnectionViewModel();
         var setupViewModel = new SetupViewModel(new SetupChecker());
 
-        connectionViewModel.UpdateFrom(pairingManager, isRunning: true, WebSocketListener.DefaultPort);
+        void RefreshConnection() => connectionViewModel.UpdateFrom(
+            pairingManager, isRunning: true, WebSocketListener.DefaultPort, _root.Gate.ConnectedDeviceIds);
+        RefreshConnection();
 
         var pairingView = new PairingView(pairingManager);
 
         // A phone pairing in the background must show up immediately: refresh
-        // the active-device label and the device list on the UI thread.
+        // the paired-device label and the device list on the UI thread.
+        // Same for connect/disconnect: the status card follows live sessions.
+        _root.Gate.ConnectionsChanged += () =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshConnection);
         _root.PairingService.PairingCompleted += (_, _, _) =>
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                connectionViewModel.UpdateFrom(pairingManager, isRunning: true, WebSocketListener.DefaultPort);
+                RefreshConnection();
                 pairingView.ViewModel?.RefreshDevices();
             });
         };

@@ -28,6 +28,13 @@ public sealed class SessionGate
     /// the shell can tell the phone to re-pair instead of dropping input silently.</summary>
     public event Action<WebSocket>? UnknownSessionToken;
 
+    /// <summary>Fires when the set of connected devices changes (bind or drop), so the shell can refresh status.</summary>
+    public event Action? ConnectionsChanged;
+
+    /// <summary>Ids of devices with at least one live connection.</summary>
+    public IReadOnlyCollection<string> ConnectedDeviceIds =>
+        _connectionDevices.Values.Where(id => id is not null).Distinct().ToList()!;
+
     public SessionGate(
         PairingManager pairingManager,
         Action<StateMessage> onState,
@@ -46,6 +53,7 @@ public sealed class SessionGate
     public void OnPairingCompleted(WebSocket socket, string deviceId, string? sessionToken)
     {
         _connectionDevices[socket] = deviceId;
+        ConnectionsChanged?.Invoke();
     }
 
     /// <summary>Updates the last-seen timestamp and binds the connection via its token.</summary>
@@ -63,7 +71,11 @@ public sealed class SessionGate
         }
 
         _pairingManager.TouchLastSeen(device.Id);
-        _connectionDevices[socket] = device.Id;
+        if (!_connectionDevices.TryGetValue(socket, out var previous) || previous != device.Id)
+        {
+            _connectionDevices[socket] = device.Id;
+            ConnectionsChanged?.Invoke();
+        }
         HeartbeatAccepted?.Invoke(heartbeat);
     }
 
@@ -97,7 +109,10 @@ public sealed class SessionGate
     /// <summary>Forgets a connection when it drops.</summary>
     public void OnConnectionClosed(WebSocket socket)
     {
-        _connectionDevices.Remove(socket);
+        if (_connectionDevices.Remove(socket, out var dropped) && dropped is not null)
+        {
+            ConnectionsChanged?.Invoke();
+        }
         _staleTokenNotified.Remove(socket);
         _onConnectionClosed(socket);
     }
