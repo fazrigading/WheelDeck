@@ -13,5 +13,8 @@
     <Style Selector="TextBlock.hint">
       <Setter Property="FontSize" Value="13" />
     </Style>
+    <Style Selector="Button.nav-selected">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
   </Application.Styles>
 </Application>
