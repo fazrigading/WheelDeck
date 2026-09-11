@@ -147,6 +147,7 @@ public sealed class MainWindow : Window
         }
 
         ThemeSettings.Save(variant);
+        Brand.Apply(variant);
     }
 
     private static string ThemeButtonLabel() =>
