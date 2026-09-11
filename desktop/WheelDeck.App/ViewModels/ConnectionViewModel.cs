@@ -39,7 +39,7 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
         set => SetField(ref _isDeviceConnected, value);
     }
 
-    /// <summary>Hex fill for the status dot: green when a device is connected, gray otherwise.</summary>
+    /// <summary>Hex fill for the status dot: muted teal when a device is connected, gray otherwise.</summary>
     public string StatusColor
     {
         get => _statusColor;
@@ -103,7 +103,7 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
             IsDeviceConnected = true;
             var name = paired.FirstOrDefault(d => d.Id == connectedId)?.DisplayName ?? connectedId;
             StatusText = $"Connected to {name}";
-            StatusColor = "#3DA35D";
+            StatusColor = "#415A77";
         }
         else
         {

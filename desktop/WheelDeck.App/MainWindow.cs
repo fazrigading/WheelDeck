@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Styling;
 using WheelDeck.App.ViewModels;
 using WheelDeck.App.Views;
@@ -74,6 +73,7 @@ public sealed class MainWindow : Window
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
             };
+            button.Classes.Add("nav");
             button.Click += (_, _) =>
             {
                 content.Content = page;
@@ -103,25 +103,23 @@ public sealed class MainWindow : Window
             themeButton.Content = ThemeButtonLabel();
         };
 
-        var title = new TextBlock
-        {
-            Text = "WheelDeck",
-            FontSize = 18,
-            FontWeight = FontWeight.SemiBold,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        var header = new DockPanel { Margin = new Thickness(12, 12, 12, 0) };
-        DockPanel.SetDock(title, Dock.Left);
-        DockPanel.SetDock(themeButton, Dock.Right);
-        header.Children.Add(title);
-        header.Children.Add(themeButton);
+        var title = new TextBlock { Text = "WheelDeck" };
+        title.Classes.Add("app-title");
+        Grid.SetColumn(title, 1);
+        Grid.SetColumn(themeButton, 2);
+        themeButton.HorizontalAlignment = HorizontalAlignment.Right;
+        var headerGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,*") };
+        headerGrid.Children.Add(title);
+        headerGrid.Children.Add(themeButton);
+        var header = new Border { Child = headerGrid };
+        header.Classes.Add("app-header");
 
         var navPane = new Border
         {
             Width = 170,
-            Margin = new Thickness(0, 12, 0, 12),
             Child = nav,
         };
+        navPane.Classes.Add("nav-pane");
         var body = new DockPanel { LastChildFill = true };
         DockPanel.SetDock(navPane, Dock.Left);
         body.Children.Add(navPane);
