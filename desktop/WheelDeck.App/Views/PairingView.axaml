@@ -16,7 +16,8 @@
 
     <TextBlock FontWeight="SemiBold" Text="Paired devices" />
 
-    <ListBox ItemsSource="{Binding Devices}">
+    <Border Classes="card" Padding="8">
+      <ListBox ItemsSource="{Binding Devices}" Background="Transparent">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,2">
@@ -35,6 +36,7 @@
           </Grid>
         </DataTemplate>
       </ListBox.ItemTemplate>
-    </ListBox>
+      </ListBox>
+    </Border>
   </StackPanel>
 </UserControl>
