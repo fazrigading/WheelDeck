@@ -14,6 +14,7 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
     private bool _isRunning;
     private bool _isDeviceConnected;
     private string _statusText = "Stopped";
+    private string _statusColor = "#8A8A8A";
     private string _pairedDevice = "None";
     private int _port;
     private string _localIpAddress = NetworkHelper.GetLocalIpAddress();
@@ -36,6 +37,13 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
     {
         get => _isDeviceConnected;
         set => SetField(ref _isDeviceConnected, value);
+    }
+
+    /// <summary>Hex fill for the status dot: green when a device is connected, gray otherwise.</summary>
+    public string StatusColor
+    {
+        get => _statusColor;
+        set => SetField(ref _statusColor, value);
     }
 
     public string PairedDevice
@@ -88,17 +96,20 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
         {
             IsDeviceConnected = false;
             StatusText = "Stopped";
+            StatusColor = "#8A8A8A";
         }
         else if (connectedId is not null)
         {
             IsDeviceConnected = true;
             var name = paired.FirstOrDefault(d => d.Id == connectedId)?.DisplayName ?? connectedId;
             StatusText = $"Connected to {name}";
+            StatusColor = "#3DA35D";
         }
         else
         {
             IsDeviceConnected = false;
             StatusText = $"Listening on port {port}";
+            StatusColor = "#8A8A8A";
         }
     }
 
