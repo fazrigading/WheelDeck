@@ -2,9 +2,9 @@
 goal: Migrate the Windows virtual controller backend from ViGEmBus (retired, kernel-mode) to HIDMaestro (active, user-mode UMDF2)
 version: '1.1'
 date_created: '2026-09-05'
-last_updated: '2026-09-11'
+last_updated: '2026-09-12'
 owner: 'fazrigading'
-status: 'Ongoing'
+status: 'In progress'
 tags:
   - migration
   - infrastructure
@@ -13,9 +13,9 @@ tags:
 
 # Introduction
 
-![Status: Ongoing](https://img.shields.io/badge/status-Ongoing-purple)
+![Status: In progress](https://img.shields.io/badge/status-In_progress-yellow)
 
-Migrate the Windows virtual controller backend from ViGEmBus to HIDMaestro. ViGEmBus is retired and requires a kernel driver plus an EV code-signing certificate for new builds. HIDMaestro is a user-mode UMDF2 driver with a managed C# SDK (vendored `HIDMaestro.Core.dll`, 228+ embedded device profiles, no kernel dependency). The `VirtualOutputBackend` interface in `WheelDeck.Core` decouples business logic from the driver, making this a targeted swap of the Windows backend implementation. As of 2026-09-11 the desktop tree is still 100% ViGEmBus (no HIDMaestro code, no SDK reference); all 5 phases are unstarted.
+Migrate the Windows virtual controller backend from ViGEmBus to HIDMaestro. ViGEmBus is retired and requires a kernel driver plus an EV code-signing certificate for new builds. HIDMaestro is a user-mode UMDF2 driver with a managed C# SDK (vendored `HIDMaestro.Core.dll`, 228+ embedded device profiles, no kernel dependency). The `VirtualOutputBackend` interface in `WheelDeck.Core` decouples business logic from the driver, making this a targeted swap of the Windows backend implementation. Code phases 1–4 are complete as of 2026-09-12 (SDK vendored, `HidMaestroBackend` implemented and wired in, ViGEmBus code deleted); Phase 5 (documentation and setup scripts) is pending.
 
 ## 1. Requirements & Constraints
 
@@ -76,9 +76,9 @@ Migrate the Windows virtual controller backend from ViGEmBus to HIDMaestro. ViGE
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-014 | Delete `desktop/WheelDeck.Backends/Windows/ViGEmClient.cs` (the P/Invoke bindings to `ViGEmClient.dll`, 65 lines). | | |
-| TASK-015 | Delete `desktop/WheelDeck.Backends/Windows/ViGEmXboxBackend.cs` (the old `VirtualOutputBackend` implementation, 267 lines). | | |
-| TASK-016 | Run `dotnet build` and `dotnet test` from `desktop/` to verify no remaining references to ViGEmBus exist (`grep -r "ViGEm" desktop/WheelDeck.* --include="*.cs" --include="*.csproj"` returns empty) and the solution compiles cleanly. | | |
+| TASK-014 | Delete `desktop/WheelDeck.Backends/Windows/ViGEmClient.cs` (the P/Invoke bindings to `ViGEmClient.dll`, 65 lines). | ✅ | 2026-09-12 |
+| TASK-015 | Delete `desktop/WheelDeck.Backends/Windows/ViGEmXboxBackend.cs` (the old `VirtualOutputBackend` implementation, 267 lines). | ✅ | 2026-09-12 |
+| TASK-016 | Run `dotnet build` and `dotnet test` from `desktop/` to verify no remaining references to ViGEmBus exist (`grep -r "ViGEm" desktop/WheelDeck.* --include="*.cs" --include="*.csproj"` returns empty) and the solution compiles cleanly. | ✅ | 2026-09-12 |
 
 ### Implementation Phase 5: Update documentation and setup scripts
 
