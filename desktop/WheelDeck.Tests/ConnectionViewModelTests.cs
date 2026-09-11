@@ -15,7 +15,7 @@ public sealed class ConnectionViewModelTests
 
         Assert.Equal("Connected to phone-1", vm.StatusText);
         Assert.True(vm.IsDeviceConnected);
-        Assert.Equal("#415A77", vm.StatusColor);
+        Assert.Equal("#64FFDA", vm.StatusColor);
         Assert.Equal("phone-1", vm.PairedDevice);
     }
 

@@ -4,8 +4,8 @@
   <StackPanel Margin="24" Spacing="12">
     <TextBlock Classes="h1" Text="Donate" />
     <TextBlock Classes="hint" Text="WheelDeck is free and open source. If it makes your drives better, consider supporting development." TextWrapping="Wrap" />
-    <Button Content="Buy Me a Coffee" Click="OnBuyMeACoffeeClick" HorizontalAlignment="Left" />
-    <Button Content="PayPal" Click="OnPayPalClick" HorizontalAlignment="Left" />
-    <Button Content="Ko-fi" Click="OnKoFiClick" HorizontalAlignment="Left" />
+    <Button Classes="accent" Content="Buy Me a Coffee" Click="OnBuyMeACoffeeClick" HorizontalAlignment="Left" />
+    <Button Classes="accent" Content="PayPal" Click="OnPayPalClick" HorizontalAlignment="Left" />
+    <Button Classes="accent" Content="Ko-fi" Click="OnKoFiClick" HorizontalAlignment="Left" />
   </StackPanel>
 </UserControl>

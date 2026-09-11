@@ -4,7 +4,7 @@
   <StackPanel Margin="24" Spacing="12">
     <TextBlock Classes="h1" Text="Setup" />
 
-    <Button Content="Check setup" Command="{Binding CheckCommand}" HorizontalAlignment="Left" />
+    <Button Classes="accent" Content="Check setup" Command="{Binding CheckCommand}" HorizontalAlignment="Left" />
 
     <Border Background="#205676" Padding="12" CornerRadius="8">
       <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
