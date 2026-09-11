@@ -3,12 +3,14 @@
 > Detailed plan: `To be added`
 
 ## branch: feature/revamp-desktop-ui
-- [ ] connection tab showing active when it's not connected
-- [ ] pairing tab
-- [ ] default window position at launch should be in the middle not top left
-- [ ] add dark/light mode button
-- [ ] redesign whole UI
-- [ ] create settings page
+- [x] connection tab:
+  - [x] after connected to device, the "Status" still showing "Listening on port 8765" → status card now shows `Connected to {device}` via `SessionGate.ConnectedDeviceIds`
+  - [x] "Active device" is misleading, it should be "Paired device" → renamed label + `ConnectionViewModel.PairedDevice`
+- [x] fonts are too small → centralized styles in `App.axaml` (default 15, `.h1` 26, `.hint` 13)
+- [x] default window position at launch should be in the middle not top left → `CenterScreen`, 880×600
+- [x] add dark/light mode button → header toggle + Settings page, persisted to `theme.txt`, `Brand` palette follows theme
+- [x] redesign whole UI → sidebar shell, status card, brand cards, navy/ocean/teal/seafoam/salt (light) + trench/abyssal/frost/cyan (dark)
+- [x] create settings page, about page, and donation page → Settings page + Donate tab with About section merged underneath (per review: no separate About tab)
 
 ---
 
