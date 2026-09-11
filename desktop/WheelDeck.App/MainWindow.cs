@@ -47,11 +47,19 @@ public sealed class MainWindow : Window
             });
         };
 
+        var settingsViewModel = new SettingsViewModel(
+            getCurrent: () => Application.Current?.RequestedThemeVariant,
+            apply: ApplyTheme,
+            portInfo: $"Listening on port {WebSocketListener.DefaultPort}");
+
         var pages = new Dictionary<string, UserControl>
         {
             ["Connection"] = new ConnectionView(connectionViewModel),
             ["Pairing"] = pairingView,
             ["Setup"] = new SetupView(setupViewModel),
+            ["Settings"] = new SettingsView(settingsViewModel),
+            ["About"] = new AboutView(),
+            ["Donate"] = new DonateView(),
         };
 
         var content = new ContentControl { Content = pages["Connection"] };
