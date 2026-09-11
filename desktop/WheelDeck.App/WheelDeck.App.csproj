@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

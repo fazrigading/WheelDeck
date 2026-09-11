@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              x:Class="WheelDeck.App.Views.SettingsView">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock Classes="h1" Text="Settings" />
+
+    <TextBlock FontWeight="SemiBold" Text="Theme" />
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Classes="accent" Content="System" Command="{Binding UseSystemThemeCommand}" />
+      <Button Classes="accent" Content="Light" Command="{Binding UseLightThemeCommand}" />
+      <Button Classes="accent" Content="Dark" Command="{Binding UseDarkThemeCommand}" />
+    </StackPanel>
+    <TextBlock Classes="hint" Text="{Binding ThemeLabel, StringFormat='Current: {0}'}" />
+
+    <TextBlock FontWeight="SemiBold" Text="Connection" />
+    <TextBlock Text="{Binding PortInfo}" />
+  </StackPanel>
+</UserControl>

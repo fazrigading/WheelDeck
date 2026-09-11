@@ -26,6 +26,14 @@ public sealed class CompositionRoot
     public HeartbeatMonitor HeartbeatMonitor { get; }
     public MdnsAdvertiser Advertiser { get; }
 
+    /// <summary>Session gate, exposed so the shell can show live connection state.</summary>
+    public SessionGate Gate => _gate;
+
+    /// <summary>App data dir shared by the pairing store and UI settings.</summary>
+    public static string AppDataDirectory { get; } = OperatingSystem.IsWindows()
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WheelDeck")
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "wheeldeck");
+
     private readonly SessionGate _gate;
 
     public CompositionRoot(int port = WebSocketListener.DefaultPort, IPairingStore? pairingStore = null)
@@ -116,12 +124,6 @@ public sealed class CompositionRoot
         throw new PlatformNotSupportedException("WheelDeck supports Windows and Linux only.");
     }
 
-    private static IPairingStore CreatePairingStore()
-    {
-        var baseDir = OperatingSystem.IsWindows()
-            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WheelDeck")
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "wheeldeck");
-
-        return new JsonFilePairingStore(Path.Combine(baseDir, "pairings.json"));
-    }
+    private static IPairingStore CreatePairingStore() =>
+        new JsonFilePairingStore(Path.Combine(AppDataDirectory, "pairings.json"));
 }
