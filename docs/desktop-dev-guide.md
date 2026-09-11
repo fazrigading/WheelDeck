@@ -1,13 +1,13 @@
 # Desktop developer guide
 
-This guide gets you set up, building, testing, and contributing to the WheelDeck desktop server. It's a C#/.NET application with an Avalonia UI that receives WebSocket input from the phone and translates it into a virtual game controller on Windows (ViGEmBus) and Linux (uinput).
+This guide gets you set up, building, testing, and contributing to the WheelDeck desktop server. It's a C#/.NET application with an Avalonia UI that receives WebSocket input from the phone and translates it into a virtual game controller on Windows (HIDMaestro) and Linux (uinput).
 
 ## Prerequisites
 
 | Tool | Minimum |
 |---|---|
 | .NET SDK | 8.0+ |
-| ViGEmBus (Windows) | [ViGEm releases](https://github.com/ViGEm/ViGEm.NET/releases) |
+| HIDMaestro (Windows) | n/a | Auto-installs on first use via `HMContext.InstallDriver()` (admin required) — see `https://github.com/hifihedgehog/HIDMaestro` |
 | uinput (Linux) | Fedora: `sudo dnf install kernel-modules-extra` |
 
 ## Get started
@@ -117,20 +117,20 @@ Persistence is abstracted behind `IPairingStore` (default: `JsonFilePairingStore
 ### Setup check
 
 `WheelDeck.App/SetupChecker.cs` runs on first launch:
-- **Windows**: checks for ViGEmBus driver. If missing, launches the browser to the official release page.
+- **Windows**: checks for the HIDMaestro driver. If missing, the app installs it automatically (requires administrator).
 - **Linux**: checks uinput permissions. If missing, prints remediation commands.
 
 Per [ADR-0004](./adr/0004-degraded-continue-setup-check.md), the check **does not block**. It shows instructions and continues in a degraded state. Pairing works without the output backend.
 
 ## Platform-specific setup
 
-### Windows (ViGEmBus)
+### Windows (HIDMaestro)
 
-1. Download and install ViGEmBus from `https://github.com/ViGEm/ViGEm.NET/releases`
-2. Run the setup checker: the app prompts you if it's missing
-3. Or run manually: `scripts/windows/check-vigembus.ps1`
+1. Run the app as administrator on first launch — the HIDMaestro driver installs automatically
+2. The setup checker verifies the driver before the backend initializes
+3. Or check status manually: `scripts/windows/check-hidmaestro.ps1`
 
-ViGEmBus creates a virtual Xbox controller that simulators like ETS2 read natively. Key simulation uses the Win32 `SendInput` API.
+HIDMaestro creates a virtual Xbox controller that simulators like ETS2 read natively (`joy.cpl` shows "Controller (XBOX 360 For Windows)" while the app is running). Key simulation uses the Win32 `SendInput` API.
 
 ### Linux (uinput)
 
@@ -158,10 +158,10 @@ Located in `scripts/`:
 
 | Script | Platform | Purpose |
 |---|---|---|
-| `scripts/windows/check-vigembus.ps1` | Windows | Detects ViGEmBus, offers to launch the browser to the official release page |
+| `scripts/windows/check-hidmaestro.ps1` | Windows | Detects HIDMaestro driver state; install is automatic via the app (admin) |
 | `scripts/linux/install-uinput-rules.sh` | Linux | Detects uinput/SELinux issues, prints commands for you to run manually |
 
-> **ADR-0005**: These scripts detect-only. They do not install drivers or modify permissions directly. They show you what is missing and either launch a browser (Windows) or print commands to run manually (Linux).
+> **ADR-0005**: The Linux script is detect-only. On Windows, driver install is automatic via the app (admin required); `check-hidmaestro.ps1` is a status check.
 
 ## CI
 

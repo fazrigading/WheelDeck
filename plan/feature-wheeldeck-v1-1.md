@@ -23,7 +23,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 - **REQ-005**: The mobile app captures steering, pedals, and dashboard controls and sends state/button messages over WebSocket.
 - **REQ-006**: Pairing persists across sessions until the desktop's 30-day expiry; session tokens skip re-pairing.
 - **REQ-007**: Input latency targets sub-50ms round trip.
-- **CON-001**: Windows backend uses ViGEmBus and SendInput; Linux backend uses uinput.
+- **CON-001**: Windows backend uses ViGEmBus and SendInput; Linux backend uses uinput. (Historical: Windows backend migrated to HIDMaestro per `plan/migrate-vigembus-to-hidmaestro-1.md`.)
 - **CON-002**: Desktop UI is Avalonia (C#/.NET); mobile UI is Flutter (Dart), shipped as a native Android app and an iOS PWA.
 - **CON-003**: Primary transport is local Wi-Fi; USB tethering is the fallback.
 - **CON-004**: v1 targets ETS2 only; macOS, Bluetooth, and force feedback are post-v1.
@@ -74,7 +74,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-013 | Implement ViGEmBus virtual Xbox controller in `desktop/WheelDeck.Backends/Windows/`. | ✅ | 2026-09-03 |
+| TASK-013 | Implement ViGEmBus virtual Xbox controller in `desktop/WheelDeck.Backends/Windows/`. (Historical: replaced by `HidMaestroBackend` per `plan/migrate-vigembus-to-hidmaestro-1.md`.) | ✅ | 2026-09-03 |
 | TASK-014 | Implement SendInput key simulation in the Windows backend. | ✅ | 2026-09-03 |
 | TASK-015 | Implement uinput virtual joystick in `desktop/WheelDeck.Backends/Linux/`. | ✅ | 2026-09-03 |
 | TASK-016 | Implement `neutralize()` on both backends to zero axes and release buttons/keys. | ✅ | 2026-09-03 |
@@ -99,7 +99,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | TASK-021 | Add composition root in `desktop/WheelDeck.App/` that picks the backend by OS. | ✅ | 2026-09-03 |
 | TASK-022 | Build connection management UI (status, active device, firewall reminder). | ✅ | 2026-09-03 |
 | TASK-023 | Build pairing UI (PIN, paired list, revoke, set active). | ✅ | 2026-09-03 |
-| TASK-024 | Add first-run setup check for ViGEmBus or uinput permissions. | ✅ | 2026-09-03 |
+| TASK-024 | Add first-run setup check for ViGEmBus or uinput permissions. (Historical: Windows check is now HIDMaestro per `plan/migrate-vigembus-to-hidmaestro-1.md`.) | ✅ | 2026-09-03 |
 | TASK-025 | Add manual launch default and opt-in daemon mode. | ✅ | 2026-09-03 |
 
 ### Implementation Phase 7: Mobile input capture layer
@@ -152,7 +152,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-041 | Write `scripts/linux/install-uinput-rules.sh` with Fedora SELinux handling. | ✅ | 2026-09-06 |
-| TASK-042 | Write `scripts/windows/check-vigembus.ps1` for now. | ✅ | 2026-09-06 |
+| TASK-042 | Write `scripts/windows/check-vigembus.ps1` for now. (Historical: replaced by `check-hidmaestro.ps1` per `plan/migrate-vigembus-to-hidmaestro-1.md`.) | ✅ | 2026-09-06 |
 
 ### Implementation Phase 12: CI workflows
 
@@ -183,7 +183,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 
 - **DEP-001**: .NET SDK with Avalonia UI.
 - **DEP-002**: Flutter SDK.
-- **DEP-003**: ViGEmBus driver (Windows) and uinput (Linux).
+- **DEP-003**: ViGEmBus driver (Windows) and uinput (Linux). (Historical: Windows driver is now HIDMaestro, auto-installed; see `plan/migrate-vigembus-to-hidmaestro-1.md`.)
 - **DEP-004**: `gh` CLI authenticated against `fazrigading/WheelDeck`.
 - **DEP-005**: `create-implementation-plan` and `create-github-issues-feature-from-implementation-plan` skills.
 
@@ -205,7 +205,7 @@ Turn the four docs in `docs/` into working v1 code: shared protocol schemas, a .
 - **FILE-014**: `mobile/lib/network/**`
 - **FILE-015**: `mobile/lib/ui/**`
 - **FILE-016**: `scripts/linux/install-uinput-rules.sh`
-- **FILE-017**: `scripts/windows/check-vigembus.ps1`
+- **FILE-017**: `scripts/windows/check-vigembus.ps1` (historical: now `check-hidmaestro.ps1`; see `plan/migrate-vigembus-to-hidmaestro-1.md`)
 - **FILE-018**: `.github/workflows/mobile-ci.yml`
 - **FILE-019**: `.github/workflows/desktop-ci.yml`
 

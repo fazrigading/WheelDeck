@@ -4,7 +4,7 @@ version: '1.1'
 date_created: '2026-09-05'
 last_updated: '2026-09-12'
 owner: 'fazrigading'
-status: 'In progress'
+status: 'Completed'
 tags:
   - migration
   - infrastructure
@@ -13,9 +13,9 @@ tags:
 
 # Introduction
 
-![Status: In progress](https://img.shields.io/badge/status-In_progress-yellow)
+![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
-Migrate the Windows virtual controller backend from ViGEmBus to HIDMaestro. ViGEmBus is retired and requires a kernel driver plus an EV code-signing certificate for new builds. HIDMaestro is a user-mode UMDF2 driver with a managed C# SDK (vendored `HIDMaestro.Core.dll`, 228+ embedded device profiles, no kernel dependency). The `VirtualOutputBackend` interface in `WheelDeck.Core` decouples business logic from the driver, making this a targeted swap of the Windows backend implementation. Code phases 1–4 are complete as of 2026-09-12 (SDK vendored, `HidMaestroBackend` implemented and wired in, ViGEmBus code deleted); Phase 5 (documentation and setup scripts) is pending.
+Migrate the Windows virtual controller backend from ViGEmBus to HIDMaestro. ViGEmBus is retired and requires a kernel driver plus an EV code-signing certificate for new builds. HIDMaestro is a user-mode UMDF2 driver with a managed C# SDK (vendored `HIDMaestro.Core.dll`, 228+ embedded device profiles, no kernel dependency). The `VirtualOutputBackend` interface in `WheelDeck.Core` decouples business logic from the driver, making this a targeted swap of the Windows backend implementation. Code phases 1–4 are complete as of 2026-09-12 (SDK vendored, `HidMaestroBackend` implemented and wired in, ViGEmBus code deleted); All 5 phases are complete as of 2026-09-12.
 
 ## 1. Requirements & Constraints
 
@@ -86,23 +86,23 @@ Migrate the Windows virtual controller backend from ViGEmBus to HIDMaestro. ViGE
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-017 | Update `CONTEXT.md:52` — change "Windows uses ViGEmBus" to "Windows uses HIDMaestro" in the VirtualOutputBackend glossary entry. | | |
-| TASK-018 | Update `CONTEXT.md:79,82` — change "ViGEmBus" references in the setup check and setup scripts glossary entries to "HIDMaestro" (`check-vigembus.ps1` → `check-hidmaestro.ps1`, release-page offer → auto-install note). | | |
-| TASK-019 | Update `docs/desktop-dev-guide.md:3` — change "Windows (ViGEmBus)" to "Windows (HIDMaestro)" in the introduction. | | |
-| TASK-020 | Update `docs/desktop-dev-guide.md:10` — change the ViGEmBus prerequisite row to "HIDMaestro (Windows) \| n/a \| Auto-installs on first use via `HMContext.InstallDriver()` (admin required) — see `https://github.com/hifihedgehog/HIDMaestro`". | | |
-| TASK-021 | Update `docs/desktop-dev-guide.md:117-123` — rewrite the Setup check section: Windows checks for the HIDMaestro driver (auto-install, admin required) instead of "checks for ViGEmBus driver. If missing, launches the browser to the official release page." | | |
-| TASK-022 | Update `docs/desktop-dev-guide.md:127-133` — rewrite the Windows platform-specific setup section (`### Windows (ViGEmBus)` → `### Windows (HIDMaestro)`): driver auto-installs on first run (admin), manual fallback `scripts/windows/check-hidmaestro.ps1`, note `joy.cpl` shows "Controller (XBOX 360 For Windows)" while the process is alive. | | |
-| TASK-023 | Update `docs/desktop-dev-guide.md:159-162` — change `check-vigembus.ps1` row to `check-hidmaestro.ps1`, purpose "Detects HIDMaestro driver state; install is automatic via the app (admin)". | | |
-| TASK-024 | Update `docs/prd.md:39,74,79,101` — replace all ViGEmBus references with HIDMaestro. | | |
-| TASK-025 | Update `docs/backend-interface.md:17,137` — replace ViGEmBus references. | | |
-| TASK-026 | Update `docs/project-structure.md:53,62,70,93` — replace ViGEmBus references (`SetupChecker.cs` comment, `Windows/` comment, `check-vigembus.ps1` filename, rationale paragraph). | | |
-| TASK-027 | Update `docs/adr/0004-degraded-continue-setup-check.md:3` — replace ViGEmBus reference. | | |
-| TASK-028 | Update `docs/adr/0005-setup-scripts-detect-only.md:5` — replace ViGEmBus reference and note the ADR's detect-only rule is superseded on Windows by HIDMaestro auto-install (script becomes a status check). | | |
-| TASK-029 | Update `README.md:17` — change "virtual Xbox controller (Windows/ViGEmBus)" to "virtual Xbox controller (Windows/HIDMaestro)". Do NOT touch line 58 (already correct: `Windows \| P1 \| HIDMaestro \| XBOX 360 Controller`). | | |
-| TASK-030 | Rename `scripts/windows/check-vigembus.ps1` (79 lines) to `scripts/windows/check-hidmaestro.ps1` and rewrite: check HIDMaestro driver registration (`Get-PnpDevice` for `HIDMAESTRO*` / `pnputil /enum-drivers` for `hidmaestro.inf`) and `desktop/third_party/HIDMaestro/HIDMaestro.Core.dll` presence; report that install is automatic via the app (admin required). Remove the ViGEmBus release-page browser prompt. | | |
-| TASK-031 | Update `plan/feature-wheeldeck-v1-1.md:26,77,102,155,186,208` — replace ViGEmBus references with HIDMaestro (CON-001, TASK-013, TASK-024, TASK-042, DEP-003, FILE-017). These are historical records of completed work; append a note that the backend was migrated per this plan rather than rewriting history. | | |
-| TASK-032 | Update `desktop/README.md:7,21,30-32,44,85-87` — replace all ViGEmBus references (overview, SetupChecker comment, Windows tree `ViGEmClient.cs`/`ViGEmXboxBackend.cs` → `HidMaestroBackend.cs`, prerequisites table, Windows setup section) with HIDMaestro equivalents. | | |
-| TASK-033 | Create `desktop/third_party/HIDMaestro/README.md` recording the vendored SDK release version, download URL, and SHA256 of `HIDMaestro.Core.dll` (written in TASK-001), plus the upstream repo link. | | |
+| TASK-017 | Update `CONTEXT.md:52` — change "Windows uses ViGEmBus" to "Windows uses HIDMaestro" in the VirtualOutputBackend glossary entry. | ✅ | 2026-09-12 |
+| TASK-018 | Update `CONTEXT.md:79,82` — change "ViGEmBus" references in the setup check and setup scripts glossary entries to "HIDMaestro" (`check-vigembus.ps1` → `check-hidmaestro.ps1`, release-page offer → auto-install note). | ✅ | 2026-09-12 |
+| TASK-019 | Update `docs/desktop-dev-guide.md:3` — change "Windows (ViGEmBus)" to "Windows (HIDMaestro)" in the introduction. | ✅ | 2026-09-12 |
+| TASK-020 | Update `docs/desktop-dev-guide.md:10` — change the ViGEmBus prerequisite row to "HIDMaestro (Windows) \| n/a \| Auto-installs on first use via `HMContext.InstallDriver()` (admin required) — see `https://github.com/hifihedgehog/HIDMaestro`". | ✅ | 2026-09-12 |
+| TASK-021 | Update `docs/desktop-dev-guide.md:117-123` — rewrite the Setup check section: Windows checks for the HIDMaestro driver (auto-install, admin required) instead of "checks for ViGEmBus driver. If missing, launches the browser to the official release page." | ✅ | 2026-09-12 |
+| TASK-022 | Update `docs/desktop-dev-guide.md:127-133` — rewrite the Windows platform-specific setup section (`### Windows (ViGEmBus)` → `### Windows (HIDMaestro)`): driver auto-installs on first run (admin), manual fallback `scripts/windows/check-hidmaestro.ps1`, note `joy.cpl` shows "Controller (XBOX 360 For Windows)" while the process is alive. | ✅ | 2026-09-12 |
+| TASK-023 | Update `docs/desktop-dev-guide.md:159-162` — change `check-vigembus.ps1` row to `check-hidmaestro.ps1`, purpose "Detects HIDMaestro driver state; install is automatic via the app (admin)". | ✅ | 2026-09-12 |
+| TASK-024 | Update `docs/prd.md:39,74,79,101` — replace all ViGEmBus references with HIDMaestro. | ✅ | 2026-09-12 |
+| TASK-025 | Update `docs/backend-interface.md:17,137` — replace ViGEmBus references. | ✅ | 2026-09-12 |
+| TASK-026 | Update `docs/project-structure.md:53,62,70,93` — replace ViGEmBus references (`SetupChecker.cs` comment, `Windows/` comment, `check-vigembus.ps1` filename, rationale paragraph). | ✅ | 2026-09-12 |
+| TASK-027 | Update `docs/adr/0004-degraded-continue-setup-check.md:3` — replace ViGEmBus reference. | ✅ | 2026-09-12 |
+| TASK-028 | Update `docs/adr/0005-setup-scripts-detect-only.md:5` — replace ViGEmBus reference and note the ADR's detect-only rule is superseded on Windows by HIDMaestro auto-install (script becomes a status check). | ✅ | 2026-09-12 |
+| TASK-029 | Update `README.md:17` — change "virtual Xbox controller (Windows/ViGEmBus)" to "virtual Xbox controller (Windows/HIDMaestro)". Do NOT touch line 58 (already correct: `Windows \| P1 \| HIDMaestro \| XBOX 360 Controller`). | ✅ | 2026-09-12 |
+| TASK-030 | Rename `scripts/windows/check-vigembus.ps1` (79 lines) to `scripts/windows/check-hidmaestro.ps1` and rewrite: check HIDMaestro driver registration (`Get-PnpDevice` for `HIDMAESTRO*` / `pnputil /enum-drivers` for `hidmaestro.inf`) and `desktop/third_party/HIDMaestro/HIDMaestro.Core.dll` presence; report that install is automatic via the app (admin required). Remove the ViGEmBus release-page browser prompt. | ✅ | 2026-09-12 |
+| TASK-031 | Update `plan/feature-wheeldeck-v1-1.md:26,77,102,155,186,208` — replace ViGEmBus references with HIDMaestro (CON-001, TASK-013, TASK-024, TASK-042, DEP-003, FILE-017). These are historical records of completed work; append a note that the backend was migrated per this plan rather than rewriting history. | ✅ | 2026-09-12 |
+| TASK-032 | Update `desktop/README.md:7,21,30-32,44,85-87` — replace all ViGEmBus references (overview, SetupChecker comment, Windows tree `ViGEmClient.cs`/`ViGEmXboxBackend.cs` → `HidMaestroBackend.cs`, prerequisites table, Windows setup section) with HIDMaestro equivalents. | ✅ | 2026-09-12 |
+| TASK-033 | Create `desktop/third_party/HIDMaestro/README.md` recording the vendored SDK release version, download URL, and SHA256 of `HIDMaestro.Core.dll` (written in TASK-001), plus the upstream repo link. | ✅ | 2026-09-12 |
 
 ## 3. Alternatives
 

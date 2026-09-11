@@ -50,7 +50,7 @@ WheelDeck/
 │   ├── WheelDeck.App/              # Avalonia UI + composition root
 │   │   ├── Program.cs              # Entry point (GUI or --daemon)
 │   │   ├── CompositionRoot.cs      # DI, picks VirtualOutputBackend by OS
-│   │   ├── SetupChecker.cs         # First-run ViGEmBus/uinput check
+│   │   ├── SetupChecker.cs         # First-run HIDMaestro/uinput check
 │   │   ├── Views/                  # XAML views
 │   │   └── ViewModels/             # MVVM view models
 │   ├── WheelDeck.Core/             # Domain logic (no OS dependencies)
@@ -59,7 +59,7 @@ WheelDeck/
 │   │   ├── Input/                  # InputMapper, MappingMode
 │   │   └── Network/                # WebSocketListener, PairingService, SessionGate, HeartbeatMonitor
 │   ├── WheelDeck.Backends/
-│   │   ├── Windows/                # ViGEmBus virtual Xbox 360 controller
+│   │   ├── Windows/                # HIDMaestro virtual Xbox 360 controller
 │   │   └── Linux/                  # uinput virtual joystick
 │   └── WheelDeck.Tests/            # xunit unit tests
 │
@@ -67,7 +67,7 @@ WheelDeck/
 │   ├── linux/
 │   │   └── install-uinput-rules.sh
 │   └── windows/
-│       └── check-vigembus.ps1
+│       └── check-hidmaestro.ps1
 │
 ├── .github/
 │   └── workflows/
@@ -90,7 +90,7 @@ Kept as separate projects per platform (Windows/, Linux/) rather than one projec
 
 ### scripts/
 
-First-run setup friction is called out as a non-functional requirement in the PRD: verify ViGEmBus or uinput permissions instead of failing silently. These scripts are what the WheelDeck.App first-run check runs automatically or points the user to. They are also useful to run manually during development on Fedora.
+First-run setup friction is called out as a non-functional requirement in the PRD: verify HIDMaestro or uinput permissions instead of failing silently. These scripts are what the WheelDeck.App first-run check runs automatically or points the user to. They are also useful to run manually during development on Fedora.
 
 ### mobile/lib/ internal layout
 
