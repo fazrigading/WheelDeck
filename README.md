@@ -1,6 +1,10 @@
 # WheelDeck
 
+Project Status: **Work-in-Progress**
+
 Turn an Android or iOS phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively.
+
+Exclusively made for Linux and Android/iOS; planned for macOS and Windows.
 
 Primary target: Euro Truck Simulator 2.
 
@@ -47,12 +51,12 @@ See `docs/mobile-dev-guide.md` and `docs/desktop-dev-guide.md` for full setup in
 
 ## Supported platforms
 
-| Platform | Status | Virtual controller |
-|----------|--------|--------------------|
-| Android | P0 | — |
-| iOS | P0 (via PWA) | — |
-| Windows | P0 | ViGEmBus (virtual Xbox 360) |
-| Linux | P0 | uinput (virtual joystick) |
+| Platform | Status | Driver | Virtual controller |
+|----------|--------|--------|--------------------|
+| Android  | P0 | Native     | Fully functional    |
+| iOS      | P2 | PWA        | Gyro may not work   |
+| Windows  | P1 | HIDMaestro | XBOX 360 Controller |
+| Linux    | P0 | uinput     | Virtual Joystick    |
 
 ## Docs
 
