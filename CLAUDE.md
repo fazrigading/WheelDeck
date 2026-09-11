@@ -60,6 +60,11 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## Important Note
+
+- Do not include a Co-Authored-By line in commit messages.
+- Do not co-author the source code.
+
 ---
 
 ## Agent skills
