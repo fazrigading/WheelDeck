@@ -6,7 +6,7 @@
 
     <Button Classes="accent" Content="Check setup" Command="{Binding CheckCommand}" HorizontalAlignment="Left" />
 
-    <Border Background="#205676" Padding="12" CornerRadius="8">
+    <Border Classes="card" Padding="12">
       <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
     </Border>
   </StackPanel>
