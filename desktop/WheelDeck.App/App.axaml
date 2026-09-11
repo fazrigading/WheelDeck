@@ -1,6 +1,13 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="WheelDeck.App.App">
+  <Application.Resources>
+    <SolidColorBrush x:Key="NavyBrush" Color="#0D1B2A" />
+    <SolidColorBrush x:Key="OceanBrush" Color="#1B263B" />
+    <SolidColorBrush x:Key="TealBrush" Color="#415A77" />
+    <SolidColorBrush x:Key="SeafoamBrush" Color="#778DA9" />
+    <SolidColorBrush x:Key="SaltBrush" Color="#E0E1DD" />
+  </Application.Resources>
   <Application.Styles>
     <FluentTheme />
     <Style Selector="TextBlock">
@@ -13,7 +20,27 @@
     <Style Selector="TextBlock.hint">
       <Setter Property="FontSize" Value="13" />
     </Style>
+    <Style Selector="TextBlock.app-title">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{StaticResource SaltBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.app-header">
+      <Setter Property="Background" Value="{StaticResource NavyBrush}" />
+      <Setter Property="Padding" Value="12" />
+    </Style>
+    <Style Selector="Border.nav-pane">
+      <Setter Property="Background" Value="{StaticResource NavyBrush}" />
+    </Style>
+    <Style Selector="Button.nav">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{StaticResource SaltBrush}" />
+    </Style>
     <Style Selector="Button.nav-selected">
+      <Setter Property="Background" Value="{StaticResource OceanBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource SaltBrush}" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
   </Application.Styles>
