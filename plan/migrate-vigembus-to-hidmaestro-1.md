@@ -2,7 +2,7 @@
 goal: Migrate the Windows virtual controller backend from ViGEmBus (retired, kernel-mode) to HIDMaestro (active, user-mode UMDF2)
 version: '1.0'
 date_created: '2026-09-05'
-owner: ''
+owner: 'fazrigading'
 status: 'Planned'
 tags:
   - migration
