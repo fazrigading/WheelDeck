@@ -33,3 +33,7 @@ mobile/ios/Runner/GeneratedPluginRegistrant.m
 # --- OS ---
 .DS_Store
 Thumbs.db
+
+# --- Graphify ---
+.opencode
+graphify-out/
