@@ -4,7 +4,7 @@
   <StackPanel Margin="24" Spacing="12">
     <TextBlock Classes="h1" Text="Connection" />
 
-    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" Padding="16" CornerRadius="8">
+    <Border Classes="card" Padding="16">
       <StackPanel Orientation="Horizontal" Spacing="12">
         <Ellipse Width="12" Height="12" VerticalAlignment="Center" Fill="{Binding StatusColor}" />
         <StackPanel Spacing="2">
@@ -19,7 +19,7 @@
       <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding PairedDevice}" />
     </StackPanel>
 
-    <Border Background="#205676" Padding="12" CornerRadius="8">
+    <Border Classes="card" Padding="12">
       <TextBlock Classes="hint" Text="{Binding FirewallReminder}" TextWrapping="Wrap" />
     </Border>
   </StackPanel>

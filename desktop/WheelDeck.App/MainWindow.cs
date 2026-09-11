@@ -126,6 +126,7 @@ public sealed class MainWindow : Window
         body.Children.Add(new Border { Margin = new Thickness(4), Child = content });
 
         var root = new DockPanel { LastChildFill = true };
+        root.Classes.Add("page");
         DockPanel.SetDock(header, Dock.Top);
         root.Children.Add(header);
         root.Children.Add(body);

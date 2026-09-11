@@ -29,6 +29,10 @@ public static class Brand
         Set("NavSelectedForeground", dark ? "#E6F1FF" : "#F4F7F6");
         Set("AccentBrush", dark ? "#64FFDA" : "#3066BE");
         Set("AccentForeground", dark ? "#020C1B" : "#F4F7F6");
+        Set("PageBackground", dark ? "#020C1B" : "#F4F7F6");
+        Set("PageForeground", dark ? "#E6F1FF" : "#0A192F");
+        Set("CardBackground", dark ? "#0A192F" : "#B4D4EE");
+        Set("SecondaryText", dark ? "#B4D4EE" : "#172A45");
 
         StatusConnectedHex = dark ? "#64FFDA" : "#3066BE";
 
