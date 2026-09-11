@@ -1,26 +1,26 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="WheelDeck.App.Views.ConnectionView">
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              x:Class="WheelDeck.App.Views.ConnectionView">
   <StackPanel Margin="24" Spacing="12">
-    <TextBlock FontSize="22" FontWeight="SemiBold" Text="Connection" />
+    <TextBlock Classes="h1" Text="Connection" />
+
+    <Border Classes="card" Padding="16">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Ellipse Width="12" Height="12" VerticalAlignment="Center" Fill="{Binding StatusColor}" />
+        <StackPanel Spacing="2">
+          <TextBlock FontWeight="SemiBold" Text="{Binding StatusText}" />
+          <TextBlock Classes="hint" Text="{Binding ConnectionInfo}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
 
     <StackPanel Orientation="Horizontal" Spacing="8">
-      <TextBlock VerticalAlignment="Center" Text="Status:" />
-      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding StatusText}" />
+      <TextBlock VerticalAlignment="Center" Text="Paired device:" />
+      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding PairedDevice}" />
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <TextBlock VerticalAlignment="Center" Text="Address:" />
-      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding ConnectionInfo}" />
-    </StackPanel>
-
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <TextBlock VerticalAlignment="Center" Text="Active device:" />
-      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding ActiveDevice}" />
-    </StackPanel>
-
-    <Border Background="#205676" Padding="12" CornerRadius="4">
-      <TextBlock Text="{Binding FirewallReminder}" TextWrapping="Wrap" />
+    <Border Classes="card" Padding="12">
+      <TextBlock Classes="hint" Text="{Binding FirewallReminder}" TextWrapping="Wrap" />
     </Border>
   </StackPanel>
 </UserControl>
