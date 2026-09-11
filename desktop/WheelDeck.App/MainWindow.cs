@@ -57,7 +57,6 @@ public sealed class MainWindow : Window
             ["Pairing"] = pairingView,
             ["Setup"] = new SetupView(setupViewModel),
             ["Settings"] = new SettingsView(settingsViewModel),
-            ["About"] = new AboutView(),
             ["Donate"] = new DonateView(),
         };
 
