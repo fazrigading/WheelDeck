@@ -14,7 +14,7 @@ Network/Session Layer   -> pairing, auth, device selection, heartbeat
    v
 Input Mapper            -> interprets messages, applies per-control mapping mode
    v
-Virtual Output Backend  -> OS-specific: ViGEmBus (Windows) / uinput (Linux)
+Virtual Output Backend  -> OS-specific: HIDMaestro (Windows) / uinput (Linux)
 ```
 
 ## 1. Wire protocol
@@ -134,7 +134,7 @@ enum AxisType { Steering, Accelerator, Brake, Clutch }
 
 | Platform | Axis/Button backend | Key simulation |
 |---|---|---|
-| Windows | ViGEmBus (virtual Xbox controller) | SendInput API |
+| Windows | HIDMaestro (virtual Xbox controller) | SendInput API |
 | Linux | uinput virtual joystick device | uinput synthetic key events |
 
 ### Mapping mode

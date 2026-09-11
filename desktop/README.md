@@ -4,7 +4,7 @@ C#/.NET 10 desktop server that receives WebSocket input from the phone app and t
 
 ## Overview
 
-Runs on Windows (ViGEmBus virtual Xbox controller) or Linux (uinput virtual joystick). Pairing, session management, and input routing are handled in `WheelDeck.Core` with zero platform dependencies. The composition root picks the right backend at startup.
+Runs on Windows (HIDMaestro virtual Xbox controller) or Linux (uinput virtual joystick). Pairing, session management, and input routing are handled in `WheelDeck.Core` with zero platform dependencies. The composition root picks the right backend at startup.
 
 Two run modes:
 - **GUI** (default) — `dotnet run --project WheelDeck.App`
@@ -18,7 +18,7 @@ desktop/
 ├── WheelDeck.App/                     # Avalonia UI + composition root
 │   ├── Program.cs                     # Entry point (GUI or --daemon)
 │   ├── CompositionRoot.cs             # DI, picks VirtualOutputBackend by OS
-│   ├── SetupChecker.cs                # First-run ViGEmBus/uinput check
+│   ├── SetupChecker.cs                # First-run HIDMaestro/uinput check
 │   ├── Views/                         # XAML views (connection, pairing, status)
 │   └── ViewModels/                    # MVVM view models
 ├── WheelDeck.Core/                    # Domain logic (no OS dependencies)
@@ -27,9 +27,8 @@ desktop/
 │   ├── Input/                         # InputMapper, MappingMode
 │   └── Network/                       # WebSocketListener, PairingService, SessionGate, HeartbeatMonitor
 ├── WheelDeck.Backends/
-│   ├── Windows/                       # ViGEmBus virtual Xbox 360 controller
-│   │   ├── ViGEmClient.cs
-│   │   ├── ViGEmXboxBackend.cs
+│   ├── Windows/                       # HIDMaestro virtual Xbox 360 controller
+│   │   ├── HidMaestroBackend.cs
 │   │   └── SendInputKeySimulator.cs   # Win32 SendInput for key simulation
 │   └── Linux/                         # uinput virtual joystick
 │       └── UinputBackend.cs
@@ -41,7 +40,7 @@ desktop/
 | Tool | Minimum |
 |------|---------|
 | .NET SDK | 10.0+ |
-| ViGEmBus driver | Windows only — [ViGEm releases](https://github.com/ViGEm/ViGEm.NET/releases) |
+| HIDMaestro driver | Windows only — auto-installs on first run (admin required), see [HIDMaestro](https://github.com/hifihedgehog/HIDMaestro) |
 | uinput | Linux only — `sudo dnf install kernel-modules-extra` (Fedora) |
 
 ## Guide
@@ -82,9 +81,9 @@ dotnet test --collect:"XPlat Code Coverage"                    # with coverage
 
 ## Platform-specific setup
 
-### Windows (ViGEmBus)
-1. Install ViGEmBus driver from the [official releases](https://github.com/ViGEm/ViGEm.NET/releases)
-2. The app prompts you on first launch if missing
+### Windows (HIDMaestro)
+1. Run the app as administrator on first launch — the HIDMaestro driver installs automatically
+2. The app prompts you on first launch if the driver is missing
 
 ### Linux (uinput)
 1. Load kernel module: `modprobe uinput`
