@@ -28,10 +28,21 @@ const _links = [
 class DonateScreen extends StatelessWidget {
   const DonateScreen({super.key});
 
-  Future<void> _open(String url) async {
+  Future<void> _open(BuildContext context, String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok && context.mounted) {
+        // Fallback to platform default
+        final fallback = await launchUrl(uri, mode: LaunchMode.platformDefault);
+        if (!fallback && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url')));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url: $e')));
+      }
     }
   }
 
@@ -78,10 +89,10 @@ class DonateScreen extends StatelessWidget {
                 title: Text(link.label, style: const TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: Text(link.desc, style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
                 trailing: FilledButton.tonal(
-                  onPressed: () => _open(link.url),
+                  onPressed: () => _open(context, link.url),
                   child: const Text('Open'),
                 ),
-                onTap: () => _open(link.url),
+                onTap: () => _open(context, link.url),
               ),
             ),
             const SizedBox(height: 12),

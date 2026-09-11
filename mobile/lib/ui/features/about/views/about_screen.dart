@@ -39,10 +39,20 @@ class _AboutScreenState extends State<AboutScreen> {
     }
   }
 
-  Future<void> _openRepo() async {
+  Future<void> _openRepo(BuildContext context) async {
     final uri = Uri.parse(_repoUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok && context.mounted) {
+        final fallback = await launchUrl(uri, mode: LaunchMode.platformDefault);
+        if (!fallback && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open $_repoUrl')));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $_repoUrl: $e')));
+      }
     }
   }
 
@@ -86,7 +96,7 @@ class _AboutScreenState extends State<AboutScreen> {
               title: const Text('Source Code', style: TextStyle(fontWeight: FontWeight.w600)),
               subtitle: const Text('github.com/fazrigading/WheelDeck'),
               trailing: FilledButton.tonalIcon(
-                onPressed: _openRepo,
+                onPressed: () => _openRepo(context),
                 icon: const Icon(Icons.open_in_new, size: 18),
                 label: const Text('Open'),
               ),
@@ -153,7 +163,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     ),
                   ),
                   FilledButton.icon(
-                    onPressed: _openRepo,
+                    onPressed: () => _openRepo(context),
                     icon: const Icon(Icons.star_outline, size: 18),
                     label: const Text('Star'),
                   ),
