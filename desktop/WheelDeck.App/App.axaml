@@ -8,11 +8,16 @@
     <SolidColorBrush x:Key="NavSelectedForeground" Color="#E6F1FF" />
     <SolidColorBrush x:Key="AccentBrush" Color="#64FFDA" />
     <SolidColorBrush x:Key="AccentForeground" Color="#020C1B" />
+    <SolidColorBrush x:Key="PageBackground" Color="#020C1B" />
+    <SolidColorBrush x:Key="PageForeground" Color="#E6F1FF" />
+    <SolidColorBrush x:Key="CardBackground" Color="#0A192F" />
+    <SolidColorBrush x:Key="SecondaryText" Color="#B4D4EE" />
   </Application.Resources>
   <Application.Styles>
     <FluentTheme />
     <Style Selector="TextBlock">
       <Setter Property="FontSize" Value="15" />
+      <Setter Property="Foreground" Value="{DynamicResource PageForeground}" />
     </Style>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="26" />
@@ -20,6 +25,7 @@
     </Style>
     <Style Selector="TextBlock.hint">
       <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryText}" />
     </Style>
     <Style Selector="TextBlock.app-title">
       <Setter Property="FontSize" Value="18" />
@@ -34,6 +40,13 @@
     </Style>
     <Style Selector="Border.nav-pane">
       <Setter Property="Background" Value="{DynamicResource ChromeBackground}" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="DockPanel.page">
+      <Setter Property="Background" Value="{DynamicResource PageBackground}" />
     </Style>
     <Style Selector="Button.nav">
       <Setter Property="Background" Value="Transparent" />
