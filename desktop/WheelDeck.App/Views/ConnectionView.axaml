@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="WheelDeck.App.Views.ConnectionView">
   <StackPanel Margin="24" Spacing="12">
-    <TextBlock FontSize="22" FontWeight="SemiBold" Text="Connection" />
+    <TextBlock Classes="h1" Text="Connection" />
 
     <StackPanel Orientation="Horizontal" Spacing="8">
       <TextBlock VerticalAlignment="Center" Text="Status:" />
@@ -15,11 +15,11 @@
     </StackPanel>
 
     <StackPanel Orientation="Horizontal" Spacing="8">
-      <TextBlock VerticalAlignment="Center" Text="Active device:" />
-      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding ActiveDevice}" />
+      <TextBlock VerticalAlignment="Center" Text="Paired device:" />
+      <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding PairedDevice}" />
     </StackPanel>
 
-    <Border Background="#205676" Padding="12" CornerRadius="4">
+    <Border Background="#205676" Padding="12" CornerRadius="8">
       <TextBlock Text="{Binding FirewallReminder}" TextWrapping="Wrap" />
     </Border>
   </StackPanel>

@@ -6,14 +6,15 @@ using WheelDeck.Core.Pairing;
 namespace WheelDeck.App.ViewModels;
 
 /// <summary>
-/// State shown on the connection management screen: server status, the active paired
+/// State shown on the connection management screen: server status, the paired
 /// device, and a firewall reminder for when connections cannot reach the desktop.
 /// </summary>
 public sealed class ConnectionViewModel : INotifyPropertyChanged
 {
     private bool _isRunning;
+    private bool _isDeviceConnected;
     private string _statusText = "Stopped";
-    private string _activeDevice = "None";
+    private string _pairedDevice = "None";
     private int _port;
     private string _localIpAddress = NetworkHelper.GetLocalIpAddress();
 
@@ -31,10 +32,16 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
         set => SetField(ref _statusText, value);
     }
 
-    public string ActiveDevice
+    public bool IsDeviceConnected
     {
-        get => _activeDevice;
-        set => SetField(ref _activeDevice, value);
+        get => _isDeviceConnected;
+        set => SetField(ref _isDeviceConnected, value);
+    }
+
+    public string PairedDevice
+    {
+        get => _pairedDevice;
+        set => SetField(ref _pairedDevice, value);
     }
 
     public int Port
@@ -62,15 +69,37 @@ public sealed class ConnectionViewModel : INotifyPropertyChanged
     public string FirewallReminder =>
         "If a phone cannot connect, allow WheelDeck through the firewall and confirm both devices are on the same local network.";
 
-    public void UpdateFrom(PairingManager pairingManager, bool isRunning, int port)
+    public void UpdateFrom(
+        PairingManager pairingManager,
+        bool isRunning,
+        int port,
+        IReadOnlyCollection<string>? connectedDeviceIds = null)
     {
         IsRunning = isRunning;
         Port = port;
-        StatusText = isRunning ? $"Listening on port {port}" : "Stopped";
         LocalIpAddress = NetworkHelper.GetLocalIpAddress();
 
-        var active = pairingManager.ListPairedDevices().FirstOrDefault(d => d.IsActive);
-        ActiveDevice = active is null ? "None" : active.DisplayName;
+        var paired = pairingManager.ListPairedDevices();
+        var active = paired.FirstOrDefault(d => d.IsActive);
+        PairedDevice = active is null ? "None" : active.DisplayName;
+
+        var connectedId = connectedDeviceIds?.FirstOrDefault();
+        if (!isRunning)
+        {
+            IsDeviceConnected = false;
+            StatusText = "Stopped";
+        }
+        else if (connectedId is not null)
+        {
+            IsDeviceConnected = true;
+            var name = paired.FirstOrDefault(d => d.Id == connectedId)?.DisplayName ?? connectedId;
+            StatusText = $"Connected to {name}";
+        }
+        else
+        {
+            IsDeviceConnected = false;
+            StatusText = $"Listening on port {port}";
+        }
     }
 
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

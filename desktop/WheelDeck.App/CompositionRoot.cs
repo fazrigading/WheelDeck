@@ -26,6 +26,9 @@ public sealed class CompositionRoot
     public HeartbeatMonitor HeartbeatMonitor { get; }
     public MdnsAdvertiser Advertiser { get; }
 
+    /// <summary>Session gate, exposed so the shell can show live connection state.</summary>
+    public SessionGate Gate => _gate;
+
     private readonly SessionGate _gate;
 
     public CompositionRoot(int port = WebSocketListener.DefaultPort, IPairingStore? pairingStore = null)

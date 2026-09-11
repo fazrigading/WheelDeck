@@ -3,5 +3,15 @@
              x:Class="WheelDeck.App.App">
   <Application.Styles>
     <FluentTheme />
+    <Style Selector="TextBlock">
+      <Setter Property="FontSize" Value="15" />
+    </Style>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="26" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="FontSize" Value="13" />
+    </Style>
   </Application.Styles>
 </Application>
