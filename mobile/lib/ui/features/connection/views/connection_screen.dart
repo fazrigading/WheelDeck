@@ -60,6 +60,25 @@ class ConnectionScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ConnectionStatusCard(status: coordinator.status),
           ),
+          if (coordinator.status == ConnectionStatus.connected)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: const Key('ready-to-drive'),
+                  onPressed: () {
+                    // Pop the pushed ConnectionScreen to reveal DrivingView
+                    // which _Routing already shows when status==connected.
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  icon: const Icon(Icons.sports_motorsports),
+                  label: const Text('Ready to Drive'),
+                ),
+              ),
+            ),
           if (coordinator.status == ConnectionStatus.reconnecting)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

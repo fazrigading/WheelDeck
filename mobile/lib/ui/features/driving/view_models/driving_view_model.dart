@@ -6,6 +6,7 @@ import '../../../../data/repositories/sensor_repository.dart';
 import '../../../../domain/models/connection_target.dart';
 import '../../../../domain/models/pedal_state.dart';
 import '../../../../domain/models/steering_state.dart';
+import '../../../../data/services/controller_type.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
@@ -45,6 +46,7 @@ class DrivingViewModel extends ChangeNotifier {
   bool _draggingWheel = false;
   double _dragBase = 0.0;
   PedalLayout _pedalLayout = PedalLayout.layoutA;
+  ControllerType _controllerType = ControllerType.full;
 
   /// Normalized steering angle snapshot (-1.0..1.0).
   SteeringState get steering => _steering;
@@ -65,6 +67,7 @@ class DrivingViewModel extends ChangeNotifier {
   DashboardInput get dashboardInput => _dashboardInput;
 
   PedalLayout get pedalLayout => _pedalLayout;
+  ControllerType get controllerType => _controllerType;
 
   /// Applies the persisted dashboard mapping on the desktop. Best-effort:
   /// never throws, so driving still works when storage is unavailable.
@@ -75,8 +78,11 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
     try {
       _pedalLayout = await PedalLayout.load();
-      notifyListeners();
     } catch (_) {}
+    try {
+      _controllerType = await ControllerType.load();
+    } catch (_) {}
+    notifyListeners();
   }
 
   Future<void> refreshPedalLayout() async {
@@ -84,6 +90,18 @@ class DrivingViewModel extends ChangeNotifier {
       _pedalLayout = await PedalLayout.load();
       notifyListeners();
     } catch (_) {}
+  }
+
+  Future<void> refreshControllerType() async {
+    try {
+      _controllerType = await ControllerType.load();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> refreshSettings() async {
+    await refreshPedalLayout();
+    await refreshControllerType();
   }
 
   /// Syncs the calibration gate with the lifecycle pause flag.

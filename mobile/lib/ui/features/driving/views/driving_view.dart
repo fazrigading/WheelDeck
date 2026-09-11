@@ -6,12 +6,14 @@ import 'package:flutter/services.dart';
 
 import '../../../../data/repositories/pedal_repository.dart';
 import '../../../../data/repositories/sensor_repository.dart';
+import '../../../../data/services/controller_type.dart';
 import '../../../../data/services/gyroscope_service.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/steering_sensor.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../../../../ui/core/lifecycle_observer.dart';
+import '../../connection/views/connection_screen.dart';
 import '../../settings/views/settings_screen.dart';
 import '../view_models/driving_view_model.dart';
 import 'calibration_overlay.dart';
@@ -109,7 +111,14 @@ class _DrivingViewState extends State<DrivingView> {
     }
   }
 
-  Future<void> _onDisconnect() => _viewModel.disconnect();
+  Future<void> _onDisconnect() async {
+    await _viewModel.disconnect();
+    if (!mounted) return;
+    // _Routing will switch to Menu on disconnected; push Connect so user lands on Connect, not Menu
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ConnectionScreen()),
+    );
+  }
 
   void _onRecalibrate() {
     HapticFeedback.lightImpact();
@@ -167,12 +176,15 @@ class _DrivingViewState extends State<DrivingView> {
                 ),
               IconButton(
                 icon: const Icon(Icons.settings),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        SettingsScreen(coordinator: widget.coordinator),
-                  ),
-                ),
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          SettingsScreen(coordinator: widget.coordinator),
+                    ),
+                  );
+                  await _viewModel.refreshSettings();
+                },
                 tooltip: 'Settings',
               ),
               IconButton(
@@ -204,13 +216,23 @@ class _DrivingViewState extends State<DrivingView> {
   }
 
   Widget _buildDrivingContent() {
-    // Landscape-locked: wheel left, pedals + dashboard right. Wheel fills
-    // available height instead of the fixed 280px portrait box.
     return LayoutBuilder(
       builder: (context, constraints) {
         final wheelSize =
             (math.min(constraints.maxWidth * 0.42, constraints.maxHeight) - 16)
                 .clamp(160.0, 480.0);
+        final ct = _viewModel.controllerType;
+        final pedalsVisible = ct == ControllerType.steering3Pedals ||
+            ct == ControllerType.steering2Pedals ||
+            ct == ControllerType.full;
+        final dashboardVisible =
+            ct == ControllerType.steeringDashboard || ct == ControllerType.full;
+
+        List<PedalType> effectiveOrder = _viewModel.pedalLayout.order;
+        if (ct == ControllerType.steering2Pedals) {
+          effectiveOrder = effectiveOrder.where((p) => p != PedalType.clutch).toList();
+        }
+
         return Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -218,8 +240,7 @@ class _DrivingViewState extends State<DrivingView> {
               flex: 5,
               child: Center(
                 child: GestureDetector(
-                  onHorizontalDragStart: (_) =>
-                      _viewModel.onWheelDragStart(),
+                  onHorizontalDragStart: (_) => _viewModel.onWheelDragStart(),
                   onHorizontalDragUpdate: (details) =>
                       _viewModel.onWheelDragUpdate(details.delta.dx),
                   onHorizontalDragEnd: (_) => _viewModel.onWheelDragEnd(),
@@ -231,31 +252,42 @@ class _DrivingViewState extends State<DrivingView> {
                 ),
               ),
             ),
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                child: Column(
-                  children: [
-                    Expanded(
-                      flex: 5,
-                      child: PedalPanel(
-                        input: _viewModel.pedalInput,
-                        layout: _viewModel.pedalLayout.order,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      flex: 4,
-                      child: SingleChildScrollView(
-                        child:
-                            DashboardPanel(input: _viewModel.dashboardInput),
-                      ),
-                    ),
-                  ],
+            if (ct != ControllerType.steeringOnly)
+              Expanded(
+                flex: 5,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Column(
+                    children: [
+                      if (pedalsVisible)
+                        Expanded(
+                          flex: 5,
+                          child: PedalPanel(
+                            input: _viewModel.pedalInput,
+                            layout: effectiveOrder,
+                          ),
+                        ),
+                      if (pedalsVisible && dashboardVisible) const SizedBox(height: 8),
+                      if (dashboardVisible)
+                        Expanded(
+                          flex: 4,
+                          child: SingleChildScrollView(
+                            child: DashboardPanel(input: _viewModel.dashboardInput),
+                          ),
+                        ),
+                      if (!pedalsVisible && !dashboardVisible)
+                        Expanded(
+                          child: Center(
+                            child: Text('Steering only',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    )),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         );
       },
