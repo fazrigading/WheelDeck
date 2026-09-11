@@ -1,3 +1,4 @@
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -6,7 +7,12 @@ namespace WheelDeck.App.Views;
 
 public sealed partial class DonateView : UserControl
 {
-    public DonateView() => InitializeComponent();
+    public DonateView()
+    {
+        InitializeComponent();
+        var version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "?";
+        this.FindControl<TextBlock>("VersionText")!.Text = $"WheelDeck {version}";
+    }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
@@ -18,4 +24,7 @@ public sealed partial class DonateView : UserControl
 
     private void OnKoFiClick(object? sender, RoutedEventArgs e) =>
         Browser.Open("https://ko-fi.com/fazrigading", this);
+
+    private void OnRepoClick(object? sender, RoutedEventArgs e) =>
+        Browser.Open("https://github.com/fazrigading/WheelDeck", this);
 }
