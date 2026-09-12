@@ -4,7 +4,7 @@ Project Status: **Work-in-Progress**
 
 Turn an Android or iOS phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively.
 
-Exclusively made for Linux and Android/iOS; planned for macOS and Windows.
+Runs on Linux and Windows desktops paired with an Android or iOS phone; macOS planned.
 
 Primary target: Euro Truck Simulator 2.
 
@@ -46,6 +46,8 @@ cd desktop
 dotnet build
 dotnet run --project WheelDeck.App
 ```
+
+Linux: run `scripts/linux/install-uinput-rules.sh` from the repo root, then apply the commands it prints. Covers Fedora/RHEL, Ubuntu/Debian derivatives (Mint, Pop!_OS, Zorin), and Arch-based (CachyOS, Manjaro, EndeavourOS).
 
 See `docs/mobile-dev-guide.md` and `docs/desktop-dev-guide.md` for full setup instructions including platform-specific driver requirements.
 

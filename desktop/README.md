@@ -41,7 +41,7 @@ desktop/
 |------|---------|
 | .NET SDK | 10.0+ |
 | HIDMaestro driver | Windows only — auto-installs on first run (admin required), see [HIDMaestro](https://github.com/hifihedgehog/HIDMaestro) |
-| uinput | Linux only — `sudo dnf install kernel-modules-extra` (Fedora) |
+| uinput | Linux only — per distro (see below) |
 
 ## Guide
 
@@ -88,6 +88,12 @@ dotnet test --collect:"XPlat Code Coverage"                    # with coverage
 ### Linux (uinput)
 1. Load kernel module: `modprobe uinput`
 2. Set up permissions: `scripts/linux/install-uinput-rules.sh`
-3. Fedora SELinux: follow the remediation steps the script prints
+3. Follow any distro-specific remediation the script prints (SELinux on Fedora, udev rule install everywhere).
+
+| Distro | Kernel module package | Notes |
+|---|---|---|
+| Fedora / RHEL (+Nobara) | `sudo dnf install kernel-modules-extra` | SELinux steps per script output |
+| Ubuntu / Debian (+Mint, Pop!_OS, Zorin) | built-in, no package | AppArmor stock OK; install udev rule via script output |
+| Arch (+Manjaro, EndeavourOS, Garuda) | built into `linux` / `linux-lts` kernel | same udev rule path |
 
 
