@@ -34,8 +34,41 @@ _Avoid_: Switching, handoff, device change
 **Neutralize**: Zero all axes and release all buttons and keys on the virtual controller. Triggered on WebSocket disconnect, heartbeat timeout, active-device switch, and server shutdown.
 _Avoid_: Reset, clear, zero, center
 
-**Steering**: Phone rotation captured via gyroscope, normalized to -1.0..1.0 where 0 is straight ahead.
+**Steering**: Normalized -1.0..1.0 where 0 is straight ahead, regardless of input mode.
 _Avoid_: Wheel, rotation, yaw
+
+**Gyro steering**: Phone rotation captured via gyroscope; tilt maps to steering.
+_Avoid_: Tilt steering, motion steering
+
+**Rotatable steering**: Finger-drag circular wheel on the phone; N degrees of finger rotation equals full lock-to-lock.
+_Avoid_: Rotateable, drag wheel, circular steering
+
+**Rotation degree**: The finger-rotation range mapping to full lock-to-lock. Selectable 180, 270, 900, 1080, 1800, or 2520; 900 is the ETS2 default. Gyro steering is unaffected.
+_Avoid_: Sensitivity, range, lock
+
+**Rotation indicator**: Rotating wheel graphic plus an arc above the ring showing rotation.
+_Avoid_: Angle readout, progress ring
+
+**Controller visibility**: Independent show/hide for Clutch and Dashboard; Steering Wheel, Accelerator, and Brake always shown.
+_Avoid_: Controller type, toggles
+
+**Pedal side**: Per-pedal Left or Right screen placement for each shown pedal.
+_Avoid_: Pedal layout, pedal position
+
+**Light cycle**: Headlight control cycling OFF → Parking Lights → Low Beam, with state held on the phone. High-beam stays independent.
+_Avoid_: Light modes, light toggle
+
+**Engine start mode**: Engine Start engages by hold-confirm or single press, per user setting.
+_Avoid_: Hold to start, press to start
+
+**Tilt readout**: Horizontal X-axis line under the gyro wheel shifting with tilt angle.
+_Avoid_: X-axis line, tilt line
+
+**Hazard**: Both turn signals blinking together at ~1.5Hz; suppresses individual Left/Right until cleared.
+_Avoid_: Hazard lights, emergency blink
+
+**Unbound control**: A control whose per-mode keybind is empty. The phone sends nothing; the desktop ignores unknown controls as safety net.
+_Avoid_: Empty keybind, unmapped control
 
 **Calibration**: Capturing the phone's current orientation as "straight ahead" (the center point for steering).
 _Avoid_: Centering, zeroing, reset
