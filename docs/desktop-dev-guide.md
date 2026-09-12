@@ -8,7 +8,7 @@ This guide gets you set up, building, testing, and contributing to the WheelDeck
 |---|---|
 | .NET SDK | 8.0+ |
 | HIDMaestro (Windows) | n/a | Auto-installs on first use via `HMContext.InstallDriver()` (admin required) — see `https://github.com/hifihedgehog/HIDMaestro` |
-| uinput (Linux) | Fedora: `sudo dnf install kernel-modules-extra` |
+| uinput (Linux) | Per distro (see below) |
 
 ## Get started
 
@@ -142,7 +142,13 @@ HIDMaestro creates a virtual Xbox controller that simulators like ETS2 read nati
    ```bash
    scripts/linux/install-uinput-rules.sh
    ```
-3. On Fedora with SELinux, follow the additional remediation steps the script prints.
+3. Follow any distro-specific remediation the script prints (SELinux on Fedora, udev rule install everywhere).
+
+| Distro | Kernel module package | Notes |
+|---|---|---|
+| Fedora / RHEL (+Nobara) | `sudo dnf install kernel-modules-extra` | SELinux steps per script output |
+| Ubuntu / Debian (+Mint, Pop!_OS, Zorin) | built-in, no package | AppArmor stock OK; install udev rule via script output |
+| Arch (+Manjaro, EndeavourOS, Garuda) | built into `linux` / `linux-lts` kernel | same udev rule path |
 
 The uinput backend creates a virtual joystick device. Key simulation uses uinput synthetic key events.
 
