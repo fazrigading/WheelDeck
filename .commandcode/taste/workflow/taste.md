@@ -25,6 +25,8 @@
 - Verifies Flutter/Dart changes by running `flutter analyze` and `flutter test`, iterating until the analyzer reports zero issues before considering the task done. Confidence: 0.7
 - Uses throwaway `/tmp` scratch files to confirm Dart language/analyzer behavior (e.g. private named initializing formals) before applying a pattern to real code. Confidence: 0.6
 - Tracks repo-level agent config and scaffolding (e.g. `AGENTS.md`/`CLAUDE.md`, `docs/agents/`) in version control, distinct from local tool state (`.commandcode`) which stays untracked. Confidence: 0.5
+- When cleaning up dead/redundant code or tests, prefers audit-then-delete (static analysis: missing SUTs, broken constructor signatures, tautological assertions, duplication) over patch-and-keep. Accepts plans that recommend deleting entire files when the named target no longer exists, rather than partial rewrites. Confidence: 0.7
+- Plans include an explicit "Verification" section listing concrete build/test commands the user can run (e.g. `dotnet test`, `flutter analyze`, `flutter test`) and an "Out of Scope" section flagging upstream bugs or related issues deferred to follow-up tasks. Confidence: 0.7
 - Writes exploration/implementation plans to `~/.commandcode/plans/task-XXX-name.md` as local (unversioned) scratchpad state. Confidence: 0.7
 - Uses the `exit_plan_mode` tool to signal plan completion and explicitly await go-ahead before implementing. Confidence: 0.7
 - Batches exploration tool calls in parallel (multiple read_directory/read_file/glob calls fired together) to gather codebase context efficiently before writing code. Confidence: 0.7
