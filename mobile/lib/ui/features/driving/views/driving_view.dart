@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../data/repositories/pedal_repository.dart';
 import '../../../../data/repositories/sensor_repository.dart';
-import '../../../../data/services/controller_type.dart';
+import '../../../../data/services/pedal_side.dart';
 import '../../../../data/services/gyroscope_service.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/pedal_input.dart';
@@ -221,17 +221,19 @@ class _DrivingViewState extends State<DrivingView> {
         final wheelSize =
             (math.min(constraints.maxWidth * 0.42, constraints.maxHeight) - 16)
                 .clamp(160.0, 480.0);
-        final ct = _viewModel.controllerType;
-        final pedalsVisible = ct == ControllerType.steering3Pedals ||
-            ct == ControllerType.steering2Pedals ||
-            ct == ControllerType.full;
-        final dashboardVisible =
-            ct == ControllerType.steeringDashboard || ct == ControllerType.full;
+        final vis = _viewModel.visibility;
+        final dashboardVisible = vis.showDashboard;
 
-        List<PedalType> effectiveOrder = _viewModel.pedalLayout.order;
-        if (ct == ControllerType.steering2Pedals) {
-          effectiveOrder = effectiveOrder.where((p) => p != PedalType.clutch).toList();
-        }
+        final sides = _viewModel.pedalSides;
+        final shown = [
+          PedalType.accelerator,
+          PedalType.brake,
+          if (vis.showClutch) PedalType.clutch,
+        ];
+        final left =
+            shown.where((p) => sides[p] == PedalSide.left).toList();
+        final right =
+            shown.where((p) => sides[p] != PedalSide.left).toList();
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -252,42 +254,45 @@ class _DrivingViewState extends State<DrivingView> {
                 ),
               ),
             ),
-            if (ct != ControllerType.steeringOnly)
-              Expanded(
-                flex: 5,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: Column(
-                    children: [
-                      if (pedalsVisible)
-                        Expanded(
-                          flex: 5,
-                          child: PedalPanel(
-                            input: _viewModel.pedalInput,
-                            layout: effectiveOrder,
-                          ),
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                child: Column(
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: Row(
+                        children: [
+                          if (left.isNotEmpty)
+                            Expanded(
+                              child: PedalPanel(
+                                input: _viewModel.pedalInput,
+                                layout: left,
+                              ),
+                            ),
+                          if (right.isNotEmpty)
+                            Expanded(
+                              child: PedalPanel(
+                                input: _viewModel.pedalInput,
+                                layout: right,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (dashboardVisible) const SizedBox(height: 8),
+                    if (dashboardVisible)
+                      Expanded(
+                        flex: 4,
+                        child: SingleChildScrollView(
+                          child: DashboardPanel(input: _viewModel.dashboardInput),
                         ),
-                      if (pedalsVisible && dashboardVisible) const SizedBox(height: 8),
-                      if (dashboardVisible)
-                        Expanded(
-                          flex: 4,
-                          child: SingleChildScrollView(
-                            child: DashboardPanel(input: _viewModel.dashboardInput),
-                          ),
-                        ),
-                      if (!pedalsVisible && !dashboardVisible)
-                        Expanded(
-                          child: Center(
-                            child: Text('Steering only',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                    )),
-                          ),
-                        ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               ),
+            ),
           ],
         );
       },

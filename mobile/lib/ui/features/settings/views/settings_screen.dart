@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../data/repositories/settings_repository.dart';
 import '../../../../data/services/controller_preset.dart';
-import '../../../../data/services/controller_type.dart';
+import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
-import '../../../../data/services/pedal_layout.dart';
+import '../../../../data/services/pedal_input.dart';
+import '../../../../data/services/pedal_side.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../view_models/settings_view_model.dart';
 
@@ -51,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Reset to defaults?'),
-        content: const Text('This will restore keyboard, full controller, and layout A.'),
+        content: const Text('This will restore keyboard, hidden clutch, shown dashboard, and default pedal sides.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Reset')),
@@ -110,42 +111,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Controller type
-              Text('Controller type', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              // Controller visibility
+              Text('Show controls', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Card(
-                child: RadioGroup<ControllerType>(
-                  groupValue: _viewModel.controllerType,
-                  onChanged: (v) => v != null ? _viewModel.selectControllerType(v) : null,
-                  child: Column(
-                    children: ControllerType.values.map((t) {
-                      return RadioListTile<ControllerType>(
-                        title: Text(t.label),
-                        value: t,
-                        dense: true,
-                      );
-                    }).toList(),
-                  ),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: const Text('Clutch pedal', style: TextStyle(fontSize: 14)),
+                      value: _viewModel.visibility.showClutch,
+                      onChanged: (v) => _viewModel.selectVisibility(
+                        ControllerVisibility(
+                          showClutch: v,
+                          showDashboard: _viewModel.visibility.showDashboard,
+                        ),
+                      ),
+                      dense: true,
+                    ),
+                    SwitchListTile(
+                      title: const Text('Dashboard', style: TextStyle(fontSize: 14)),
+                      value: _viewModel.visibility.showDashboard,
+                      onChanged: (v) => _viewModel.selectVisibility(
+                        ControllerVisibility(
+                          showClutch: _viewModel.visibility.showClutch,
+                          showDashboard: v,
+                        ),
+                      ),
+                      dense: true,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Pedal layout
-              Text('Pedal layout', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              // Pedal sides
+              Text('Pedal sides', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Card(
-                child: RadioGroup<PedalLayout>(
-                  groupValue: _viewModel.pedalLayout,
-                  onChanged: (v) => v != null ? _viewModel.selectPedalLayout(v) : null,
-                  child: Column(
-                    children: PedalLayout.values.map((l) {
-                      return RadioListTile<PedalLayout>(
-                        title: Text(l.label, style: const TextStyle(fontSize: 14)),
-                        value: l,
+                child: Column(
+                  children: [
+                    for (final pedal in PedalType.values)
+                      ListTile(
                         dense: true,
-                      );
-                    }).toList(),
-                  ),
+                        title: Text(_pedalLabel(pedal), style: const TextStyle(fontSize: 14)),
+                        trailing: SegmentedButton<PedalSide>(
+                          segments: const [
+                            ButtonSegment(value: PedalSide.left, label: Text('Left')),
+                            ButtonSegment(value: PedalSide.right, label: Text('Right')),
+                          ],
+                          selected: {_viewModel.pedalSides[pedal] ?? PedalSide.right},
+                          onSelectionChanged: (s) =>
+                              _viewModel.selectPedalSide(pedal, s.first),
+                          style: const ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -192,6 +214,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
     );
+  }
+
+  String _pedalLabel(PedalType p) {
+    switch (p) {
+      case PedalType.accelerator:
+        return 'Accelerator';
+      case PedalType.brake:
+        return 'Brake';
+      case PedalType.clutch:
+        return 'Clutch';
+    }
   }
 
   String _controlLabel(ControlId c) {

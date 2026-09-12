@@ -1,22 +1,27 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/controller_type.dart';
+import '../services/controller_visibility.dart';
 import '../services/dashboard_input.dart';
 import '../services/input_mapping.dart';
-import '../services/pedal_layout.dart';
+import '../services/pedal_input.dart';
+import '../services/pedal_side.dart';
 
-/// Single source of truth for settings (mapping, controller type, pedal layout, bindings).
+/// Single source of truth for settings (mapping, visibility, pedal sides, bindings).
 class SettingsRepository {
   const SettingsRepository();
 
   Future<InputMapping> getMapping() => InputMapping.load();
   Future<void> setMapping(InputMapping mapping) => mapping.save();
 
-  Future<ControllerType> getControllerType() => ControllerType.load();
-  Future<void> setControllerType(ControllerType v) => v.save();
+  Future<ControllerVisibility> getVisibility() => ControllerVisibility.load();
+  Future<void> setVisibility(ControllerVisibility v) => v.save();
 
-  Future<PedalLayout> getPedalLayout() => PedalLayout.load();
-  Future<void> setPedalLayout(PedalLayout v) => v.save();
+  Future<PedalSides> getPedalSides() => PedalSides.load();
+
+  Future<void> setPedalSide(PedalType pedal, PedalSide side) async {
+    final current = await PedalSides.load();
+    await current.copyWithSide(pedal, side).save();
+  }
 
   static String _bindingKey(ControlId c, bool isGamepad) =>
       'wheeldeck.binding.${isGamepad ? 'gamepad' : 'keyboard'}.${c.wireValue}';
@@ -41,8 +46,9 @@ class SettingsRepository {
 
   Future<void> resetAll() async {
     await InputMapping.keyboard.save();
-    await ControllerType.full.save();
-    await PedalLayout.layoutA.save();
+    await const ControllerVisibility(showClutch: false, showDashboard: true)
+        .save();
+    await PedalSides({}).save();
     await clearBindingOverrides();
   }
 }
