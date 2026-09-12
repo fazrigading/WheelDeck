@@ -29,3 +29,5 @@
 - Uses the `exit_plan_mode` tool to signal plan completion and explicitly await go-ahead before implementing. Confidence: 0.7
 - Batches exploration tool calls in parallel (multiple read_directory/read_file/glob calls fired together) to gather codebase context efficiently before writing code. Confidence: 0.7
 - Prefers PRs created for the current branch to follow the repo's PULL_REQUEST_TEMPLATE (e.g. `.github/PULL_REQUEST_TEMPLATE/template.md`). Confidence: 0.6
+- Prefers atomic commits split by concern (e.g., separate docs commit from script/behavior change) rather than bundling unrelated changes in one commit. Confidence: 0.8
+- Closes GitHub issues from commit messages with a `Fixes #N` trailer on the relevant commit, matching established commit style. Confidence: 0.9

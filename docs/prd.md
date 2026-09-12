@@ -36,7 +36,7 @@ Someone who owns a PC simulator game and does not have a physical wheel and peda
 
 Desktop app: C#/.NET with Avalonia UI, a cross-platform XAML UI framework. Chosen over WPF because WPF is Windows-only and would force a split UI codebase between Windows and Linux. Linux is now equal priority to Windows, not a stretch platform, so one Avalonia codebase covers both from a single project.
 
-Desktop output backends: platform-specific implementations behind a shared interface. ViGEmBus on Windows, uinput on Linux. See backend-interface.md.
+Desktop output backends: platform-specific implementations behind a shared interface. HIDMaestro on Windows, uinput on Linux. See backend-interface.md.
 
 Mobile app: Flutter, shipped as a native Android app and as a progressive web app for iOS. The PWA path avoids the Apple Developer Program fee while keeping the same Flutter UI and WebSocket client. See mobile-interface.md.
 
@@ -71,12 +71,12 @@ Discovery: auto-discovery (mDNS-style broadcast) as the default connection metho
 
 ### Desktop server
 
-1. Virtual controller output. Windows via ViGEmBus, Linux via uinput.
+1. Virtual controller output. Windows via HIDMaestro, Linux via uinput.
 2. Network listener. Receives wheel, pedal, and button data from the mobile app over Wi-Fi or USB tethering.
 3. Pairing management. Generates a PIN or QR for new phones, maintains a list of previously paired phones, lets the user choose which paired phone is currently active and connected, and revoke devices manually.
 4. Connection management UI. Shows connection status, active paired device, and basic troubleshooting info (firewall reminder, etc.).
 5. Input mapping. Translates incoming wheel angle to controller axis, pedal pressure to analog axes, and dashboard buttons to either virtual-controller buttons or simulated key presses. User-selectable, default is simulated key presses to match ETS2's default keybinds.
-6. First-run setup check. Verify ViGEmBus is installed (Windows) or uinput permissions are configured (Linux), and tell the user what is missing rather than failing silently.
+6. First-run setup check. Verify HIDMaestro driver is installed (Windows, auto-installs with admin) or uinput permissions are configured (Linux), and tell the user what is missing rather than failing silently.
 7. Launch mode. Manual launch is the default; the user opens the app when they want to play. Running as a background service or daemon that starts automatically is an opt-in advanced setting, kept out of the main flow so it does not add friction for typical users.
 
 ## Functional requirements (detail)
@@ -98,7 +98,7 @@ Security: pairing (PIN/QR) required before any input is accepted, given the publ
 
 Battery usage: continuous gyroscope polling and network transmission will drain the phone faster than idle use. Advise users to keep the phone plugged in during long sessions.
 
-Installation friction: Windows requires installing ViGEmBus once. Linux requires uinput permission setup. Both should be handled by a setup script or clearly documented first-run steps.
+Installation friction: Windows auto-installs the HIDMaestro driver on first run (admin required). Linux requires uinput permission setup. Both should be handled by a setup script or clearly documented first-run steps.
 
 ## Technical constraints / assumptions
 

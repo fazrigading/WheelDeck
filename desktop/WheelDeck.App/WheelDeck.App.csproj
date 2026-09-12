@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <Platforms>x64</Platforms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
@@ -13,6 +15,9 @@
     <ProjectReference Include="..\WheelDeck.Core\WheelDeck.Core.csproj" />
     <ProjectReference Include="..\WheelDeck.Backends\Windows\WheelDeck.Backends.Windows.csproj" />
     <ProjectReference Include="..\WheelDeck.Backends\Linux\WheelDeck.Backends.Linux.csproj" />
+    <Reference Include="HIDMaestro.Core">
+      <HintPath>..\third_party\HIDMaestro\HIDMaestro.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

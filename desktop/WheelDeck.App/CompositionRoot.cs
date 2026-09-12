@@ -113,7 +113,7 @@ public sealed class CompositionRoot
     {
         if (OperatingSystem.IsWindows())
         {
-            return new ViGEmXboxBackend();
+            return new HidMaestroBackend();
         }
 
         if (OperatingSystem.IsLinux())
