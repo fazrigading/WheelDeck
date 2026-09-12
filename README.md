@@ -14,7 +14,7 @@ Primary target: Euro Truck Simulator 2.
 2. Phone discovers the desktop server on the local network via mDNS
 3. One-time PIN pairing establishes a session
 4. State and button messages stream over WebSocket in real time
-5. Desktop app drives a virtual Xbox controller (Windows/ViGEmBus) or joystick (Linux/uinput)
+5. Desktop app drives a virtual Xbox controller (Windows/HIDMaestro) or joystick (Linux/uinput)
 6. Simulator reads the virtual controller natively — no game plugins needed
 
 ## Components

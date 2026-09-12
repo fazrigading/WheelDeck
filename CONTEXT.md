@@ -49,7 +49,7 @@ _Avoid_: Button, switch, toggle
 **Action**: The kind of interaction with a control: toggle, press, release, or hold_confirm.
 _Avoid_: Event, input, click
 
-**VirtualOutputBackend**: OS-specific abstraction for driving a virtual controller. Windows uses ViGEmBus; Linux uses uinput.
+**VirtualOutputBackend**: OS-specific abstraction for driving a virtual controller. Windows uses HIDMaestro; Linux uses uinput.
 _Avoid_: Backend, driver, output
 
 **InputMapper**: Routes incoming axes and buttons to the virtual controller per mapping mode (virtual-controller buttons or simulated key presses).
@@ -76,10 +76,10 @@ _Avoid_: Foreground reconnect, PWA recovery
 **Calibration reconfirm**: On resume from background/call/lock, the app prompts the user to confirm the gyro center hasn't drifted. Always prompts regardless of detected drift.
 _Avoid_: Recalibration, drift check
 
-**Setup check**: First-run check for ViGEmBus (Windows) or uinput permissions (Linux). Degraded-continue on failure — show instructions but don't block pairing.
+**Setup check**: First-run check for HIDMaestro (Windows) or uinput permissions (Linux). Degraded-continue on failure — show instructions but don't block pairing.
 _Avoid_: First-run check, driver check, prerequisite check
 
-**Setup scripts**: Platform-specific first-run helpers. Windows (`check-vigembus.ps1`) detects ViGEmBus and offers to launch the browser to the official release page. Linux (`install-uinput-rules.sh`) detects uinput/SELinux issues and prints remediation commands for the user to run manually.
+**Setup scripts**: Platform-specific first-run helpers. Windows (`check-hidmaestro.ps1`) reports HIDMaestro driver status; the app installs the driver automatically (admin required). Linux (`install-uinput-rules.sh`) detects uinput/SELinux issues and prints remediation commands for the user to run manually.
 _Avoid_: Install scripts, setup helpers, first-run scripts
 
 **Onboarding flow**: Linear multi-step first-run flow: permissions → discovery/pairing → calibration confirm → driving screens. Each step validates before advancing.
