@@ -15,8 +15,58 @@ fail() { printf "${RED}✗${NC} %s\n" "$1"; }
 
 issues=0
 
+DISTRO_ID="unknown"
+DISTRO_FAMILY="unknown"
+
+detect_distro() {
+    local id="" id_like=""
+    if [ -r /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        id=$(printf '%s' "${ID:-unknown}" | tr '[:upper:]' '[:lower:]')
+        id_like=$(printf '%s' "${ID_LIKE:-}" | tr '[:upper:]' '[:lower:]')
+    fi
+    DISTRO_ID="$id"
+    [ -z "$DISTRO_ID" ] && DISTRO_ID="unknown"
+    case " ${id} ${id_like} " in
+        *" fedora "*|*" rhel "*|*" centos "*|*" rocky "*|*" alma "*|*" almalinux "*|*" nobara "*)
+            DISTRO_FAMILY="fedora" ;;
+        *" debian "*|*" ubuntu "*|*" mint "*|*" linuxmint "*|*" pop "*|*" zorin "*|*" elementary "*|*" kali "*|*" raspbian "*)
+            DISTRO_FAMILY="debian" ;;
+        *" arch "*|*" manjaro "*|*" endeavouros "*|*" garuda "*|*" cachyos "*)
+            DISTRO_FAMILY="arch" ;;
+        *)
+            DISTRO_FAMILY="unknown" ;;
+    esac
+}
+
+module_pkg_hint() {
+    case "$DISTRO_FAMILY" in
+        fedora)
+            echo "  If modprobe fails, install the extra modules package:"
+            echo "    sudo dnf install kernel-modules-extra" ;;
+        debian)
+            echo "  (Ubuntu/Debian: uinput is built into stock kernels — no package needed.)" ;;
+        arch)
+            echo "  (Arch: uinput is built into the linux / linux-lts kernel — no package needed.)" ;;
+    esac
+}
+
+RULES_PATH="/etc/udev/rules.d/99-wheeldeck-uinput.rules"
+RULES_CONTENT='KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"'
+
+EFFECTIVE_USER="${SUDO_USER:-${USER:-$(id -un)}}"
+
 echo "WheelDeck uinput setup check"
 echo "============================"
+echo
+
+detect_distro
+if [ "$DISTRO_FAMILY" = "unknown" ]; then
+    warn "Could not detect distro family (ID: $DISTRO_ID) — showing generic remediation."
+else
+    echo "Detected distro: $DISTRO_ID (family: $DISTRO_FAMILY)"
+fi
 echo
 
 # 1. Check if uinput device exists
@@ -29,15 +79,28 @@ fi
 
 if [ -z "$UINPUT_PATH" ]; then
     fail "uinput device not found (/dev/uinput or /dev/input/uinput)"
-    echo "  Install the uinput module:"
+    echo "  Load the uinput module:"
     echo "    sudo modprobe uinput"
+    module_pkg_hint
     echo
     issues=$((issues + 1))
 else
     pass "uinput device found at $UINPUT_PATH"
 fi
 
-# 2. Check if current user can write to uinput
+# 2. Check udev rule file and content
+if [ -f "$RULES_PATH" ] && grep -Fxq "$RULES_CONTENT" "$RULES_PATH"; then
+    pass "udev rule installed at $RULES_PATH"
+else
+    fail "udev rule missing or incorrect at $RULES_PATH"
+    echo "  Install it with:"
+    echo "    echo '$RULES_CONTENT' | sudo tee $RULES_PATH"
+    echo "    sudo udevadm control --reload-rules && sudo udevadm trigger --subsystem-misc --action=change"
+    echo
+    issues=$((issues + 1))
+fi
+
+# 3. Check if current user can write to uinput
 if [ -n "$UINPUT_PATH" ]; then
     if [ -w "$UINPUT_PATH" ]; then
         pass "Current user can write to $UINPUT_PATH"
@@ -57,8 +120,8 @@ if [ -n "$UINPUT_PATH" ]; then
     fi
 fi
 
-# 3. Check if user is in the input group
-if groups "$USER" 2>/dev/null | grep -qw input; then
+# 4. Check if user is in the input group
+if id -nG "$EFFECTIVE_USER" 2>/dev/null | tr ' ' '\n' | grep -qx input; then
     pass "User is in the input group"
 else
     warn "User is not in the input group"
@@ -75,7 +138,7 @@ else
     issues=$((issues + 1))
 fi
 
-# 4. Check SELinux (Fedora / RHEL / CentOS)
+# 5. Check SELinux (Fedora / RHEL / CentOS)
 if command -v getenforce >/dev/null 2>&1; then
     SELINUX_MODE=$(getenforce 2>/dev/null || echo "Disabled")
     if [ "$SELINUX_MODE" = "Enforcing" ]; then
@@ -108,16 +171,28 @@ if command -v getenforce >/dev/null 2>&1; then
         pass "SELinux is not enforcing ($SELINUX_MODE)"
     fi
 else
-    pass "SELinux not present (not Fedora/RHEL)"
+    pass "SELinux not present (expected on $DISTRO_FAMILY)"
 fi
 
-# 5. Check if uinput module is loaded
+# 5b. AppArmor note (Ubuntu / Debian default MAC)
+if [ "$DISTRO_FAMILY" = "debian" ] && command -v aa-status >/dev/null 2>&1; then
+    if aa-status --enabled 2>/dev/null; then
+        pass "AppArmor enabled — stock profiles do not block unconfined uinput"
+        echo "  Note: if running as a snap/flatpak and the device open fails, that is sandbox confinement, not a host rule issue."
+        echo
+    else
+        pass "AppArmor not enforcing"
+    fi
+fi
+
+# 6. Check if uinput module is loaded
 if lsmod 2>/dev/null | grep -q uinput; then
     pass "uinput kernel module is loaded"
 else
     warn "uinput kernel module may not be loaded"
     echo "  Load it with:"
     echo "    sudo modprobe uinput"
+    module_pkg_hint
     echo "  To load on boot:"
     echo "    echo uinput | sudo tee /etc/modules-load.d/uinput.conf"
     echo
