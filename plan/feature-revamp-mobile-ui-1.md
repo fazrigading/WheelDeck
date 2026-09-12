@@ -4,7 +4,7 @@ version: 1.0
 date_created: 2026-09-09
 last_updated: 2026-09-09
 owner: fazrigading
-status: Draft
+status: Finished
 tags:
   - feature
   - ux
@@ -15,7 +15,7 @@ tags:
 
 # Introduction
 
-![Status: Draft](https://img.shields.io/badge/status-Draft-yellow)
+![Status: Finished](https://img.shields.io/badge/status-Finished-green)
 
 Current mobile app has 3 top-level screens (Onboarding → Connection → Driving) with no app shell. `ConnectionScreen` (mobile/lib/ui/features/connection/views/connection_screen.dart:16) mixes discovery, manual IP, and PIN in one column; `SettingsScreen` (mobile/lib/ui/features/settings/views/settings_screen.dart:13) is a 2-radio list; `DrivingView` (mobile/lib/ui/features/driving/views/driving_view.dart:34) hides calibration behind lifecycle only. TODO.md on `feature/revamp-mobile-ui` asks for a full M3 revamp: new Menu hub, Connect card + paired/unpaired separation + FAB modal, Driving recalibration + lifecycle bug fix, Settings presets/layouts, About + Donate.
 
