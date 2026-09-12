@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart';
 import '../../../../data/repositories/connection_repository.dart';
 import '../../../../data/repositories/settings_repository.dart';
 import '../../../../data/services/controller_preset.dart';
-import '../../../../data/services/controller_type.dart';
+import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
-import '../../../../data/services/pedal_layout.dart';
+import '../../../../data/services/pedal_input.dart';
+import '../../../../data/services/pedal_side.dart';
 
 /// Presentation state for the settings page.
 ///
@@ -23,15 +24,15 @@ class SettingsViewModel extends ChangeNotifier {
   final ConnectionRepository _connectionRepository;
 
   InputMapping _mapping = InputMapping.keyboard;
-  ControllerType _controllerType = ControllerType.full;
-  PedalLayout _pedalLayout = PedalLayout.layoutA;
+  ControllerVisibility _visibility = ControllerVisibility.fallback;
+  Map<PedalType, PedalSide> _pedalSides = PedalSides.defaults().asMap();
   GamePreset _preset = GamePreset.ets2;
   final Map<String, String> _bindingOverrides = {};
   bool _loaded = false;
 
   InputMapping get mapping => _mapping;
-  ControllerType get controllerType => _controllerType;
-  PedalLayout get pedalLayout => _pedalLayout;
+  ControllerVisibility get visibility => _visibility;
+  Map<PedalType, PedalSide> get pedalSides => Map.unmodifiable(_pedalSides);
   GamePreset get preset => _preset;
   bool get loaded => _loaded;
 
@@ -40,10 +41,11 @@ class SettingsViewModel extends ChangeNotifier {
       _mapping = await _settingsRepository.getMapping();
     } catch (_) {}
     try {
-      _controllerType = await _settingsRepository.getControllerType();
+      _visibility = await _settingsRepository.getVisibility();
     } catch (_) {}
     try {
-      _pedalLayout = await _settingsRepository.getPedalLayout();
+      final sides = await _settingsRepository.getPedalSides();
+      _pedalSides = sides.asMap();
     } catch (_) {}
     // Load binding overrides for both modes
     for (final c in ControlId.values) {
@@ -73,16 +75,16 @@ class SettingsViewModel extends ChangeNotifier {
     _connectionRepository.sendMappingMode(mapping);
   }
 
-  Future<void> selectControllerType(ControllerType v) async {
-    _controllerType = v;
+  Future<void> selectVisibility(ControllerVisibility v) async {
+    _visibility = v;
     notifyListeners();
-    await _settingsRepository.setControllerType(v);
+    await _settingsRepository.setVisibility(v);
   }
 
-  Future<void> selectPedalLayout(PedalLayout v) async {
-    _pedalLayout = v;
+  Future<void> selectPedalSide(PedalType pedal, PedalSide side) async {
+    _pedalSides[pedal] = side;
     notifyListeners();
-    await _settingsRepository.setPedalLayout(v);
+    await _settingsRepository.setPedalSide(pedal, side);
   }
 
   void selectPreset(GamePreset v) {
@@ -105,8 +107,8 @@ class SettingsViewModel extends ChangeNotifier {
 
   Future<void> resetToDefaults() async {
     _mapping = InputMapping.keyboard;
-    _controllerType = ControllerType.full;
-    _pedalLayout = PedalLayout.layoutA;
+    _visibility = ControllerVisibility.fallback;
+    _pedalSides = PedalSides.defaults().asMap();
     _preset = GamePreset.ets2;
     _bindingOverrides.clear();
     notifyListeners();
