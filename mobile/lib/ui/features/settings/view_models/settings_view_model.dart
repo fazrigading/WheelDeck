@@ -8,6 +8,7 @@ import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/wheel_mode.dart';
 
 /// Presentation state for the settings page.
 ///
@@ -27,6 +28,8 @@ class SettingsViewModel extends ChangeNotifier {
   ControllerVisibility _visibility = ControllerVisibility.fallback;
   Map<PedalType, PedalSide> _pedalSides = PedalSides.defaults().asMap();
   GamePreset _preset = GamePreset.ets2;
+  WheelMode _wheelMode = WheelMode.rotatable;
+  int _rotationDegree = RotationDegree.fallback;
   final Map<String, String> _bindingOverrides = {};
   bool _loaded = false;
 
@@ -34,6 +37,8 @@ class SettingsViewModel extends ChangeNotifier {
   ControllerVisibility get visibility => _visibility;
   Map<PedalType, PedalSide> get pedalSides => Map.unmodifiable(_pedalSides);
   GamePreset get preset => _preset;
+  WheelMode get wheelMode => _wheelMode;
+  int get rotationDegree => _rotationDegree;
   bool get loaded => _loaded;
 
   Future<void> init() async {
@@ -46,6 +51,13 @@ class SettingsViewModel extends ChangeNotifier {
     try {
       final sides = await _settingsRepository.getPedalSides();
       _pedalSides = sides.asMap();
+    } catch (_) {}
+    try {
+      _wheelMode = await _settingsRepository.getWheelMode();
+    } catch (_) {}
+    try {
+      _rotationDegree =
+          await _settingsRepository.getRotationDegree(_preset);
     } catch (_) {}
     // Load binding overrides for both modes
     for (final c in ControlId.values) {
@@ -87,8 +99,25 @@ class SettingsViewModel extends ChangeNotifier {
     await _settingsRepository.setPedalSide(pedal, side);
   }
 
-  void selectPreset(GamePreset v) {
+  Future<void> selectWheelMode(WheelMode mode) async {
+    _wheelMode = mode;
+    notifyListeners();
+    await _settingsRepository.setWheelMode(mode);
+  }
+
+  Future<void> selectRotationDegree(int degree) async {
+    _rotationDegree = degree;
+    notifyListeners();
+    await _settingsRepository.setRotationDegree(_preset, degree);
+  }
+
+  Future<void> selectPreset(GamePreset v) async {
     _preset = v;
+    try {
+      _rotationDegree = await _settingsRepository.getRotationDegree(v);
+    } catch (_) {
+      _rotationDegree = RotationDegree.fallback;
+    }
     notifyListeners();
   }
 
@@ -110,6 +139,8 @@ class SettingsViewModel extends ChangeNotifier {
     _visibility = ControllerVisibility.fallback;
     _pedalSides = PedalSides.defaults().asMap();
     _preset = GamePreset.ets2;
+    _wheelMode = WheelMode.rotatable;
+    _rotationDegree = RotationDegree.fallback;
     _bindingOverrides.clear();
     notifyListeners();
     await _settingsRepository.resetAll();

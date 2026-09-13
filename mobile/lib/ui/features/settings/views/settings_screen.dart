@@ -7,6 +7,7 @@ import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/wheel_mode.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../view_models/settings_view_model.dart';
 
@@ -52,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Reset to defaults?'),
-        content: const Text('This will restore keyboard, hidden clutch, shown dashboard, and default pedal sides.'),
+        content: const Text('This will restore keyboard, rotatable 900°, hidden clutch, shown dashboard, and default pedal sides.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Reset')),
@@ -109,6 +110,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 selected: {_viewModel.preset},
                 onSelectionChanged: (s) => _viewModel.selectPreset(s.first),
               ),
+              const SizedBox(height: 24),
+
+              // Wheel mode
+              Text('Wheel mode', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              SegmentedButton<WheelMode>(
+                segments: [
+                  ButtonSegment(
+                      value: WheelMode.rotatable,
+                      label: Text(WheelMode.rotatable.label)),
+                  ButtonSegment(
+                      value: WheelMode.gyro,
+                      label: Text(WheelMode.gyro.label)),
+                ],
+                selected: {_viewModel.wheelMode},
+                onSelectionChanged: (s) => _viewModel.selectWheelMode(s.first),
+              ),
+              const SizedBox(height: 12),
+              if (_viewModel.wheelMode == WheelMode.rotatable) ...[
+                Text('Rotation degrees',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final degree in RotationDegree.allowed)
+                      ChoiceChip(
+                        label: Text('$degree°'),
+                        selected: _viewModel.rotationDegree == degree,
+                        onSelected: (_) =>
+                            _viewModel.selectRotationDegree(degree),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Finger rotation for full lock-to-lock.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              ] else
+                Text('Gyro steering ignores rotation degrees.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
               const SizedBox(height: 24),
 
               // Controller visibility
