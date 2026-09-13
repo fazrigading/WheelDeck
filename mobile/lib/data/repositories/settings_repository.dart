@@ -1,12 +1,15 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/controller_preset.dart';
 import '../services/controller_visibility.dart';
 import '../services/dashboard_input.dart';
 import '../services/input_mapping.dart';
 import '../services/pedal_input.dart';
 import '../services/pedal_side.dart';
+import '../services/wheel_mode.dart';
 
-/// Single source of truth for settings (mapping, visibility, pedal sides, bindings).
+/// Single source of truth for settings (mapping, visibility, pedal sides,
+/// wheel mode, rotation degrees, bindings).
 class SettingsRepository {
   const SettingsRepository();
 
@@ -15,6 +18,14 @@ class SettingsRepository {
 
   Future<ControllerVisibility> getVisibility() => ControllerVisibility.load();
   Future<void> setVisibility(ControllerVisibility v) => v.save();
+
+  Future<WheelMode> getWheelMode() => WheelMode.load();
+  Future<void> setWheelMode(WheelMode mode) => mode.save();
+
+  Future<int> getRotationDegree(GamePreset preset) =>
+      RotationDegree.load(preset);
+  Future<void> setRotationDegree(GamePreset preset, int degree) =>
+      RotationDegree.save(preset, degree);
 
   Future<PedalSides> getPedalSides() => PedalSides.load();
 
@@ -49,6 +60,10 @@ class SettingsRepository {
     await const ControllerVisibility(showClutch: false, showDashboard: true)
         .save();
     await PedalSides({}).save();
+    await WheelMode.rotatable.save();
+    for (final preset in GamePreset.values) {
+      await RotationDegree.save(preset, RotationDegree.fallback);
+    }
     await clearBindingOverrides();
   }
 }
