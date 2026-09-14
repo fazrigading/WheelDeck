@@ -20,63 +20,35 @@ class DashboardPanel extends StatelessWidget {
       runSpacing: 12,
       alignment: WrapAlignment.center,
       children: [
-        DashboardControl.toggle(
-          key: const ValueKey('dashboard-turnSignalLeft'),
-          label: 'L',
-          control: ControlId.turnSignalLeft,
-          input: input,
-        ),
-        DashboardControl.toggle(
-          key: const ValueKey('dashboard-turnSignalRight'),
-          label: 'R',
-          control: ControlId.turnSignalRight,
-          input: input,
-        ),
-        DashboardControl.toggle(
-          key: const ValueKey('dashboard-headlightToggle'),
-          label: 'LIGHT',
-          control: ControlId.headlightToggle,
-          input: input,
-        ),
-        DashboardControl.toggle(
-          key: const ValueKey('dashboard-highBeamToggle'),
-          label: 'HI',
-          control: ControlId.highBeamToggle,
-          input: input,
-        ),
-        DashboardControl.toggle(
-          key: const ValueKey('dashboard-cruiseToggle'),
-          label: 'CRUISE',
-          control: ControlId.cruiseToggle,
-          input: input,
-        ),
-        DashboardControl.momentary(
-          key: const ValueKey('dashboard-cruiseSetResume'),
-          label: 'SET',
-          control: ControlId.cruiseSetResume,
-          input: input,
-        ),
-        DashboardControl.momentary(
-          key: const ValueKey('dashboard-parkingBrake'),
-          label: 'PARK',
-          control: ControlId.parkingBrake,
-          input: input,
-        ),
-        DashboardControl.momentary(
-          key: const ValueKey('dashboard-wipers'),
-          label: 'WIPE',
-          control: ControlId.wipers,
-          input: input,
-        ),
-        DashboardControl.holdConfirm(
-          key: const ValueKey('dashboard-engineStart'),
-          label: 'START',
-          control: ControlId.engineStart,
-          input: input,
-        ),
+        for (final entry in _entries)
+          DashboardControl(
+            key: ValueKey('dashboard-${entry.control.name}'),
+            label: entry.label,
+            control: entry.control,
+            input: input,
+            mode: DashboardControl.modeFor(entry.control),
+          ),
       ],
     );
   }
+
+  static const _entries = [
+    _DashboardEntry('L', ControlId.turnSignalLeft),
+    _DashboardEntry('R', ControlId.turnSignalRight),
+    _DashboardEntry('LIGHT', ControlId.headlightToggle),
+    _DashboardEntry('HI', ControlId.highBeamToggle),
+    _DashboardEntry('CRUISE', ControlId.cruiseToggle),
+    _DashboardEntry('SET', ControlId.cruiseSetResume),
+    _DashboardEntry('PARK', ControlId.parkingBrake),
+    _DashboardEntry('WIPE', ControlId.wipers),
+    _DashboardEntry('START', ControlId.engineStart),
+  ];
+}
+
+class _DashboardEntry {
+  const _DashboardEntry(this.label, this.control);
+  final String label;
+  final ControlId control;
 }
 
 /// A single dashboard control button.
@@ -93,26 +65,29 @@ class DashboardControl extends StatefulWidget {
     this.holdDuration = const Duration(milliseconds: 500),
   });
 
-  const DashboardControl.toggle({
-    Key? key,
-    required String label,
-    required ControlId control,
-    required DashboardInput input,
-  })  : this(key: key, label: label, control: control, input: input, mode: ControlMode.toggle);
-
-  const DashboardControl.momentary({
-    Key? key,
-    required String label,
-    required ControlId control,
-    required DashboardInput input,
-  })  : this(key: key, label: label, control: control, input: input, mode: ControlMode.momentary);
-
-  const DashboardControl.holdConfirm({
-    Key? key,
-    required String label,
-    required ControlId control,
-    required DashboardInput input,
-  })  : this(key: key, label: label, control: control, input: input, mode: ControlMode.holdConfirm);
+  /// Interaction mode for a control: toggle-pulse, momentary
+  /// press/release, or hold-to-confirm. Single source of truth for how each
+  /// control behaves; the dashboard grid build is driven by it.
+  static ControlMode modeFor(ControlId control) {
+    switch (control) {
+      case ControlId.turnSignalLeft:
+      case ControlId.turnSignalRight:
+      case ControlId.headlightToggle:
+      case ControlId.highBeamToggle:
+      case ControlId.cruiseToggle:
+      case ControlId.hazardLights:
+      case ControlId.beaconLights:
+      case ControlId.trailer:
+      case ControlId.liftDropAxle:
+      case ControlId.engineBrake:
+      case ControlId.differentialLock:
+        return ControlMode.toggle;
+      case ControlId.engineStart:
+        return ControlMode.holdConfirm;
+      default:
+        return ControlMode.momentary;
+    }
+  }
 
   final String label;
   final ControlId control;

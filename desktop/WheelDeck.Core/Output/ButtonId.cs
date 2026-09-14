@@ -1,11 +1,13 @@
 namespace WheelDeck.Core.Output;
 
-/// <summary>
 /// Virtual-controller buttons exposed by the output backends for controller-button
 /// mapping mode. Follows the standard Xbox-style button set.
-/// </summary>
 public enum ButtonId
 {
+    /// No button. Rows mapped here are inert by design (e.g. menu-type
+    /// or user-set-able controls with no sensible controller equivalent);
+    /// every backend ignores unmapped buttons.
+    None,
     A,
     B,
     X,
