@@ -14,5 +14,30 @@
 
     <TextBlock FontWeight="SemiBold" Text="Connection" />
     <TextBlock Text="{Binding PortInfo}" />
+
+    <TextBlock FontWeight="SemiBold" Text="Wheel monitor" />
+    <ToggleButton Content="Show wheel monitor"
+                  Command="{Binding Monitor.ToggleMonitorCommand}"
+                  IsChecked="{Binding Monitor.IsMonitorVisible, Mode=OneWay}" />
+    <Border IsVisible="{Binding Monitor.IsMonitorVisible}">
+      <StackPanel Spacing="8">
+        <Canvas Width="200" Height="200">
+          <Path Stroke="Gray" StrokeThickness="6" StrokeLineCap="Round"
+                Data="M 47.7,152.3 A 74,74 0 1 1 152.3,152.3" />
+          <Line StartPoint="100,100" EndPoint="100,40"
+                Stroke="Red" StrokeThickness="4" StrokeLineCap="Round">
+            <Line.RenderTransform>
+              <RotateTransform Angle="{Binding Monitor.NeedleAngle}"
+                               CenterX="100" CenterY="100" />
+            </Line.RenderTransform>
+          </Line>
+          <Ellipse Width="12" Height="12" Canvas.Left="94" Canvas.Top="94" Fill="White" />
+        </Canvas>
+        <TextBlock Text="{Binding Monitor.SteeringText, StringFormat='Steering: {0}'}"
+                   HorizontalAlignment="Center" />
+        <TextBlock Classes="hint" Text="Display only — never drives output."
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+    </Border>
   </StackPanel>
 </UserControl>
