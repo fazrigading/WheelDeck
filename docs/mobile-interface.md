@@ -60,7 +60,20 @@ interface DashboardInput {
 
 enum ControlId {
     ParkingBrake, TurnSignalLeft, TurnSignalRight, HeadlightToggle,
-    HighBeamToggle, Wipers, CruiseToggle, CruiseSetResume, EngineStart
+    LightsOff, LightsParking, LightsLowbeam, HighBeamToggle,
+    Wipers, CruiseToggle, CruiseSetResume, EngineStart,
+    HazardLights, BeaconLights, Flasher, Horn,
+    Trailer, LiftDropAxle, CameraView, GearUp,
+    GearDown, EngineBrake, AirHorn, DifferentialLock,
+    RetarderIncrease, RetarderDecrease, QuickInfo, MirrorToggle,
+    HudWidgets, VehicleAdjustment, NavigationZoomOut, WidgetOptions,
+    Services, QuickSave, QuickLoad, Screenshot,
+    GarageManager, AudioPlayer,
+    ShiftToDrive, ShiftToReverse, ShiftToNeutral, EngineElectricity,
+    AdaptiveCruise, CruiseSpeedIncrease, CruiseSpeedDecrease,
+    LaneAssistant, LaneKeeping, EmergencyBrake, WipersBack,
+    AudioPlayPause, AudioNext, AudioPrevious,
+    AudioVolumeUp, AudioVolumeDown, AudioFavorite
 }
 
 enum ActionType { Toggle, Press, Release, HoldConfirm }
