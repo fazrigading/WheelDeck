@@ -12,6 +12,8 @@ import '../../../../data/services/controller_preset.dart';
 import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
+import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
@@ -62,6 +64,8 @@ class DrivingViewModel extends ChangeNotifier {
   Map<String, String> _bindingOverrides = {};
   WheelMode _wheelMode = WheelMode.fallback;
   int _rotationDegree = RotationDegree.fallback;
+  EngineStartMode _engineStartMode = EngineStartMode.fallback;
+  Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
 
   /// Normalized steering angle snapshot (-1.0..1.0).
   SteeringState get steering => _steering;
@@ -81,6 +85,25 @@ class DrivingViewModel extends ChangeNotifier {
   /// Phone-held send gate: drops unbound controls, cycles the headlight IDs,
   /// and holds signal/hazard blink state.
   DashboardSendGate get sendGate => _sendGate;
+
+  /// Public per-mode binding resolver for the grid's unbound visuals.
+  String bindingFor(ControlId control) => _bindingFor(control);
+
+  /// Current mapping mode, for the binder dialog label.
+  InputMapping get mapping => _mapping;
+
+  /// Persists a per-mode binding override (empty means unbound) and refreshes
+  /// the gate resolution. Best-effort: never throws.
+  Future<void> setBinding(ControlId control, String value) async {
+    final isGamepad = _mapping == InputMapping.gamepad;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = SettingsRepository.bindingKey(control, isGamepad);
+      await prefs.setString(key, value);
+      _bindingOverrides[key] = value;
+      notifyListeners();
+    } catch (_) {}
+  }
 
   /// Resolves the per-mode binding for [control]: user override first, then
   /// the preset default. Empty means unbound; the gate sends nothing.
@@ -107,6 +130,12 @@ class DrivingViewModel extends ChangeNotifier {
   /// Selected lock-to-lock range in degrees for the rotatable wheel.
   int get rotationDegree => _rotationDegree;
 
+  /// Engine-start interaction mode (hold-confirm vs single press).
+  EngineStartMode get engineStartMode => _engineStartMode;
+
+  /// Extra dashboard controls shown in the grid.
+  Set<ControlId> get visibleExtras => Set.unmodifiable(_visibleExtras);
+
   /// Applies the persisted dashboard mapping on the desktop. Best-effort:
   /// never throws, so driving still works when storage is unavailable.
   Future<void> init() async {
@@ -123,6 +152,7 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
     await _loadWheelState();
     await _loadBindings();
+    await _loadDashboardState();
     if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
   }
@@ -169,6 +199,17 @@ class DrivingViewModel extends ChangeNotifier {
       _mapping = await InputMapping.load();
     } catch (_) {}
     await _loadBindings();
+    await _loadDashboardState();
+  }
+
+  /// Best-effort load of engine-start mode and visible dashboard extras.
+  Future<void> _loadDashboardState() async {
+    try {
+      _engineStartMode = await EngineStartMode.load();
+    } catch (_) {}
+    try {
+      _visibleExtras = (await DashboardVisibility.load()).visibleExtras;
+    } catch (_) {}
   }
 
   /// Best-effort load of per-mode binding overrides, so the send gate drops

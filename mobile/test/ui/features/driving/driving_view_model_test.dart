@@ -7,6 +7,7 @@ import 'package:wheeldeck/data/repositories/connection_repository.dart';
 import 'package:wheeldeck/data/repositories/pedal_repository.dart';
 import 'package:wheeldeck/data/repositories/sensor_repository.dart';
 import 'package:wheeldeck/data/services/dashboard_input.dart';
+import 'package:wheeldeck/data/services/engine_start_mode.dart';
 import 'package:wheeldeck/data/services/pedal_input.dart';
 import 'package:wheeldeck/data/services/steering_sensor.dart';
 import 'package:wheeldeck/data/services/wheeldeck_client.dart';
@@ -109,5 +110,30 @@ void main() {
 
     expect(viewModel.isRotatable, isTrue);
     expect(viewModel.awaitingCalibration, isFalse);
+  });
+
+  test('setBinding persists an override the grid resolver sees', () async {
+    SharedPreferences.setMockInitialValues({});
+    viewModel = buildViewModel();
+    await viewModel.init();
+
+    expect(viewModel.bindingFor(ControlId.horn), 'H');
+    await viewModel.setBinding(ControlId.horn, 'J');
+    expect(viewModel.bindingFor(ControlId.horn), 'J');
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('wheeldeck.binding.keyboard.horn'), 'J');
+  });
+
+  test('dashboard state loads engine mode and visible extras', () async {
+    SharedPreferences.setMockInitialValues({
+      'wheeldeck.engine_start_mode': 'single_press',
+      'wheeldeck.dashboard_extras': ['air_horn'],
+    });
+    viewModel = buildViewModel();
+    await viewModel.init();
+
+    expect(viewModel.engineStartMode, EngineStartMode.singlePress);
+    expect(viewModel.visibleExtras, {ControlId.airHorn});
   });
 }

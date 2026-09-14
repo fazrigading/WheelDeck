@@ -5,6 +5,8 @@ import '../../../../data/repositories/settings_repository.dart';
 import '../../../../data/services/controller_preset.dart';
 import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
@@ -30,6 +32,8 @@ class SettingsViewModel extends ChangeNotifier {
   GamePreset _preset = GamePreset.ets2;
   WheelMode _wheelMode = WheelMode.rotatable;
   int _rotationDegree = RotationDegree.fallback;
+  EngineStartMode _engineStartMode = EngineStartMode.fallback;
+  Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
   final Map<String, String> _bindingOverrides = {};
   bool _loaded = false;
 
@@ -39,6 +43,8 @@ class SettingsViewModel extends ChangeNotifier {
   GamePreset get preset => _preset;
   WheelMode get wheelMode => _wheelMode;
   int get rotationDegree => _rotationDegree;
+  EngineStartMode get engineStartMode => _engineStartMode;
+  Set<ControlId> get visibleExtras => Set.unmodifiable(_visibleExtras);
   bool get loaded => _loaded;
 
   Future<void> init() async {
@@ -61,6 +67,13 @@ class SettingsViewModel extends ChangeNotifier {
     try {
       _rotationDegree =
           await _settingsRepository.getRotationDegree(_preset);
+    } catch (_) {}
+    try {
+      _engineStartMode = await _settingsRepository.getEngineStartMode();
+    } catch (_) {}
+    try {
+      _visibleExtras =
+          (await _settingsRepository.getDashboardVisibility()).visibleExtras;
     } catch (_) {}
     // Load binding overrides for both modes
     for (final c in ControlId.values) {
@@ -114,6 +127,21 @@ class SettingsViewModel extends ChangeNotifier {
     await _settingsRepository.setRotationDegree(_preset, degree);
   }
 
+  Future<void> selectEngineStartMode(EngineStartMode mode) async {
+    _engineStartMode = mode;
+    notifyListeners();
+    await _settingsRepository.setEngineStartMode(mode);
+  }
+
+  Future<void> toggleExtraControl(ControlId control) async {
+    final next = Set<ControlId>.of(_visibleExtras);
+    if (!next.remove(control)) next.add(control);
+    _visibleExtras = next;
+    notifyListeners();
+    await _settingsRepository
+        .setDashboardVisibility(DashboardVisibility(next));
+  }
+
   Future<void> selectPreset(GamePreset v) async {
     _preset = v;
     try {
@@ -145,6 +173,8 @@ class SettingsViewModel extends ChangeNotifier {
     _preset = GamePreset.ets2;
     _wheelMode = WheelMode.rotatable;
     _rotationDegree = RotationDegree.fallback;
+    _engineStartMode = EngineStartMode.fallback;
+    _visibleExtras = DashboardVisibility.defaults;
     _bindingOverrides.clear();
     notifyListeners();
     await _settingsRepository.resetAll();
