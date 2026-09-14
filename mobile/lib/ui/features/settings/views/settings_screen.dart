@@ -4,12 +4,15 @@ import '../../../../data/repositories/settings_repository.dart';
 import '../../../../data/services/controller_preset.dart';
 import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
 import '../../../../data/services/wheel_mode.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../view_models/settings_view_model.dart';
+import 'binding_edit_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.coordinator, this.viewModel});
@@ -214,6 +217,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Engine start mode
+              Text('Engine start', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              SegmentedButton<EngineStartMode>(
+                segments: const [
+                  ButtonSegment(value: EngineStartMode.holdConfirm, label: Text('Hold to confirm')),
+                  ButtonSegment(value: EngineStartMode.singlePress, label: Text('Single press')),
+                ],
+                selected: {_viewModel.engineStartMode},
+                onSelectionChanged: (s) =>
+                    _viewModel.selectEngineStartMode(s.first),
+              ),
+              const SizedBox(height: 24),
+
+              // Dashboard controls
+              Text('Dashboard controls', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Card(
+                child: Column(
+                  children: [
+                    for (final c in DashboardVisibility.toggleable)
+                      SwitchListTile(
+                        title: Text(_controlLabel(c), style: const TextStyle(fontSize: 14)),
+                        value: _viewModel.visibleExtras.contains(c),
+                        onChanged: (_) => _viewModel.toggleExtraControl(c),
+                        dense: true,
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Per-control bindings
               Text('Button bindings (${isGamepad ? 'gamepad' : 'keyboard'})',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
@@ -286,13 +321,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case ControlId.lightsLowbeam:
         return 'Lights low beam';
       case ControlId.highBeamToggle:
-        return 'High beam';
+        return 'High-beam';
       case ControlId.wipers:
         return 'Wipers';
       case ControlId.cruiseToggle:
         return 'Cruise toggle';
       case ControlId.cruiseSetResume:
-        return 'Cruise set/resume';
+        return 'Cruise resume';
       case ControlId.engineStart:
         return 'Engine start';
       case ControlId.hazardLights:
@@ -385,33 +420,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _editBinding(ControlId c, String current, bool isGamepad) {
-    final ctrl = TextEditingController(text: current);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Edit ${_controlLabel(c)}'),
-        content: TextField(
-          controller: ctrl,
-          decoration: InputDecoration(labelText: isGamepad ? 'Button' : 'Key', border: const OutlineInputBorder()),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () async {
-              final value = ctrl.text.trim();
-              Navigator.pop(ctx);
-              await _viewModel.setBinding(c, value);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${_controlLabel(c)} → $value')),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+    BindingEditDialog.show(
+      context,
+      title: _controlLabel(c),
+      current: current,
+      isGamepad: isGamepad,
+      onSave: (value) async {
+        await _viewModel.setBinding(c, value);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${_controlLabel(c)} → $value')),
+          );
+        }
+      },
     );
   }
 }

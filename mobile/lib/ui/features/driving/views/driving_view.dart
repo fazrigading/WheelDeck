@@ -6,20 +6,25 @@ import 'package:flutter/services.dart';
 
 import '../../../../data/repositories/pedal_repository.dart';
 import '../../../../data/repositories/sensor_repository.dart';
+import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/dashboard_send_gate.dart';
+import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_side.dart';
 import '../../../../data/services/gyroscope_service.dart';
-import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/steering_sensor.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../../../../ui/core/lifecycle_observer.dart';
 import '../../connection/views/connection_screen.dart';
+import '../../settings/views/binding_edit_dialog.dart';
 import '../../settings/views/settings_screen.dart';
 import '../view_models/driving_view_model.dart';
 import 'calibration_overlay.dart';
 import 'dashboard_panel.dart';
 import 'pedal_panel.dart';
 import 'rotatable_wheel.dart';
+import 'signal_arrows.dart';
+import 'tilt_readout.dart';
 import 'wheel_view.dart';
 
 /// The post-connection driving view: steering wheel, pedal bars, and dashboard
@@ -221,12 +226,7 @@ class _DrivingViewState extends State<DrivingView> {
   Widget _buildDrivingContent() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final wheelSize =
-            (math.min(constraints.maxWidth * 0.42, constraints.maxHeight) - 16)
-                .clamp(160.0, 480.0);
         final vis = _viewModel.visibility;
-        final dashboardVisible = vis.showDashboard;
-
         final sides = _viewModel.pedalSides;
         final shown = [
           PedalType.accelerator,
@@ -238,75 +238,239 @@ class _DrivingViewState extends State<DrivingView> {
         final right =
             shown.where((p) => sides[p] != PedalSide.left).toList();
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              flex: 5,
-              child: Center(
-                child: _viewModel.isRotatable
-                    ? RotatableWheel(
-                        degrees: _viewModel.rotationDegree,
-                        size: wheelSize,
-                        onChanged: _viewModel.setRotatableSteering,
-                      )
-                    : GestureDetector(
-                        onHorizontalDragStart: (_) =>
-                            _viewModel.onWheelDragStart(),
-                        onHorizontalDragUpdate: (details) =>
-                            _viewModel.onWheelDragUpdate(details.delta.dx),
-                        onHorizontalDragEnd: (_) =>
-                            _viewModel.onWheelDragEnd(),
-                        onDoubleTap: () => _viewModel.onWheelDragEnd(),
-                        child: WheelView(
-                          angle: _viewModel.steering.angle,
-                          size: wheelSize,
-                        ),
-                      ),
+        if (_viewModel.isRotatable) {
+          return _rotatableLayout(constraints, left, right);
+        }
+        return _gyroLayout(left, right, vis.showDashboard);
+      },
+    );
+  }
+
+  /// Shared grid: core controls plus visible extras. Turn signals never
+  /// appear here; [SignalArrows] owns them.
+  DashboardPanel _grid({Set<ControlId> excluded = const {}}) =>
+      DashboardPanel(
+        input: _viewModel.dashboardInput,
+        bindingFor: _viewModel.bindingFor,
+        gate: _viewModel.sendGate,
+        visibleExtras: _viewModel.visibleExtras,
+        excluded: excluded,
+        engineStartMode: _viewModel.engineStartMode,
+        onBindRequested: _openBinder,
+      );
+
+  Future<void> _openBinder(ControlId control) async {
+    await BindingEditDialog.show(
+      context,
+      title: DashboardPanel.gridLabel(control),
+      current: _viewModel.bindingFor(control),
+      isGamepad: _viewModel.mapping == InputMapping.gamepad,
+      onSave: (value) => _viewModel.setBinding(control, value),
+    );
+    await _viewModel.refreshSettings();
+  }
+
+  SignalArrows get _arrows => SignalArrows(
+        input: _viewModel.dashboardInput,
+        gate: _viewModel.sendGate,
+      );
+
+  /// Rotatable: bottom-left 50% wheel with arrows above, clutch top-left,
+  /// pedals bottom-right, gears vertical top-right, grid center-right.
+  Widget _rotatableLayout(
+    BoxConstraints constraints,
+    List<PedalType> left,
+    List<PedalType> right,
+  ) {
+    final wheelSize =
+        (math.min(constraints.maxWidth * 0.5, constraints.maxHeight) - 16)
+            .clamp(160.0, 480.0);
+    final gears = [
+      ControlId.gearUp,
+      ControlId.gearDown,
+    ].where((c) => _viewModel.visibleExtras.contains(c)).toList();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (left.isNotEmpty)
+                Expanded(
+                  child: PedalPanel(
+                    input: _viewModel.pedalInput,
+                    layout: left,
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: _arrows,
               ),
-            ),
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                child: Column(
+              RotatableWheel(
+                degrees: _viewModel.rotationDegree,
+                size: wheelSize,
+                onChanged: _viewModel.setRotatableSteering,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 6,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(
-                      flex: 5,
-                      child: Row(
-                        children: [
-                          if (left.isNotEmpty)
-                            Expanded(
-                              child: PedalPanel(
-                                input: _viewModel.pedalInput,
-                                layout: left,
-                              ),
-                            ),
-                          if (right.isNotEmpty)
-                            Expanded(
-                              child: PedalPanel(
-                                input: _viewModel.pedalInput,
-                                layout: right,
-                              ),
-                            ),
-                        ],
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(8),
+                        child: _grid(excluded: gears.toSet()),
                       ),
                     ),
-                    if (dashboardVisible) const SizedBox(height: 8),
-                    if (dashboardVisible)
-                      Expanded(
-                        flex: 4,
-                        child: SingleChildScrollView(
-                          child: DashboardPanel(input: _viewModel.dashboardInput),
+                    if (gears.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Column(
+                          children: [
+                            for (final gear in gears)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(bottom: 8),
+                                child: DashboardControl(
+                                  key: ValueKey('gear-${gear.name}'),
+                                  label:
+                                      DashboardPanel.labelFor(gear),
+                                  control: gear,
+                                  input: _viewModel.dashboardInput,
+                                  mode: DashboardControl.modeFor(gear),
+                                  gate: _viewModel.sendGate,
+                                  enabled: !DashboardSendGate
+                                      .isUnbound(
+                                          _viewModel.bindingFor(gear)),
+                                  onBindRequested: _openBinder,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                   ],
                 ),
               ),
-            ),
+              if (right.isNotEmpty)
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: PedalPanel(
+                      input: _viewModel.pedalInput,
+                      layout: right,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Gyro: dashboard hidden shows wheel middle with tilt readout beneath;
+  /// dashboard shown drops the wheel for a top-center tilt readout. Arrows
+  /// sit above the left pedal; pedals follow their per-pedal sides.
+  Widget _gyroLayout(
+    List<PedalType> left,
+    List<PedalType> right,
+    bool dashboardVisible,
+  ) {
+    Widget pedalColumn(List<PedalType> pedals, {bool arrows = false}) {
+      return Expanded(
+        child: Column(
+          children: [
+            if (arrows)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: _arrows,
+              ),
+            if (pedals.isNotEmpty)
+              Expanded(
+                child: PedalPanel(
+                  input: _viewModel.pedalInput,
+                  layout: pedals,
+                ),
+              ),
           ],
-        );
-      },
+        ),
+      );
+    }
+
+    if (!dashboardVisible) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          pedalColumn(left, arrows: true),
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onHorizontalDragStart: (_) =>
+                        _viewModel.onWheelDragStart(),
+                    onHorizontalDragUpdate: (details) =>
+                        _viewModel.onWheelDragUpdate(details.delta.dx),
+                    onHorizontalDragEnd: (_) =>
+                        _viewModel.onWheelDragEnd(),
+                    onDoubleTap: () => _viewModel.onWheelDragEnd(),
+                    child: WheelView(
+                      angle: _viewModel.steering.angle,
+                      size: 220,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TiltReadout(angle: _viewModel.steering.angle),
+                ],
+              ),
+            ),
+          ),
+          pedalColumn(right),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Center(
+            child: TiltReadout(angle: _viewModel.steering.angle),
+          ),
+        ),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              pedalColumn(left, arrows: true),
+              Expanded(
+                flex: 2,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(8),
+                  child: _grid(),
+                ),
+              ),
+              pedalColumn(right),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

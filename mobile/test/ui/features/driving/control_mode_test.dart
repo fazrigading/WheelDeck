@@ -120,6 +120,13 @@ void main() {
       }
     });
 
+    test('cruise and high-beam keep their verified bindings', () {
+      // REQ-006: C/K verified against current values; no-op confirmed.
+      expect(GamePreset.ets2.bindingFor(ControlId.cruiseToggle, false), 'C');
+      expect(
+          GamePreset.ets2.bindingFor(ControlId.highBeamToggle, false), 'K');
+    });
+
     test('generic preset mirrors ETS2', () {
       for (final control in ControlId.values) {
         expect(GamePreset.generic.bindingFor(control, false),

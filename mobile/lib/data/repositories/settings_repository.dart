@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/controller_preset.dart';
 import '../services/controller_visibility.dart';
 import '../services/dashboard_input.dart';
+import '../services/dashboard_visibility.dart';
+import '../services/engine_start_mode.dart';
 import '../services/input_mapping.dart';
 import '../services/pedal_input.dart';
 import '../services/pedal_side.dart';
@@ -31,6 +33,14 @@ class SettingsRepository {
       RotationDegree.save(preset, degree);
 
   Future<PedalSides> getPedalSides() => PedalSides.load();
+
+  Future<EngineStartMode> getEngineStartMode() => EngineStartMode.load();
+  Future<void> setEngineStartMode(EngineStartMode mode) => mode.save();
+
+  Future<DashboardVisibility> getDashboardVisibility() =>
+      DashboardVisibility.load();
+  Future<void> setDashboardVisibility(DashboardVisibility visibility) =>
+      visibility.save();
 
   Future<void> setPedalSide(PedalType pedal, PedalSide side) async {
     final current = await PedalSides.load();
@@ -65,6 +75,8 @@ class SettingsRepository {
         .save();
     await PedalSides({}).save();
     await WheelMode.rotatable.save();
+    await EngineStartMode.holdConfirm.save();
+    await const DashboardVisibility(DashboardVisibility.defaults).save();
     for (final preset in GamePreset.values) {
       await RotationDegree.save(preset, RotationDegree.fallback);
     }
