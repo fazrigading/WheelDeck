@@ -37,24 +37,24 @@ class SettingsRepository {
     await current.copyWithSide(pedal, side).save();
   }
 
-  static String _bindingKey(ControlId c, bool isGamepad) =>
+  static String bindingKey(ControlId c, bool isGamepad) =>
       'wheeldeck.binding.${isGamepad ? 'gamepad' : 'keyboard'}.${c.wireValue}';
 
   Future<String?> getBindingOverride(ControlId c, bool isGamepad) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_bindingKey(c, isGamepad));
+    return prefs.getString(bindingKey(c, isGamepad));
   }
 
   Future<void> setBindingOverride(ControlId c, bool isGamepad, String value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_bindingKey(c, isGamepad), value);
+    await prefs.setString(bindingKey(c, isGamepad), value);
   }
 
   Future<void> clearBindingOverrides() async {
     final prefs = await SharedPreferences.getInstance();
     for (final c in ControlId.values) {
-      await prefs.remove(_bindingKey(c, true));
-      await prefs.remove(_bindingKey(c, false));
+      await prefs.remove(bindingKey(c, true));
+      await prefs.remove(bindingKey(c, false));
     }
   }
 

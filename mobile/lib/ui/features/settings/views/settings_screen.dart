@@ -279,6 +279,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Turn signal R';
       case ControlId.headlightToggle:
         return 'Headlights';
+      case ControlId.lightsOff:
+        return 'Lights off';
+      case ControlId.lightsParking:
+        return 'Lights parking';
+      case ControlId.lightsLowbeam:
+        return 'Lights low beam';
       case ControlId.highBeamToggle:
         return 'High beam';
       case ControlId.wipers:

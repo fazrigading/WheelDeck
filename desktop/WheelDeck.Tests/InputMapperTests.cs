@@ -187,6 +187,50 @@ public sealed class InputMapperTests
     }
 
     [Fact]
+    public void ApplyButton_LightCycleIds_PulseHeadlightKey()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        foreach (var control in new[]
+        {
+            ControlId.LightsOff, ControlId.LightsParking, ControlId.LightsLowbeam
+        })
+        {
+            _backend.Clear();
+            _mapper.ApplyButton(new ButtonMessage
+            {
+                Control = control,
+                Action = ActionType.Toggle
+            });
+
+            Assert.Equal(2, _backend.KeyEvents.Count);
+            Assert.Equal((KeyCode.L, true), _backend.KeyEvents[0]);
+            Assert.Equal((KeyCode.L, false), _backend.KeyEvents[1]);
+        }
+    }
+
+    [Fact]
+    public void ApplyButton_LightCycleIds_ControllerButtonMode_SetHeadlightButton()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+
+        foreach (var control in new[]
+        {
+            ControlId.LightsOff, ControlId.LightsParking, ControlId.LightsLowbeam
+        })
+        {
+            _backend.Clear();
+            _mapper.ApplyButton(new ButtonMessage
+            {
+                Control = control,
+                Action = ActionType.Press
+            });
+
+            Assert.Equal(ButtonId.B, _backend.LastButtonId);
+        }
+    }
+
+    [Fact]
     public void ApplyButton_NewToggleControl_PulsesItsKey()
     {
         _mapper.Mode = MappingMode.SimulatedKeyPress;
