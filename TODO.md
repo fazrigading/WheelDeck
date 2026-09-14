@@ -2,7 +2,7 @@
 
 Remember to update the future plan status to `draft` or `ongoing` or `finished`
 
-## 1. branch: feature/rotatable-steering-mode
+## 1. branch: feature/rotatable-steering-and-dashboard
 
 Rotatable means: finger-drag circular steering wheel.
 
@@ -16,7 +16,7 @@ Rotatable means: finger-drag circular steering wheel.
 
 ---
 
-## 2. branch `feature/revamp-dashboard` :
+## 2. dashboard revamp (same branch, see plan phases 4-7) :
 
 References of the dashboard images can be viewed at `plan/references/`.
 
