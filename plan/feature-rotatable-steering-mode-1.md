@@ -2,9 +2,9 @@
 goal: Rotatable finger-drag steering mode for phone + desktop test monitor, replacing ControllerType/PedalLayout enums
 version: 1.0
 date_created: 2026-09-12
-last_updated: 2026-09-12
+last_updated: 2026-09-14
 owner: fazrigading
-status: Draft
+status: Finished
 tags:
   - feature
   - mobile
@@ -14,7 +14,7 @@ tags:
 
 # Introduction
 
-![Status: Draft](https://img.shields.io/badge/status-Draft-yellow)
+![Status: Finished](https://img.shields.io/badge/status-Finished-green)
 
 Branch `feature/rotatable-steering-mode` off `main`. Wire protocol unchanged: phone keeps sending `state.steering -1..1`; degree mapping lives phone-side. Desktop `InputMapper` untouched for steering. Dashboard revamp is separate (`feature-revamp-dashboard`).
 
@@ -56,25 +56,25 @@ Glossary (see `CONTEXT.md`): **Rotatable steering** (finger-drag circular wheel,
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Replace `ControllerType` enum (`mobile/lib/data/services/controller_type.dart`) with `showClutch/showDashboard` bools. `SettingsRepository`: new keys, first-run migration per table, delete `wheeldeck.controller_type` after. `SettingsScreen`: two M3 switches instead of 5-way radio. |  |  |
-| TASK-002 | Replace `PedalLayout` A–D (`mobile/lib/data/services/pedal_layout.dart`) with per-pedal side map. Keys `wheeldeck.pedal_side.<pedal>`, migration per table, delete `wheeldeck.pedal_layout`. Settings: per shown pedal a Left/Right segmented control. |  |  |
-| TASK-003 | Add wheel mode + degree. New or extended service (e.g. `wheel_mode.dart`): `Rotatable/Gyro`, degrees list, keys `wheeldeck.wheel_mode` / `wheeldeck.rotation_degree`, ETS2 default 900. `SettingsScreen`: mode toggle + degree selector under it. Fresh defaults: Rotatable 900°, Clutch OFF, Dashboard ON. |  |  |
-| TASK-004 | `flutter test` green; manual: fresh install defaults + migrated install (seed old prefs, verify mapping, old keys gone). |  |  |
+| TASK-001 | Replace `ControllerType` enum (`mobile/lib/data/services/controller_type.dart`) with `showClutch/showDashboard` bools. `SettingsRepository`: new keys, first-run migration per table, delete `wheeldeck.controller_type` after. `SettingsScreen`: two M3 switches instead of 5-way radio. | x | 2026-09-14 |
+| TASK-002 | Replace `PedalLayout` A–D (`mobile/lib/data/services/pedal_layout.dart`) with per-pedal side map. Keys `wheeldeck.pedal_side.<pedal>`, migration per table, delete `wheeldeck.pedal_layout`. Settings: per shown pedal a Left/Right segmented control. | x | 2026-09-14 |
+| TASK-003 | Add wheel mode + degree. New or extended service (e.g. `wheel_mode.dart`): `Rotatable/Gyro`, degrees list, keys `wheeldeck.wheel_mode` / `wheeldeck.rotation_degree`, ETS2 default 900. `SettingsScreen`: mode toggle + degree selector under it. Fresh defaults: Rotatable 900°, Clutch OFF, Dashboard ON. | x | 2026-09-14 |
+| TASK-004 | `flutter test` green; manual: fresh install defaults + migrated install (seed old prefs, verify mapping, old keys gone). | x | 2026-09-14 |
 
 ### Phase 2 — Rotatable wheel (mobile)
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-005 | New `RotatableWheel` widget (under `mobile/lib/ui/features/driving/views/`): circular drag → angle → `steering = clamp(angle / (degrees/2))`; spring-back to 0 on release; rotation indicator (rotating graphic + arc above ring). Multi-touch safe vs `PedalPanel`. |  |  |
-| TASK-006 | `DrivingView`/`DrivingViewModel` branch: rotatable shows wheel, skips calibration gate + lifecycle reconfirm; gyro path untouched. Degree reload on Settings pop (same pattern as `refreshSettings`). |  |  |
-| TASK-007 | Widget test: drag N/2° → full lock, release → 0; manual multi-touch steer + pedal. |  |  |
+| TASK-005 | New `RotatableWheel` widget (under `mobile/lib/ui/features/driving/views/`): circular drag → angle → `steering = clamp(angle / (degrees/2))`; spring-back to 0 on release; rotation indicator (rotating graphic + arc above ring). Multi-touch safe vs `PedalPanel`. | x | 2026-09-14 |
+| TASK-006 | `DrivingView`/`DrivingViewModel` branch: rotatable shows wheel, skips calibration gate + lifecycle reconfirm; gyro path untouched. Degree reload on Settings pop (same pattern as `refreshSettings`). | x | 2026-09-14 |
+| TASK-007 | Widget test: drag N/2° → full lock, release → 0; manual multi-touch steer + pedal. | x | 2026-09-14 |
 
 ### Phase 3 — Desktop monitor widget
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-008 | `Views/SettingsView.axaml` + `ViewModels/SettingsViewModel.cs`: "Show wheel monitor" toggle button revealing display-only wheel mirror (arc + needle from live `steering`). Feed from `CompositionRoot` state events. No output driving. |  |  |
-| TASK-009 | `dotnet build` + `dotnet test` green; manual: drag phone wheel, desktop mirror follows; toggle hides widget. |  |  |
+| TASK-008 | `Views/SettingsView.axaml` + `ViewModels/SettingsViewModel.cs`: "Show wheel monitor" toggle button revealing display-only wheel mirror (arc + needle from live `steering`). Feed from `CompositionRoot` state events. No output driving. | x | 2026-09-14 |
+| TASK-009 | `dotnet build` + `dotnet test` green; manual: drag phone wheel, desktop mirror follows; toggle hides widget. | x | 2026-09-14 |
 
 ## Out of scope / deferred
 
