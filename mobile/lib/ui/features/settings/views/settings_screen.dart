@@ -289,6 +289,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Cruise set/resume';
       case ControlId.engineStart:
         return 'Engine start';
+      case ControlId.hazardLights:
+        return 'Hazard lights';
+      case ControlId.beaconLights:
+        return 'Beacon lights';
+      case ControlId.flasher:
+        return 'Flasher';
+      case ControlId.horn:
+        return 'Horn';
+      case ControlId.trailer:
+        return 'Trailer';
+      case ControlId.liftDropAxle:
+        return 'Lift/drop axle';
+      case ControlId.cameraView:
+        return 'Camera view';
+      case ControlId.gearUp:
+        return 'Gear up';
+      case ControlId.gearDown:
+        return 'Gear down';
+      case ControlId.engineBrake:
+        return 'Engine brake';
+      case ControlId.airHorn:
+        return 'Air horn';
+      case ControlId.differentialLock:
+        return 'Differential lock';
+      case ControlId.retarderIncrease:
+        return 'Retarder +';
+      case ControlId.retarderDecrease:
+        return 'Retarder -';
+      case ControlId.quickInfo:
+        return 'Quick info';
+      case ControlId.mirrorToggle:
+        return 'Mirror';
+      case ControlId.hudWidgets:
+        return 'HUD widgets';
+      case ControlId.vehicleAdjustment:
+        return 'Vehicle adjustment';
+      case ControlId.navigationZoomOut:
+        return 'Nav zoom out';
+      case ControlId.widgetOptions:
+        return 'Widget options';
+      case ControlId.services:
+        return 'Services';
+      case ControlId.quickSave:
+        return 'Quick save';
+      case ControlId.quickLoad:
+        return 'Quick load';
+      case ControlId.screenshot:
+        return 'Screenshot';
+      case ControlId.garageManager:
+        return 'Garage';
+      case ControlId.audioPlayer:
+        return 'Audio player';
+      case ControlId.shiftToDrive:
+        return 'Shift to drive';
+      case ControlId.shiftToReverse:
+        return 'Shift to reverse';
+      case ControlId.shiftToNeutral:
+        return 'Shift to neutral';
+      case ControlId.engineElectricity:
+        return 'Engine electricity';
+      case ControlId.adaptiveCruise:
+        return 'Adaptive cruise';
+      case ControlId.cruiseSpeedIncrease:
+        return 'Cruise speed +';
+      case ControlId.cruiseSpeedDecrease:
+        return 'Cruise speed -';
+      case ControlId.laneAssistant:
+        return 'Lane assistant';
+      case ControlId.laneKeeping:
+        return 'Lane keeping';
+      case ControlId.emergencyBrake:
+        return 'Emergency brake';
+      case ControlId.wipersBack:
+        return 'Wipers back';
+      case ControlId.audioPlayPause:
+        return 'Audio play/pause';
+      case ControlId.audioNext:
+        return 'Audio next';
+      case ControlId.audioPrevious:
+        return 'Audio previous';
+      case ControlId.audioVolumeUp:
+        return 'Audio vol +';
+      case ControlId.audioVolumeDown:
+        return 'Audio vol -';
+      case ControlId.audioFavorite:
+        return 'Audio favorite';
     }
   }
 

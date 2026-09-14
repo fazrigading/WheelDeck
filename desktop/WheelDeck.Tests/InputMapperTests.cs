@@ -186,6 +186,67 @@ public sealed class InputMapperTests
         }
     }
 
+    [Fact]
+    public void ApplyButton_NewToggleControl_PulsesItsKey()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.HazardLights,
+            Action = ActionType.Toggle
+        });
+
+        Assert.Equal(2, _backend.KeyEvents.Count);
+        Assert.Equal((KeyCode.F, true), _backend.KeyEvents[0]);
+        Assert.Equal((KeyCode.F, false), _backend.KeyEvents[1]);
+    }
+
+    [Fact]
+    public void ApplyButton_GearUp_SendsLeftShift()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.GearUp,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.LeftShift, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_UnboundControl_SendsNone()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ShiftToDrive,
+            Action = ActionType.Press
+        });
+
+        // KeyCode.None is inert in every real backend; the phone gates these.
+        Assert.Equal(KeyCode.None, _backend.LastKeyCode);
+    }
+
+    [Fact]
+    public void ApplyButton_ControllerButtonMode_NewControl_SetsSpareButton()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.HazardLights,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(ButtonId.Back, _backend.LastButtonId);
+        Assert.True(_backend.LastButtonPressed);
+    }
+
     private sealed class FakeBackend : VirtualOutputBackend
     {
         public float LastSteering { get; private set; }
