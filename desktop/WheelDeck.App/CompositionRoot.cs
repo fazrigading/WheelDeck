@@ -29,6 +29,10 @@ public sealed class CompositionRoot
     /// <summary>Session gate, exposed so the shell can show live connection state.</summary>
     public SessionGate Gate => _gate;
 
+    /// <summary>Fires for every authorized state message, so display-only
+    /// consumers (e.g. the wheel monitor) can mirror input. Never drives output.</summary>
+    public event Action<StateMessage>? SteeringReceived;
+
     /// <summary>App data dir shared by the pairing store and UI settings.</summary>
     public static string AppDataDirectory { get; } = OperatingSystem.IsWindows()
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WheelDeck")
@@ -45,7 +49,7 @@ public sealed class CompositionRoot
 
         _gate = new SessionGate(
             PairingManager,
-            onState: InputMapper.ApplyState,
+            onState: ApplyState,
             onButton: InputMapper.ApplyButton,
             onConnectionClosed: _ => Backend.Neutralize(),
             onMapping: ApplyMapping);
@@ -81,6 +85,14 @@ public sealed class CompositionRoot
         await HeartbeatMonitor.DisposeAsync();
         Backend.Neutralize();
         Backend.Shutdown();
+    }
+
+    /// <summary>Routes authorized state to the mapper and mirrors it to
+    /// display-only consumers. The gate already filtered unauthorized senders.</summary>
+    private void ApplyState(StateMessage state)
+    {
+        InputMapper.ApplyState(state);
+        SteeringReceived?.Invoke(state);
     }
 
     /// <summary>Applies the phone's dashboard mapping choice to the input mapper.</summary>
