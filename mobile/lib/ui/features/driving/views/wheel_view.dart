@@ -34,27 +34,28 @@ class WheelView extends StatelessWidget {
       child: AnimatedRotation(
         turns: turns,
         duration: const Duration(milliseconds: 80),
-        child: _WheelGraphic(size: size),
+        child: WheelGraphic(size: size),
       ),
     );
   }
 }
 
-class _WheelGraphic extends StatelessWidget {
-  const _WheelGraphic({required this.size});
+/// Shared wheel graphic, also used by the rotatable wheel.
+class WheelGraphic extends StatelessWidget {
+  const WheelGraphic({super.key, required this.size});
 
   final double size;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _WheelPainter(),
+      painter: WheelPainter(),
       size: Size.square(size),
     );
   }
 }
 
-class _WheelPainter extends CustomPainter {
+class WheelPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
@@ -93,5 +94,5 @@ class _WheelPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WheelPainter oldDelegate) => false;
+  bool shouldRepaint(covariant WheelPainter oldDelegate) => false;
 }

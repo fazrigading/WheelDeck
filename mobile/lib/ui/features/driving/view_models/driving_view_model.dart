@@ -6,11 +6,13 @@ import '../../../../data/repositories/sensor_repository.dart';
 import '../../../../domain/models/connection_target.dart';
 import '../../../../domain/models/pedal_state.dart';
 import '../../../../domain/models/steering_state.dart';
+import '../../../../data/services/controller_preset.dart';
 import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/wheel_mode.dart';
 
 /// Presentation state for the driving view: steering angle, pedal pressures,
 /// calibration gate, and wheel-drag fallback.
@@ -47,6 +49,9 @@ class DrivingViewModel extends ChangeNotifier {
   double _dragBase = 0.0;
   Map<PedalType, PedalSide> _pedalSides = PedalSides.defaults().asMap();
   ControllerVisibility _visibility = ControllerVisibility.fallback;
+  GamePreset _preset = GamePreset.fallback;
+  WheelMode _wheelMode = WheelMode.fallback;
+  int _rotationDegree = RotationDegree.fallback;
 
   /// Normalized steering angle snapshot (-1.0..1.0).
   SteeringState get steering => _steering;
@@ -70,6 +75,13 @@ class DrivingViewModel extends ChangeNotifier {
       Map.unmodifiable(_pedalSides);
   ControllerVisibility get visibility => _visibility;
 
+  /// True in rotatable mode: the finger-drag wheel drives steering, the gyro
+  /// sensor is ignored, and the calibration gate never engages.
+  bool get isRotatable => _wheelMode == WheelMode.rotatable;
+
+  /// Selected lock-to-lock range in degrees for the rotatable wheel.
+  int get rotationDegree => _rotationDegree;
+
   /// Applies the persisted dashboard mapping on the desktop. Best-effort:
   /// never throws, so driving still works when storage is unavailable.
   Future<void> init() async {
@@ -84,6 +96,8 @@ class DrivingViewModel extends ChangeNotifier {
     try {
       _visibility = await ControllerVisibility.load();
     } catch (_) {}
+    await _loadWheelState();
+    if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
   }
 
@@ -102,13 +116,35 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Best-effort load of preset, wheel mode, and per-preset degree.
+  Future<void> _loadWheelState() async {
+    try {
+      _preset = await GamePreset.load();
+    } catch (_) {}
+    try {
+      _wheelMode = await WheelMode.load();
+    } catch (_) {}
+    try {
+      _rotationDegree = await RotationDegree.load(_preset);
+    } catch (_) {}
+  }
+
+  Future<void> refreshWheel() async {
+    await _loadWheelState();
+    if (isRotatable) _awaitingCalibration = false;
+    notifyListeners();
+  }
+
   Future<void> refreshSettings() async {
     await refreshPedalSides();
     await refreshVisibility();
+    await refreshWheel();
   }
 
-  /// Syncs the calibration gate with the lifecycle pause flag.
+  /// Syncs the calibration gate with the lifecycle pause flag. Rotatable
+  /// steering cannot drift, so the gate never engages there.
   void setAwaitingCalibration(bool value) {
+    if (isRotatable) value = false;
     if (_awaitingCalibration == value) return;
     _awaitingCalibration = value;
     notifyListeners();
@@ -142,6 +178,14 @@ class DrivingViewModel extends ChangeNotifier {
     _sensorRepository.setCenter();
   }
 
+  /// Applies rotatable-wheel steering. Bypasses the gyro deadband so finger
+  /// feedback stays 1:1; always transmits, so spring-back to zero is sent.
+  void setRotatableSteering(double angle) {
+    _steering = SteeringState(angle: angle.clamp(-1.0, 1.0).toDouble());
+    notifyListeners();
+    _sendState();
+  }
+
   /// Re-centers the sensor and re-opens input. The caller reconnects via
   /// [lastTarget] when non-null.
   void confirmCalibration() {
@@ -170,7 +214,7 @@ class DrivingViewModel extends ChangeNotifier {
   }
 
   void _onSensorAngle(double angle) {
-    if (_awaitingCalibration || _draggingWheel) return;
+    if (_awaitingCalibration || _draggingWheel || isRotatable) return;
     if ((_steering.angle - angle).abs() < 0.002) return;
     _steering = SteeringState(angle: angle);
     notifyListeners();

@@ -53,6 +53,9 @@ class SettingsViewModel extends ChangeNotifier {
       _pedalSides = sides.asMap();
     } catch (_) {}
     try {
+      _preset = await _settingsRepository.getPreset();
+    } catch (_) {}
+    try {
       _wheelMode = await _settingsRepository.getWheelMode();
     } catch (_) {}
     try {
@@ -119,6 +122,7 @@ class SettingsViewModel extends ChangeNotifier {
       _rotationDegree = RotationDegree.fallback;
     }
     notifyListeners();
+    await _settingsRepository.setPreset(v);
   }
 
   Future<void> setBinding(ControlId c, String value) async {
