@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dashboard_input.dart';
 
 /// Game-specific button presets. Wire values mirror desktop InputMapper defaults (ETS2).
@@ -8,6 +10,24 @@ enum GamePreset {
   const GamePreset(this.wireValue, this.label);
   final String wireValue;
   final String label;
+
+  static const String prefsKey = 'wheeldeck.game_preset';
+  static const GamePreset fallback = ets2;
+
+  static GamePreset fromWireValue(String? v) => GamePreset.values
+      .firstWhere((p) => p.wireValue == v, orElse: () => fallback);
+
+  /// Loads the persisted preset, defaulting to ETS2. Needed so driving can
+  /// resolve per-preset settings (e.g. rotation degrees).
+  static Future<GamePreset> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    return fromWireValue(prefs.getString(prefsKey));
+  }
+
+  Future<void> save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(prefsKey, wireValue);
+  }
 
   /// Default bindings for keyboard / gamepad, mirroring WheelDeck.Core InputMapper.
   static const Map<ControlId, String> ets2Keyboard = {

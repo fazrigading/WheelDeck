@@ -19,6 +19,9 @@ class SettingsRepository {
   Future<ControllerVisibility> getVisibility() => ControllerVisibility.load();
   Future<void> setVisibility(ControllerVisibility v) => v.save();
 
+  Future<GamePreset> getPreset() => GamePreset.load();
+  Future<void> setPreset(GamePreset preset) => preset.save();
+
   Future<WheelMode> getWheelMode() => WheelMode.load();
   Future<void> setWheelMode(WheelMode mode) => mode.save();
 
@@ -57,6 +60,7 @@ class SettingsRepository {
 
   Future<void> resetAll() async {
     await InputMapping.keyboard.save();
+    await GamePreset.ets2.save();
     await const ControllerVisibility(showClutch: false, showDashboard: true)
         .save();
     await PedalSides({}).save();

@@ -19,6 +19,7 @@ import '../view_models/driving_view_model.dart';
 import 'calibration_overlay.dart';
 import 'dashboard_panel.dart';
 import 'pedal_panel.dart';
+import 'rotatable_wheel.dart';
 import 'wheel_view.dart';
 
 /// The post-connection driving view: steering wheel, pedal bars, and dashboard
@@ -31,8 +32,8 @@ import 'wheel_view.dart';
 /// latency target of sub-50ms round trip.
 ///
 /// Pauses input and disconnects on lifecycle interruptions (call, screen lock,
-/// backgrounding). On resume, the user must re-confirm steering calibration
-/// before input resumes.
+/// backgrounding). On resume in gyro mode, the user must re-confirm steering
+/// calibration before input resumes; rotatable mode resumes directly.
 class DrivingView extends StatefulWidget {
   const DrivingView({super.key, required this.coordinator, this.viewModel});
 
@@ -163,11 +164,13 @@ class _DrivingViewState extends State<DrivingView> {
       listenable: _viewModel,
       builder: (context, _) {
         final calibrating = _viewModel.awaitingCalibration;
+        // Rotatable steering cannot drift: no calibration gate, no recentering.
+        final rotatable = _viewModel.isRotatable;
         return Scaffold(
           appBar: AppBar(
             title: const Text('Driving'),
             actions: [
-              if (!calibrating)
+              if (!calibrating && !rotatable)
                 IconButton(
                   key: const Key('recalibrate-button'),
                   icon: const Icon(Icons.center_focus_strong),
@@ -194,7 +197,7 @@ class _DrivingViewState extends State<DrivingView> {
               ),
             ],
           ),
-          floatingActionButton: calibrating
+          floatingActionButton: calibrating || rotatable
               ? null
               : FloatingActionButton.small(
                   key: const Key('recalibrate-fab'),
@@ -241,17 +244,25 @@ class _DrivingViewState extends State<DrivingView> {
             Expanded(
               flex: 5,
               child: Center(
-                child: GestureDetector(
-                  onHorizontalDragStart: (_) => _viewModel.onWheelDragStart(),
-                  onHorizontalDragUpdate: (details) =>
-                      _viewModel.onWheelDragUpdate(details.delta.dx),
-                  onHorizontalDragEnd: (_) => _viewModel.onWheelDragEnd(),
-                  onDoubleTap: () => _viewModel.onWheelDragEnd(),
-                  child: WheelView(
-                    angle: _viewModel.steering.angle,
-                    size: wheelSize,
-                  ),
-                ),
+                child: _viewModel.isRotatable
+                    ? RotatableWheel(
+                        degrees: _viewModel.rotationDegree,
+                        size: wheelSize,
+                        onChanged: _viewModel.setRotatableSteering,
+                      )
+                    : GestureDetector(
+                        onHorizontalDragStart: (_) =>
+                            _viewModel.onWheelDragStart(),
+                        onHorizontalDragUpdate: (details) =>
+                            _viewModel.onWheelDragUpdate(details.delta.dx),
+                        onHorizontalDragEnd: (_) =>
+                            _viewModel.onWheelDragEnd(),
+                        onDoubleTap: () => _viewModel.onWheelDragEnd(),
+                        child: WheelView(
+                          angle: _viewModel.steering.angle,
+                          size: wheelSize,
+                        ),
+                      ),
               ),
             ),
             Expanded(
