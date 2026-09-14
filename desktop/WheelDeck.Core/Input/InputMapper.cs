@@ -17,6 +17,11 @@ public sealed class InputMapper
             [ControlId.TurnSignalLeft] = KeyCode.LeftBracket,
             [ControlId.TurnSignalRight] = KeyCode.RightBracket,
             [ControlId.HeadlightToggle] = KeyCode.L,
+            // Phone-held light cycle: three distinct IDs, one headlight key.
+            // ETS2 advances its own light state per pulse.
+            [ControlId.LightsOff] = KeyCode.L,
+            [ControlId.LightsParking] = KeyCode.L,
+            [ControlId.LightsLowbeam] = KeyCode.L,
             [ControlId.HighBeamToggle] = KeyCode.K,
             [ControlId.Wipers] = KeyCode.P,
             [ControlId.CruiseToggle] = KeyCode.C,
@@ -76,6 +81,9 @@ public sealed class InputMapper
             [ControlId.TurnSignalLeft] = ButtonId.DPadLeft,
             [ControlId.TurnSignalRight] = ButtonId.DPadRight,
             [ControlId.HeadlightToggle] = ButtonId.B,
+            [ControlId.LightsOff] = ButtonId.B,
+            [ControlId.LightsParking] = ButtonId.B,
+            [ControlId.LightsLowbeam] = ButtonId.B,
             [ControlId.HighBeamToggle] = ButtonId.Y,
             [ControlId.Wipers] = ButtonId.X,
             [ControlId.CruiseToggle] = ButtonId.LeftBumper,

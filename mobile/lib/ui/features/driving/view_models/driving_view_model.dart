@@ -1,14 +1,17 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../data/repositories/connection_repository.dart';
 import '../../../../data/repositories/pedal_repository.dart';
 import '../../../../data/repositories/sensor_repository.dart';
+import '../../../../data/repositories/settings_repository.dart';
 import '../../../../domain/models/connection_target.dart';
 import '../../../../domain/models/pedal_state.dart';
 import '../../../../domain/models/steering_state.dart';
 import '../../../../data/services/controller_preset.dart';
 import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/dashboard_send_gate.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
@@ -29,12 +32,16 @@ class DrivingViewModel extends ChangeNotifier {
     required this._dashboardInput,
     bool initialAwaitingCalibration = false,
   })  : _awaitingCalibration = initialAwaitingCalibration {
+    _sendGate = DashboardSendGate(
+      send: (control, action) =>
+          _connectionRepository.sendButtonEvent(control, action),
+      bindingFor: _bindingFor,
+    );
     _sensorRepository.onAngleChanged(_onSensorAngle);
     _sensorRepository.start();
     _pedalRepository.onStateChanged(_onPedals);
     _dashboardInput.onControlActivated(
-      (control, action) =>
-          _connectionRepository.sendButtonEvent(control, action),
+      (control, action) => _sendGate.handle(control, action),
     );
   }
 
@@ -42,6 +49,7 @@ class DrivingViewModel extends ChangeNotifier {
   final SensorRepository _sensorRepository;
   final PedalRepository _pedalRepository;
   final DashboardInput _dashboardInput;
+  late final DashboardSendGate _sendGate;
 
   SteeringState _steering = SteeringState.centered;
   bool _awaitingCalibration;
@@ -50,6 +58,8 @@ class DrivingViewModel extends ChangeNotifier {
   Map<PedalType, PedalSide> _pedalSides = PedalSides.defaults().asMap();
   ControllerVisibility _visibility = ControllerVisibility.fallback;
   GamePreset _preset = GamePreset.fallback;
+  InputMapping _mapping = InputMapping.keyboard;
+  Map<String, String> _bindingOverrides = {};
   WheelMode _wheelMode = WheelMode.fallback;
   int _rotationDegree = RotationDegree.fallback;
 
@@ -67,6 +77,21 @@ class DrivingViewModel extends ChangeNotifier {
 
   /// Raw pedal input for the pedal panel during migration.
   PedalInput get pedalInput => _pedalRepository.input;
+
+  /// Phone-held send gate: drops unbound controls, cycles the headlight IDs,
+  /// and holds signal/hazard blink state.
+  DashboardSendGate get sendGate => _sendGate;
+
+  /// Resolves the per-mode binding for [control]: user override first, then
+  /// the preset default. Empty means unbound; the gate sends nothing.
+  String _bindingFor(ControlId control) {
+    final isGamepad = _mapping == InputMapping.gamepad;
+    final override =
+        _bindingOverrides[SettingsRepository.bindingKey(control, isGamepad)];
+    // A stored override wins verbatim: empty means unbound (send nothing).
+    if (override != null) return override;
+    return _preset.bindingFor(control, isGamepad);
+  }
 
   /// Dashboard event forwarder for the dashboard panel.
   DashboardInput get dashboardInput => _dashboardInput;
@@ -86,8 +111,8 @@ class DrivingViewModel extends ChangeNotifier {
   /// never throws, so driving still works when storage is unavailable.
   Future<void> init() async {
     try {
-      final mapping = await InputMapping.load();
-      _connectionRepository.sendMappingMode(mapping);
+      _mapping = await InputMapping.load();
+      _connectionRepository.sendMappingMode(_mapping);
     } catch (_) {}
     try {
       final sides = await PedalSides.load();
@@ -97,6 +122,7 @@ class DrivingViewModel extends ChangeNotifier {
       _visibility = await ControllerVisibility.load();
     } catch (_) {}
     await _loadWheelState();
+    await _loadBindings();
     if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
   }
@@ -139,6 +165,26 @@ class DrivingViewModel extends ChangeNotifier {
     await refreshPedalSides();
     await refreshVisibility();
     await refreshWheel();
+    try {
+      _mapping = await InputMapping.load();
+    } catch (_) {}
+    await _loadBindings();
+  }
+
+  /// Best-effort load of per-mode binding overrides, so the send gate drops
+  /// unbound controls. Never throws.
+  Future<void> _loadBindings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isGamepad = _mapping == InputMapping.gamepad;
+      final overrides = <String, String>{};
+      for (final c in ControlId.values) {
+        final key = SettingsRepository.bindingKey(c, isGamepad);
+        final value = prefs.getString(key);
+        if (value != null) overrides[key] = value;
+      }
+      _bindingOverrides = overrides;
+    } catch (_) {}
   }
 
   /// Syncs the calibration gate with the lifecycle pause flag. Rotatable
@@ -208,6 +254,7 @@ class DrivingViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _sendGate.dispose();
     _sensorRepository.stop();
     _pedalRepository.dispose();
     super.dispose();

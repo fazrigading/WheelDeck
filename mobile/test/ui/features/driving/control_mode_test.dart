@@ -57,6 +57,9 @@ void main() {
     test('new controls carry TODO defaults', () {
       const expected = {
         ControlId.hazardLights: 'F',
+        ControlId.lightsOff: 'L',
+        ControlId.lightsParking: 'L',
+        ControlId.lightsLowbeam: 'L',
         ControlId.beaconLights: 'O',
         ControlId.flasher: 'J',
         ControlId.horn: 'H',
