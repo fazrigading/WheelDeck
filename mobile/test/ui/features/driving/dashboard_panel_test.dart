@@ -220,4 +220,21 @@ void main() {
     expect(container.constraints,
         BoxConstraints.tight(const Size(64, 64)));
   });
+
+  testWidgets('small phones fall back to rounded rectangles', (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    await pumpPanel(tester);
+
+    final container = tester.widget<AnimatedContainer>(
+      find.descendant(
+        of: find.byKey(const ValueKey('dashboard-wipers')),
+        matching: find.byType(AnimatedContainer),
+      ),
+    );
+    final decoration = container.decoration as BoxDecoration;
+    expect(decoration.shape, BoxShape.rectangle);
+    expect(decoration.borderRadius, BorderRadius.circular(16));
+  });
 }
