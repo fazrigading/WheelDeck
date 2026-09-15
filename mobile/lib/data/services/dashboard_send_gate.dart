@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_initializing_formals — public param names map to private fields.
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
