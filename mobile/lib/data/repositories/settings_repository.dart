@@ -1,48 +1,85 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/controller_type.dart';
+import '../services/controller_preset.dart';
+import '../services/controller_visibility.dart';
 import '../services/dashboard_input.dart';
+import '../services/dashboard_visibility.dart';
+import '../services/engine_start_mode.dart';
 import '../services/input_mapping.dart';
-import '../services/pedal_layout.dart';
+import '../services/pedal_input.dart';
+import '../services/pedal_side.dart';
+import '../services/wheel_mode.dart';
 
-/// Single source of truth for settings (mapping, controller type, pedal layout, bindings).
+/// Single source of truth for settings (mapping, visibility, pedal sides,
+/// wheel mode, rotation degrees, bindings).
 class SettingsRepository {
   const SettingsRepository();
 
   Future<InputMapping> getMapping() => InputMapping.load();
   Future<void> setMapping(InputMapping mapping) => mapping.save();
 
-  Future<ControllerType> getControllerType() => ControllerType.load();
-  Future<void> setControllerType(ControllerType v) => v.save();
+  Future<ControllerVisibility> getVisibility() => ControllerVisibility.load();
+  Future<void> setVisibility(ControllerVisibility v) => v.save();
 
-  Future<PedalLayout> getPedalLayout() => PedalLayout.load();
-  Future<void> setPedalLayout(PedalLayout v) => v.save();
+  Future<GamePreset> getPreset() => GamePreset.load();
+  Future<void> setPreset(GamePreset preset) => preset.save();
 
-  static String _bindingKey(ControlId c, bool isGamepad) =>
+  Future<WheelMode> getWheelMode() => WheelMode.load();
+  Future<void> setWheelMode(WheelMode mode) => mode.save();
+
+  Future<int> getRotationDegree(GamePreset preset) =>
+      RotationDegree.load(preset);
+  Future<void> setRotationDegree(GamePreset preset, int degree) =>
+      RotationDegree.save(preset, degree);
+
+  Future<PedalSides> getPedalSides() => PedalSides.load();
+
+  Future<EngineStartMode> getEngineStartMode() => EngineStartMode.load();
+  Future<void> setEngineStartMode(EngineStartMode mode) => mode.save();
+
+  Future<DashboardVisibility> getDashboardVisibility() =>
+      DashboardVisibility.load();
+  Future<void> setDashboardVisibility(DashboardVisibility visibility) =>
+      visibility.save();
+
+  Future<void> setPedalSide(PedalType pedal, PedalSide side) async {
+    final current = await PedalSides.load();
+    await current.copyWithSide(pedal, side).save();
+  }
+
+  static String bindingKey(ControlId c, bool isGamepad) =>
       'wheeldeck.binding.${isGamepad ? 'gamepad' : 'keyboard'}.${c.wireValue}';
 
   Future<String?> getBindingOverride(ControlId c, bool isGamepad) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_bindingKey(c, isGamepad));
+    return prefs.getString(bindingKey(c, isGamepad));
   }
 
   Future<void> setBindingOverride(ControlId c, bool isGamepad, String value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_bindingKey(c, isGamepad), value);
+    await prefs.setString(bindingKey(c, isGamepad), value);
   }
 
   Future<void> clearBindingOverrides() async {
     final prefs = await SharedPreferences.getInstance();
     for (final c in ControlId.values) {
-      await prefs.remove(_bindingKey(c, true));
-      await prefs.remove(_bindingKey(c, false));
+      await prefs.remove(bindingKey(c, true));
+      await prefs.remove(bindingKey(c, false));
     }
   }
 
   Future<void> resetAll() async {
     await InputMapping.keyboard.save();
-    await ControllerType.full.save();
-    await PedalLayout.layoutA.save();
+    await GamePreset.ets2.save();
+    await const ControllerVisibility(showClutch: false, showDashboard: true)
+        .save();
+    await PedalSides({}).save();
+    await WheelMode.rotatable.save();
+    await EngineStartMode.holdConfirm.save();
+    await const DashboardVisibility(DashboardVisibility.defaults).save();
+    for (final preset in GamePreset.values) {
+      await RotationDegree.save(preset, RotationDegree.fallback);
+    }
     await clearBindingOverrides();
   }
 }

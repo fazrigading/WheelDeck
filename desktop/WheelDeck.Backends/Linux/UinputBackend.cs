@@ -79,7 +79,21 @@ public sealed class UinputBackend : VirtualOutputBackend
             [KeyCode.LeftBracket] = 26,       // KEY_LEFTBRACE
             [KeyCode.RightBracket] = 27,      // KEY_RIGHTBRACE
             [KeyCode.Enter] = 28,             // KEY_ENTER
-            [KeyCode.Escape] = 1              // KEY_ESC
+            [KeyCode.Escape] = 1,             // KEY_ESC
+            [KeyCode.F1] = 59, [KeyCode.F2] = 60, [KeyCode.F3] = 61,
+            [KeyCode.F4] = 62, [KeyCode.F5] = 63, [KeyCode.F6] = 64,
+            [KeyCode.F7] = 65, [KeyCode.F8] = 66, [KeyCode.F9] = 67,
+            [KeyCode.F10] = 68,              // KEY_F1..KEY_F10
+            [KeyCode.Digit0] = 11, [KeyCode.Digit1] = 2, [KeyCode.Digit2] = 3,
+            [KeyCode.Digit3] = 4, [KeyCode.Digit4] = 5, [KeyCode.Digit5] = 6,
+            [KeyCode.Digit6] = 7, [KeyCode.Digit7] = 8, [KeyCode.Digit8] = 9,
+            [KeyCode.Digit9] = 10,           // KEY_0..KEY_9 (top row)
+            [KeyCode.LeftShift] = 42,        // KEY_LEFTSHIFT
+            [KeyCode.LeftCtrl] = 29,         // KEY_LEFTCTRL
+            [KeyCode.Semicolon] = 39,        // KEY_SEMICOLON (US layout)
+            [KeyCode.Quote] = 40,            // KEY_APOSTROPHE (US layout)
+            [KeyCode.ScrollLock] = 70,       // KEY_SCROLLLOCK
+            [KeyCode.Pause] = 119            // KEY_PAUSE
         };
 
     private static readonly int InputEventSize = Marshal.SizeOf<InputEvent>();
