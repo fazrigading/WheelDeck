@@ -15,6 +15,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     public string PortInfo { get; }
 
+    /// <summary>Display-only wheel monitor, fed by authorized state messages.</summary>
+    public WheelMonitorViewModel Monitor { get; }
+
     public string ThemeLabel => ReferenceEquals(_getCurrent(), ThemeVariant.Dark) ? "Dark"
         : ReferenceEquals(_getCurrent(), ThemeVariant.Light) ? "Light"
         : "System";
@@ -23,11 +26,12 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     public ICommand UseLightThemeCommand { get; }
     public ICommand UseDarkThemeCommand { get; }
 
-    public SettingsViewModel(Func<ThemeVariant?> getCurrent, Action<ThemeVariant?> apply, string portInfo)
+    public SettingsViewModel(Func<ThemeVariant?> getCurrent, Action<ThemeVariant?> apply, string portInfo, WheelMonitorViewModel? monitor = null)
     {
         _getCurrent = getCurrent;
         _apply = apply;
         PortInfo = portInfo;
+        Monitor = monitor ?? new WheelMonitorViewModel();
         UseSystemThemeCommand = new RelayCommand(_ => SetTheme(null));
         UseLightThemeCommand = new RelayCommand(_ => SetTheme(ThemeVariant.Light));
         UseDarkThemeCommand = new RelayCommand(_ => SetTheme(ThemeVariant.Dark));

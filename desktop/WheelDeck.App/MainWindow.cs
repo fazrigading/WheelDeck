@@ -51,6 +51,13 @@ public sealed class MainWindow : Window
             apply: ApplyTheme,
             portInfo: $"Listening on port {WebSocketListener.DefaultPort}");
 
+        // Authorized steering mirrors into the display-only wheel monitor.
+        // State arrives on socket threads, so marshal onto the UI thread.
+        // The monitor never drives output and never touches the mapper.
+        _root.SteeringReceived += state =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                settingsViewModel.Monitor.UpdateFrom(state));
+
         var pages = new Dictionary<string, UserControl>
         {
             ["Connection"] = new ConnectionView(connectionViewModel),

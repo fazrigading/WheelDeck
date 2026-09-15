@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../../../data/repositories/settings_repository.dart';
 import '../../../../data/services/controller_preset.dart';
-import '../../../../data/services/controller_type.dart';
+import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
-import '../../../../data/services/pedal_layout.dart';
+import '../../../../data/services/pedal_input.dart';
+import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/wheel_mode.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../view_models/settings_view_model.dart';
+import 'binding_edit_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.coordinator, this.viewModel});
@@ -51,7 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Reset to defaults?'),
-        content: const Text('This will restore keyboard, full controller, and layout A.'),
+        content: const Text('This will restore keyboard, rotatable 900°, hidden clutch, shown dashboard, and default pedal sides.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Reset')),
@@ -110,42 +115,136 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Controller type
-              Text('Controller type', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              // Wheel mode
+              Text('Wheel mode', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              SegmentedButton<WheelMode>(
+                segments: [
+                  ButtonSegment(
+                      value: WheelMode.rotatable,
+                      label: Text(WheelMode.rotatable.label)),
+                  ButtonSegment(
+                      value: WheelMode.gyro,
+                      label: Text(WheelMode.gyro.label)),
+                ],
+                selected: {_viewModel.wheelMode},
+                onSelectionChanged: (s) => _viewModel.selectWheelMode(s.first),
+              ),
+              const SizedBox(height: 12),
+              if (_viewModel.wheelMode == WheelMode.rotatable) ...[
+                Text('Rotation degrees',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final degree in RotationDegree.allowed)
+                      ChoiceChip(
+                        label: Text('$degree°'),
+                        selected: _viewModel.rotationDegree == degree,
+                        onSelected: (_) =>
+                            _viewModel.selectRotationDegree(degree),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Finger rotation for full lock-to-lock.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              ] else
+                Text('Gyro steering ignores rotation degrees.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              const SizedBox(height: 24),
+
+              // Controller visibility
+              Text('Show controls', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Card(
-                child: RadioGroup<ControllerType>(
-                  groupValue: _viewModel.controllerType,
-                  onChanged: (v) => v != null ? _viewModel.selectControllerType(v) : null,
-                  child: Column(
-                    children: ControllerType.values.map((t) {
-                      return RadioListTile<ControllerType>(
-                        title: Text(t.label),
-                        value: t,
-                        dense: true,
-                      );
-                    }).toList(),
-                  ),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: const Text('Clutch pedal', style: TextStyle(fontSize: 14)),
+                      value: _viewModel.visibility.showClutch,
+                      onChanged: (v) => _viewModel.selectVisibility(
+                        ControllerVisibility(
+                          showClutch: v,
+                          showDashboard: _viewModel.visibility.showDashboard,
+                        ),
+                      ),
+                      dense: true,
+                    ),
+                    SwitchListTile(
+                      title: const Text('Dashboard', style: TextStyle(fontSize: 14)),
+                      value: _viewModel.visibility.showDashboard,
+                      onChanged: (v) => _viewModel.selectVisibility(
+                        ControllerVisibility(
+                          showClutch: _viewModel.visibility.showClutch,
+                          showDashboard: v,
+                        ),
+                      ),
+                      dense: true,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Pedal layout
-              Text('Pedal layout', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              // Pedal sides
+              Text('Pedal sides', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Card(
-                child: RadioGroup<PedalLayout>(
-                  groupValue: _viewModel.pedalLayout,
-                  onChanged: (v) => v != null ? _viewModel.selectPedalLayout(v) : null,
-                  child: Column(
-                    children: PedalLayout.values.map((l) {
-                      return RadioListTile<PedalLayout>(
-                        title: Text(l.label, style: const TextStyle(fontSize: 14)),
-                        value: l,
+                child: Column(
+                  children: [
+                    for (final pedal in PedalType.values)
+                      ListTile(
                         dense: true,
-                      );
-                    }).toList(),
-                  ),
+                        title: Text(_pedalLabel(pedal), style: const TextStyle(fontSize: 14)),
+                        trailing: SegmentedButton<PedalSide>(
+                          segments: const [
+                            ButtonSegment(value: PedalSide.left, label: Text('Left')),
+                            ButtonSegment(value: PedalSide.right, label: Text('Right')),
+                          ],
+                          selected: {_viewModel.pedalSides[pedal] ?? PedalSide.right},
+                          onSelectionChanged: (s) =>
+                              _viewModel.selectPedalSide(pedal, s.first),
+                          style: const ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Engine start mode
+              Text('Engine start', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              SegmentedButton<EngineStartMode>(
+                segments: const [
+                  ButtonSegment(value: EngineStartMode.holdConfirm, label: Text('Hold to confirm')),
+                  ButtonSegment(value: EngineStartMode.singlePress, label: Text('Single press')),
+                ],
+                selected: {_viewModel.engineStartMode},
+                onSelectionChanged: (s) =>
+                    _viewModel.selectEngineStartMode(s.first),
+              ),
+              const SizedBox(height: 24),
+
+              // Dashboard controls
+              Text('Dashboard controls', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Card(
+                child: Column(
+                  children: [
+                    for (final c in DashboardVisibility.toggleable)
+                      SwitchListTile(
+                        title: Text(_controlLabel(c), style: const TextStyle(fontSize: 14)),
+                        value: _viewModel.visibleExtras.contains(c),
+                        onChanged: (_) => _viewModel.toggleExtraControl(c),
+                        dense: true,
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -194,6 +293,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  String _pedalLabel(PedalType p) {
+    switch (p) {
+      case PedalType.accelerator:
+        return 'Accelerator';
+      case PedalType.brake:
+        return 'Brake';
+      case PedalType.clutch:
+        return 'Clutch';
+    }
+  }
+
   String _controlLabel(ControlId c) {
     switch (c) {
       case ControlId.parkingBrake:
@@ -204,47 +314,125 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Turn signal R';
       case ControlId.headlightToggle:
         return 'Headlights';
+      case ControlId.lightsOff:
+        return 'Lights off';
+      case ControlId.lightsParking:
+        return 'Lights parking';
+      case ControlId.lightsLowbeam:
+        return 'Lights low beam';
       case ControlId.highBeamToggle:
-        return 'High beam';
+        return 'High-beam';
       case ControlId.wipers:
         return 'Wipers';
       case ControlId.cruiseToggle:
         return 'Cruise toggle';
       case ControlId.cruiseSetResume:
-        return 'Cruise set/resume';
+        return 'Cruise resume';
       case ControlId.engineStart:
         return 'Engine start';
+      case ControlId.hazardLights:
+        return 'Hazard lights';
+      case ControlId.beaconLights:
+        return 'Beacon lights';
+      case ControlId.flasher:
+        return 'Flasher';
+      case ControlId.horn:
+        return 'Horn';
+      case ControlId.trailer:
+        return 'Trailer';
+      case ControlId.liftDropAxle:
+        return 'Lift/drop axle';
+      case ControlId.cameraView:
+        return 'Camera view';
+      case ControlId.gearUp:
+        return 'Gear up';
+      case ControlId.gearDown:
+        return 'Gear down';
+      case ControlId.engineBrake:
+        return 'Engine brake';
+      case ControlId.airHorn:
+        return 'Air horn';
+      case ControlId.differentialLock:
+        return 'Differential lock';
+      case ControlId.retarderIncrease:
+        return 'Retarder +';
+      case ControlId.retarderDecrease:
+        return 'Retarder -';
+      case ControlId.quickInfo:
+        return 'Quick info';
+      case ControlId.mirrorToggle:
+        return 'Mirror';
+      case ControlId.hudWidgets:
+        return 'HUD widgets';
+      case ControlId.vehicleAdjustment:
+        return 'Vehicle adjustment';
+      case ControlId.navigationZoomOut:
+        return 'Nav zoom out';
+      case ControlId.widgetOptions:
+        return 'Widget options';
+      case ControlId.services:
+        return 'Services';
+      case ControlId.quickSave:
+        return 'Quick save';
+      case ControlId.quickLoad:
+        return 'Quick load';
+      case ControlId.screenshot:
+        return 'Screenshot';
+      case ControlId.garageManager:
+        return 'Garage';
+      case ControlId.audioPlayer:
+        return 'Audio player';
+      case ControlId.shiftToDrive:
+        return 'Shift to drive';
+      case ControlId.shiftToReverse:
+        return 'Shift to reverse';
+      case ControlId.shiftToNeutral:
+        return 'Shift to neutral';
+      case ControlId.engineElectricity:
+        return 'Engine electricity';
+      case ControlId.adaptiveCruise:
+        return 'Adaptive cruise';
+      case ControlId.cruiseSpeedIncrease:
+        return 'Cruise speed +';
+      case ControlId.cruiseSpeedDecrease:
+        return 'Cruise speed -';
+      case ControlId.laneAssistant:
+        return 'Lane assistant';
+      case ControlId.laneKeeping:
+        return 'Lane keeping';
+      case ControlId.emergencyBrake:
+        return 'Emergency brake';
+      case ControlId.wipersBack:
+        return 'Wipers back';
+      case ControlId.audioPlayPause:
+        return 'Audio play/pause';
+      case ControlId.audioNext:
+        return 'Audio next';
+      case ControlId.audioPrevious:
+        return 'Audio previous';
+      case ControlId.audioVolumeUp:
+        return 'Audio vol +';
+      case ControlId.audioVolumeDown:
+        return 'Audio vol -';
+      case ControlId.audioFavorite:
+        return 'Audio favorite';
     }
   }
 
   void _editBinding(ControlId c, String current, bool isGamepad) {
-    final ctrl = TextEditingController(text: current);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Edit ${_controlLabel(c)}'),
-        content: TextField(
-          controller: ctrl,
-          decoration: InputDecoration(labelText: isGamepad ? 'Button' : 'Key', border: const OutlineInputBorder()),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () async {
-              final value = ctrl.text.trim();
-              Navigator.pop(ctx);
-              await _viewModel.setBinding(c, value);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${_controlLabel(c)} → $value')),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+    BindingEditDialog.show(
+      context,
+      title: _controlLabel(c),
+      current: current,
+      isGamepad: isGamepad,
+      onSave: (value) async {
+        await _viewModel.setBinding(c, value);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${_controlLabel(c)} → $value')),
+          );
+        }
+      },
     );
   }
 }

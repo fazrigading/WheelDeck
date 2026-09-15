@@ -27,7 +27,21 @@ public sealed class SendInputKeySimulator : IDisposable
             [KeyCode.LeftBracket] = 0xDB,    // VK_OEM_4
             [KeyCode.RightBracket] = 0xDD,   // VK_OEM_6
             [KeyCode.Enter] = 0x0D,          // VK_RETURN
-            [KeyCode.Escape] = 0x1B          // VK_ESCAPE
+            [KeyCode.Escape] = 0x1B,         // VK_ESCAPE
+            [KeyCode.F1] = 0x70, [KeyCode.F2] = 0x71, [KeyCode.F3] = 0x72,
+            [KeyCode.F4] = 0x73, [KeyCode.F5] = 0x74, [KeyCode.F6] = 0x75,
+            [KeyCode.F7] = 0x76, [KeyCode.F8] = 0x77, [KeyCode.F9] = 0x78,
+            [KeyCode.F10] = 0x79,            // VK_F1..VK_F10
+            [KeyCode.Digit0] = 0x30, [KeyCode.Digit1] = 0x31, [KeyCode.Digit2] = 0x32,
+            [KeyCode.Digit3] = 0x33, [KeyCode.Digit4] = 0x34, [KeyCode.Digit5] = 0x35,
+            [KeyCode.Digit6] = 0x36, [KeyCode.Digit7] = 0x37, [KeyCode.Digit8] = 0x38,
+            [KeyCode.Digit9] = 0x39,         // top-row digits, not numpad
+            [KeyCode.LeftShift] = 0xA0,      // VK_LSHIFT
+            [KeyCode.LeftCtrl] = 0xA2,       // VK_LCONTROL
+            [KeyCode.Semicolon] = 0xBA,      // VK_OEM_1 (US layout)
+            [KeyCode.Quote] = 0xDE,          // VK_OEM_7 (US layout)
+            [KeyCode.ScrollLock] = 0x91,     // VK_SCROLL
+            [KeyCode.Pause] = 0x13           // VK_PAUSE
         };
 
     private readonly HashSet<KeyCode> _pressed = new();
