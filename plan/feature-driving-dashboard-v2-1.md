@@ -1,6 +1,6 @@
 ---
 goal: Revamp the driving dashboard as a cell grid, fix fourteen reported defects, and ship the Sequential layout preset
-version: 1.0
+version: 1.1
 date_created: 2026-09-17
 last_updated: 2026-09-17
 owner: Fazri Gading
@@ -14,21 +14,34 @@ tags: [feature, redesign, mobile, desktop, protocol]
 
 This plan rebuilds the mobile driving screen's rotatable layout as a cell grid
 and resolves fourteen reported defects. The grid divides the landscape screen
-into 2 rows x 3 columns of blocks, each block 4 rows x 5 columns of cells, so one
-cell is exactly 4:3. The first layout preset rendered by the grid is
-**Sequential**, which uses gear-up and gear-down shifting.
+into 2 rows x 3 columns of blocks, each block 4 rows x 5 columns of cells; cell
+size follows the screen (`W/15 x H/8`) with no aspect guideline. The first
+layout preset rendered by the grid is **Sequential**, which uses gear-up and
+gear-down shifting.
 
 Gyro mode keeps its current layout structure. Only its signal placement changes,
 because signals stop being a bespoke widget.
 
 Three follow-on phases expand the control and key enums so the preset's
 remaining cells can be filled. Those phases are mechanical plumbing with no new
-behaviour, except Phase 2c, which adds the camera pad and its interaction mode.
+behaviour, except Phase 7, which adds the camera pad and its interaction mode.
 
 This plan supersedes the design notes in `plan/plan-revamp-dashboard-v2.md`.
 Deferred work — a user-editable layout, custom profiles, additional presets, and
 camera control types beyond the D-pad — is recorded in
 `plan/feature-custom-button-layout-1.md`.
+
+### Revision note (v1.1)
+
+A design review settled the geometry, the hazard model, and the binding story:
+cells follow the screen with no aspect target; the wheel is horizontally
+centered in its slot; hazard and turn signals are independent (REQ-021); the
+camera pad encodes its input mode in the wire identifiers — thirteen controls
+total (REQ-017, `docs/adr/0006-camera-pad-wire-identifiers.md`); gyro signals
+render only in the pedal-column row (REQ-018); bindings are gamepad-first with
+hybrid routing on the desktop and a keyboard fallback on the phone, and the
+mapping default flips to gamepad (REQ-022 through REQ-026). Preset-scoped
+desktop binding tables are deferred to `plan/feature-custom-button-layout-1.md`.
 
 ## 1. Requirements & Constraints
 
@@ -36,11 +49,13 @@ camera control types beyond the D-pad — is recorded in
 
 - **REQ-001**: The top bar (`AppBar`) is removed from the driving screen
   entirely. Recalibrate stays reachable via the existing floating action button.
-- **REQ-002**: Every dashboard button is rectangular, not circular. A 1x1 cell is
-  4:3. Gear buttons are 2x2 cells.
-- **REQ-003**: The rotatable steering wheel sits flush to the screen's
-  bottom-left corner, fully visible, sized from its block. At 2400x1080 the
-  diameter is 540 and 100 logical pixels of clearance remain to its right.
+- **REQ-002**: Every dashboard button is rectangular, not circular. A 1x1 cell
+  is `W/15 x H/8`; its aspect follows the screen and no aspect guideline is
+  imposed. Gear buttons are 2x2 cells.
+- **REQ-003**: The rotatable steering wheel is sized from its block: diameter
+  equals the block's pixel height (540 at 2400x1080), fits inside its 4x4-cell
+  slot, horizontally centered with equal margins left and right (~50 device px
+  per side at 2400x1080), flush with the slot's bottom edge, fully visible.
 - **REQ-004**: Pedal height in rotatable mode is exactly half the screen height,
   anchored bottom-right, with a small inset inside each bar.
 - **REQ-005**: The region between the wheel and the pedals renders dashboard
@@ -79,23 +94,53 @@ camera control types beyond the D-pad — is recorded in
   the Sequential shifting scheme. The preset is authoritative for placement in
   rotatable mode.
 - **REQ-017**: Block C contains a 3x3 camera pad with eight directions and a
-  center cell. Numpad mode sends `Numpad7/8/9`, `Numpad4/6`, `Numpad1/2/3`.
-  Arrow mode sends the four arrow keys, with all four diagonals disabled. The
-  center cell sends `Numpad5` (recenter) on tap and switches input mode on a
-  three-second hold. Arrow mode has no recenter key, so its center cell only
-  switches back.
+  center cell. The pad's input mode is encoded in the wire identifiers
+  (`docs/adr/0006-camera-pad-wire-identifiers.md`): numpad mode sends
+  `camera_pad_up`, `camera_pad_down`, `camera_pad_left`, `camera_pad_right`,
+  `camera_pad_up_left`, `camera_pad_up_right`, `camera_pad_down_left`,
+  `camera_pad_down_right`, which the desktop resolves to `Numpad7/8/9`,
+  `Numpad4/6`, `Numpad1/2/3`, and `camera_pad_recenter` (`Numpad5`) on tap.
+  Arrow mode sends `camera_pad_arrow_up`, `camera_pad_arrow_down`,
+  `camera_pad_arrow_left`, `camera_pad_arrow_right`, which the desktop resolves
+  to the arrow keys; the four diagonals are disabled and have no wire
+  identifiers. The center cell switches input mode on a three-second hold.
+  Arrow mode has no recenter key, so its center cell only switches back.
 - **REQ-018**: Turn signals are ordinary grid entries rendered by
   `DashboardControl`, not a separate widget. Blink state is derived from the
-  existing send-gate state.
+  existing send-gate state. In gyro mode the signals render only in the
+  pedal-column signal row, in both dashboard states;
+  `DashboardPanel.coreEntries` is not extended with them.
 - **REQ-019**: `showDashboard` is ignored in rotatable mode; blocks B, C, and E
   always render there.
 - **REQ-020**: User binding overrides win over preset defaults. Switching
   presets must never discard a per-control override made in Settings.
+- **REQ-021**: Hazard and the individual turn signals are independent. A signal
+  tap while hazard is on sends normally and the signal cell blinks its own
+  state; hazard is unaffected and keeps blinking. The former suppression branch
+  is removed. Left/right mutual exclusion (REQ-009) is unchanged.
+- **REQ-022**: Binding routing is hybrid. In gamepad mapping mode a control
+  presses its virtual controller button when one is bound, otherwise its
+  keyboard key; in keyboard mode the priority is reversed.
+  `InputMapper.ApplyButton` treats the mapping mode as a route priority, not an
+  exclusivity switch.
+- **REQ-023**: In gamepad mode the phone's binding resolution falls back to the
+  keyboard preset map for controls the gamepad map lacks, so the send gate, the
+  Settings binder, and cell enabled-states agree with what the desktop fires.
+- **REQ-024**: `InputMapping` defaults to `gamepad`; reset-to-defaults restores
+  `gamepad`.
+- **REQ-025**: The `mapping` frame gains `protocol/schema/mapping_message.json`,
+  mirroring the existing message schemas.
+- **REQ-026**: The Sequential preset's keyboard defaults are: audio row
+  `L`/`J`/`K`/`U`/`O` (Vol-, Prev, Play/Pause, Next, Vol+); menu `Escape`, world
+  map `M`, photo mode `EqualSign`, activate `Enter`; the remaining new-control
+  keys per the original research (TASK-046). Still inert by design: adaptive
+  cruise, lane keeping, lane assistant, cruise speed increase/decrease,
+  emergency brake, shift to neutral, engine electricity.
 
 ### Constraints
 
-- **CON-001**: A 1x1 cell is `W/15 x H/8`. On a landscape phone this is 4:3.
-  No fixed 64-pixel control size survives.
+- **CON-001**: A 1x1 cell is `W/15 x H/8`; its aspect follows the screen. No
+  fixed 64-pixel control size survives.
 - **CON-002**: Every `KeyCode` member requires a row in **both** backend tables:
   `SendInputKeySimulator.VirtualKeyCodes` and `UinputBackend.KeyCodes`.
   `desktop/WheelDeck.Tests/KeyCodeCoverageTests.cs` fails the build otherwise,
@@ -111,10 +156,10 @@ camera control types beyond the D-pad — is recorded in
 - **CON-005**: No new dependency is added to either `pubspec.yaml` or the
   desktop solution. The grid, the drag-hit-testing, and the tap-or-hold
   interaction all use `flutter/material.dart`.
-- **CON-006**: The camera pad's direction keys are not resolvable through the
-  shared send gate's binding lookup, because `Numpad7` and the arrow equivalent
-  are two different desktop keys for one control. The pad performs a local input
-  remap before the event reaches the gate.
+- **CON-006**: The camera pad's input mode is encoded in the wire identifiers
+  themselves (numpad set vs arrow set), so the shared send gate resolves them
+  like any other control. The pad selects the mode-resolved `ControlId` before
+  the event reaches the gate. See `docs/adr/0006-camera-pad-wire-identifiers.md`.
 
 ### Guidelines and patterns
 
@@ -158,14 +203,14 @@ camera control types beyond the D-pad — is recorded in
 | TASK-002 | In the same file, wrap the `Scaffold` in `PopScope(canPop: false, onPopInvokedWithResult: ...)`. Add `Future<void> _onExitRequested()` showing an `AlertDialog` titled `Exit driving mode?` with three actions: `Settings`, `Disconnect`, `Stay`. `Settings` pops the dialog, awaits `Navigator.push` of `SettingsScreen(coordinator: widget.coordinator)`, then awaits `_viewModel.refreshSettings()`. `Stay` pops the dialog with no action. Satisfies REQ-014. | | |
 | TASK-003 | In the same file, implement the dialog's `Disconnect` action to pop the dialog, then `await _viewModel.disconnect()` and return. Delete the existing `_onDisconnect` method (currently lines 120-127) and its `Navigator.push` of `ConnectionScreen`. Remove the now-unused import of `connection_screen.dart` (line 18). `_Routing` in `mobile/lib/main.dart` flips to `MenuScreen` on disconnect, so no navigation call is needed. Satisfies REQ-014. | | |
 | TASK-004 | In `mobile/lib/ui/features/driving/views/dashboard_panel.dart`, in `_DashboardControlState.build`, remove the `compact` local and the `shape: compact ? BoxShape.rectangle : BoxShape.circle` branch (currently lines 306-334). Use `shape: BoxShape.rectangle` unconditionally with `borderRadius: BorderRadius.circular(12)`. Satisfies REQ-002 for the grid path. | | |
-| TASK-005 | In the same file, add `_DashboardEntry('SIG-L', ControlId.turnSignalLeft)` and `_DashboardEntry('SIG-R', ControlId.turnSignalRight)` to `DashboardPanel.coreEntries`, and add `ControlId.turnSignalLeft` and `ControlId.turnSignalRight` to `DashboardPanel.coreControls`. Update `ControlId.values` switch arms in `DashboardControl.modeFor` — both already map to `ControlMode.toggle`, so no change is needed there; verify and leave as-is if so. Satisfies REQ-018. | | |
+| TASK-005 | In the same file, make no change to `DashboardPanel.coreEntries`/`coreControls` — the signals are bound directly by the rotatable grid's block A slots (TASK-015) and by the gyro signal row (TASK-029), so the shared `Wrap` must not render them a second time (REQ-018). Verify `DashboardControl.modeFor` maps both signal controls to `ControlMode.toggle` and leave as-is. Satisfies REQ-018. | | |
 | TASK-006 | In the same file, extend `_DashboardControlState._active` so a turn-signal cell reads gate state. Add a branch mirroring the existing hazard branch: when `widget.control` is `turnSignalLeft` or `turnSignalRight` and `gate != null`, return `gate.signalVisualActive(widget.control)`. Extend `_gateDriven` and `_listened` to include the two signal controls so the listener subscribes and unsubscribes correctly. Satisfies REQ-018 and REQ-006's visual path. | | |
 | TASK-007 | In the same file, add `IconData? iconFor(ControlId control)` as a static method on `DashboardPanel`, returning `Icons.arrow_back` for `turnSignalLeft` and `Icons.arrow_forward` for `turnSignalRight`, and `null` otherwise. In `_DashboardControlState.build`, render `Icon(icon, ...)` in place of the label `Text` when the resolver returns non-null, at the existing 11px-equivalent size scaled to the cell. Satisfies REQ-006. | | |
 | TASK-008 | Delete `mobile/lib/ui/features/driving/views/signal_arrows.dart`. Remove the `_arrows` getter (currently `driving_view.dart:273-276`), its uses in `_rotatableLayout` and `_gyroLayout`, and the `import 'signal_arrows.dart'`. Satisfies REQ-018. Placement replacement is TASK-014 and TASK-024. | | |
 | TASK-009 | In `mobile/lib/ui/features/driving/views/pedal_panel.dart`, delete the `label` field from `PedalBar`, the label `Text` widget and its `SizedBox(height: 6)` (currently lines 79-86), and the `label` argument at the `PedalPanel.build` call site. Satisfies REQ-008. | | |
 | TASK-010 | In the same file, add a `Color _hue(PedalType pedal)` top-level or static resolver returning `0xFF1E88E5` for accelerator, `0xFFE53935` for brake, and `0xFFFDD835` for clutch. Change the track `Container` colour (currently `0xFF2A2A2A` at line 105) to the pedal hue with `withValues(alpha: 0.25)` composited over the existing dark base — implement as a `Stack` of the dark `0xFF2A2A2A` layer with the hue at 25% alpha above it. Change the fill `Container` colour (currently `0xFFE53935` at line 115) to the pedal hue at full opacity. Satisfies REQ-008. | | |
-| TASK-011 | In `mobile/lib/data/services/dashboard_send_gate.dart`, in `handle`, in the `turnSignalLeft` / `turnSignalRight` case (currently lines 106-118), after toggling the relevant side on, clear the opposite side when the new state is on. Concretely: when `turnSignalLeft` toggles to on, set `_rightOn = false`; when `turnSignalRight` toggles to on, set `_leftOn = false`. Do not send the cleared control's event. Call `_syncBlinkTimer()` after. Satisfies REQ-009. | | |
-| TASK-012 | Add `mobile/test/ui/features/driving/signal_arrows_test.dart` coverage into `dashboard_panel_test.dart` as a new test group, then delete `signal_arrows_test.dart`. The ported assertions are: a signal cell with `gate` null renders inert, and with an active gate lights during the blink phase. Satisfies REQ-018. | | |
+| TASK-011 | In `mobile/lib/data/services/dashboard_send_gate.dart`, in `handle`, delete the hazard-suppression branch (`if (_hazardOn) return;`, currently lines 106-109) so a signal tap during hazard sends normally. Keep the left/right mutual exclusion: when `turnSignalLeft` toggles to on, set `_rightOn = false` (and the reverse) without sending the cleared control's event. Call `_syncBlinkTimer()` after. Change `signalVisualActive` to own-state blink: left returns `_blinkOn && _leftOn`, right returns `_blinkOn && _rightOn`, hazard returns `_blinkOn && _hazardOn`. Satisfies REQ-009 and REQ-021. | | |
+| TASK-012 | Add `mobile/test/ui/features/driving/signal_arrows_test.dart` coverage into `dashboard_panel_test.dart` as a new test group, then delete `signal_arrows_test.dart`. The ported assertions are: a signal cell with `gate` null renders inert; with an active gate it renders the straight-arrow icon and blinks its own state; it sends normally while hazard is on. Satisfies REQ-018 and REQ-021. | | |
 
 ### Implementation Phase 2
 
@@ -176,20 +221,20 @@ camera control types beyond the D-pad — is recorded in
 |------|-------------|-----------|------|
 | TASK-013 | Create `mobile/lib/data/services/driving_layout.dart`. Define `class CellRect { final int rowStart, colStart, rowSpan, colSpan; }` with a `const` constructor and value equality. Define `class LayoutSlot { final CellRect rect; final ControlId? control; final SlotKind kind; }` where `SlotKind` is an enum of `button`, `pedal`, `wheel`, `gearUp`, `gearDown`, `cameraPad`, `hole`. Define `class DrivingLayout` holding `String name`, `List<LayoutSlot> slots`, and `ControlId? controlAt(CellRect)`. Satisfies REQ-015. | | |
 | TASK-014 | In the same file, define `const List<CellRect> blocks` as the six block regions: A `(1,1,4,5)`, B `(1,6,4,5)`, C `(1,11,4,5)`, D `(5,1,4,5)`, E `(5,6,4,5)`, F `(5,11,4,5)`, using the `(rowStart, colStart, rowSpan, colSpan)` form against the global 8x15 grid. Satisfies REQ-015. | | |
-| TASK-015 | In the same file, add `static DrivingLayout sequential()` returning the Sequential preset slots per the block tables in section 1's geometry: block A buttons `G H I L M N Q R S V W X` plus clutch at cols 4-5 rows 1-4, block C gear up 2x2 at cols 1-2 rows 1-2, gear down 2x2 at cols 1-2 rows 3-4, camera pad 3x3 at cols 3-5 rows 1-3, e-brake, engine brake, and cruise in row 4, block D wheel at cols 1-4 rows 1-4 plus horn, flasher, wiper, light modes in column 5, block E twenty buttons, block F col 1 buttons plus brake at cols 2-3 and accelerator at cols 4-5. Slots whose `ControlId` does not yet exist in the enum are emitted as `SlotKind.hole` with a `null` control. Satisfies REQ-015 and REQ-016. | | |
+| TASK-015 | In the same file, add `static DrivingLayout sequential()` returning the Sequential preset slots per the block tables in `plan/plan-revamp-dashboard-v2-original.md`: block A `G` adaptiveCruise, `H` laneKeeping, `I` laneAssistant, `L` trailerAxle, `M` liftDropAxle, `N` trailer, `Q` hazardLights, `R` beaconLights, `S` differentialLock, `V` turnSignalLeft, `W` turnSignalRight, `X` highBeamToggle, plus clutch at cols 4-5 rows 1-4; block B row 1 audioVolumeDown, audioPrevious, audioPlayPause, audioNext, audioVolumeUp (symbol icons at render time), row 2 driver_window_up, navigation_zoom_in, cruiseSpeedIncrease, retarderIncrease, passenger_window_up, row 3 driver_window_down, navigationZoomOut, cruiseSpeedDecrease, retarderDecrease, passenger_window_down, row 4 overlay_activation, chat_activation, quick_replies, name_tags, push_to_talk; block C gear up 2x2 at cols 1-2 rows 1-2, gear down 2x2 at cols 1-2 rows 3-4, camera pad 3x3 at cols 3-5 rows 1-3, row 4 emergencyBrake, engineBrake, cruiseToggle; block D wheel at cols 1-4 rows 1-4 plus horn, flasher, wipers, headlightToggle in column 5; block E rows 1-4 per the original table (camera_interior..camera_leanout; quickSave, dashboardInfo, nextCamera, hudWidgets, cruiseSetResume; quickInfo, mirrorToggle, screenshot, widgetOptions, services; menu, world_map, photo_mode, garageManager, activate); block F col 1 engineElectricity, engineStart, parkingBrake, shiftToNeutral, plus brake at cols 2-3 and accelerator at cols 4-5. Slots whose `ControlId` does not yet exist in the enum are emitted as `SlotKind.hole` with a `null` control. Satisfies REQ-015 and REQ-016. | | |
 | TASK-016 | Create `mobile/lib/ui/features/driving/views/block_grid.dart`. Implement `class BlockGrid extends StatelessWidget` taking `DrivingLayout layout`, `DashboardInput input`, `String Function(ControlId) bindingFor`, `DashboardSendGate? gate`, `PedalInput pedalInput`, `Set<PedalType> shownPedals`, `ValueChanged<double> onSteering`, and `VoidCallback? onBindRequested`. Render with a single `LayoutBuilder` producing a `Stack` of `Positioned` children, one per slot, each positioned by `rect` scaled against `constraints`. Satisfies REQ-015. | | |
-| TASK-017 | In the same file, build each `LayoutSlot` into a widget by `kind`: `button` and `hole` to a cell-sized `DashboardControl` (holes rendered disabled, matching the existing unbound visual), `pedal` to a `PedalBar` sized to its rect, `gearUp` / `gearDown` to a 2x2 `DashboardControl`, `cameraPad` to a placeholder `SizedBox` in Phase 1 (filled in TASK-036), and `wheel` to `RotatableWheel`. Satisfies REQ-015. | | |
+| TASK-017 | In the same file, build each `LayoutSlot` into a widget by `kind`: `button` and `hole` to a cell-sized `DashboardControl` (holes rendered disabled, matching the existing unbound visual), `pedal` to a `PedalBar` sized to its rect, `gearUp` / `gearDown` to a 2x2 `DashboardControl`, `cameraPad` to a placeholder `SizedBox` in Phase 2 (filled in TASK-059), and `wheel` to `RotatableWheel`. Satisfies REQ-015. | | |
 | TASK-018 | In `driving_view.dart`, replace the body of `_rotatableLayout` (currently lines 280-382) with a single `BlockGrid` built from `DrivingLayout.sequential()`, the view model's input and gate, the visible pedals, and `_viewModel.setRotatableSteering`. Delete the now-orphaned `wheelSize` local, the `gears` local, the manual `Row`/`Expanded`/`Column` nesting, and the inline gear `DashboardControl` loop. Satisfies REQ-015 and REQ-005. | | |
-| TASK-019 | In `block_grid.dart`, size the wheel from block D: diameter equals the block's pixel height, positioned flush to the screen's bottom-left corner. Remove the `clamp(160.0, 480.0)` from `driving_view.dart` (currently line 287) as part of TASK-018's deletion. At 2400x1080 this yields 540 with 100 logical pixels of clearance to the wheel's right. Satisfies REQ-003 and CON-001. | | |
+| TASK-019 | In `block_grid.dart`, size the wheel from block D: diameter equals the block's pixel height, laid out as a square box horizontally centered in the wheel slot with equal margins and flush to the slot's bottom edge. Remove the `clamp(160.0, 480.0)` from `driving_view.dart` (currently line 287) as part of TASK-018's deletion. At 2400x1080 this yields a 540 diameter centered in the 640-wide slot. Satisfies REQ-003 and CON-001. | | |
 | TASK-020 | In `block_grid.dart`, size each pedal bar to its slot rect, which is rows 5-8 — exactly half the screen height — with the pedals in block F anchored to the screen's bottom-right. Replace the fixed `width: 64` in `pedal_panel.dart` (line 76) with a width derived from the slot. Reduce the inter-pedal gap to a fixed 8-pixel inset inside each bar. Satisfies REQ-004. | | |
 | TASK-021 | Verify accelerator is the right-most pedal in the Sequential preset: brake at block F cols 2-3, accelerator at cols 4-5. Assert this in a layout test rather than relying on the visual. Satisfies REQ-012. | | |
 | TASK-022 | In `mobile/lib/ui/features/driving/views/rotatable_wheel.dart`, add a `springBack` bool parameter defaulting to `true` and a `Duration springBackDuration` defaulting to `const Duration(milliseconds: 700)`. In `_onPanEnd`, when `springBack` is true, animate `_accumulated` to zero over that duration with `Curves.easeOutCubic` and call `widget.onChanged(0.0)` on completion; when false, leave `_accumulated` unchanged and call `widget.onChanged(_steering)` so the held angle transmits. Satisfies REQ-007. | | |
 | TASK-023 | In the same file, replace `AnimatedRotation`'s fixed 80ms duration (`:99`) with the animated value driven by TASK-022 so the visual and the reported steering stay coherent, and cancel any in-flight spring-back animation in `_onPanStart` and in `dispose`. Satisfies REQ-007 and PERF-002. | | |
 | TASK-024 | In the same file, change `_RotationArcPainter.paint` (currently lines 134-151) so the fill starts at twelve o'clock and grows toward the turned side. Keep the track as the 180-degree arc from `math.pi` sweeping `math.pi`. Compute the fill start as `math.pi * 3 / 2` (twelve o'clock) and sweep `math.pi / 2 * signedSteering` where `signedSteering` carries the sign, so positive steering sweeps clockwise into the right half and negative sweeps counter-clockwise into the left half. Change the painter's parameter from `progress` (0..1) to `steering` (-1..1) and update `shouldRepaint` accordingly. Satisfies REQ-013. | | |
-| TASK-025 | In `mobile/lib/data/services/wheel_mode.dart`, add `class SpringBack { static const String prefsKey = 'wheeldeck.spring_back'; static const bool fallback = true; static Future<bool> load(); Future<void> save(); }` following PAT-001. Satisfies REQ-007. | | |
+| TASK-025 | Create `mobile/lib/data/services/spring_back.dart` with `class SpringBack { static const String prefsKey = 'wheeldeck.spring_back'; static const bool fallback = true; static Future<bool> load(); Future<void> save(); }` following PAT-001, in its own file like `camera_pad_mode.dart`. Satisfies REQ-007. | | |
 | TASK-026 | In `driving_view_model.dart`, add `bool _springBack = SpringBack.fallback`, a `springBack` getter, load it in `_loadWheelState` (currently lines 176-186), and pass it to `RotatableWheel` from `BlockGrid`. Satisfies REQ-007. | | |
 | TASK-027 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `SwitchListTile` titled `Rotate back to zero` inside the existing `if (_viewModel.wheelMode == WheelMode.rotatable)` block, bound to a new `selectSpringBack` method. In `settings_view_model.dart`, add the `_springBack` field, getter, loader in `init`, persistence method, and include it in `resetToDefaults`. Also add it to the reset-confirmation dialog's content string (currently line 59). Satisfies REQ-007. | | |
-| TASK-028 | Create `mobile/test/data/services/driving_layout_test.dart` asserting: the six block rects do not overlap and cover the 8x15 grid; the Sequential preset's clutch occupies exactly cols 4-5 rows 1-4 of block A; accelerator is right-most in block F; the wheel slot's pixel height equals its pixel width at a 2400x1080 constraint; and every slot with a non-null control names a `ControlId` that exists in `ControlId.values`. Satisfies REQ-015, REQ-012, and REQ-003. | | |
+| TASK-028 | Create `mobile/test/data/services/driving_layout_test.dart` asserting: the six block rects do not overlap and cover the 8x15 grid; the Sequential preset's clutch occupies exactly cols 4-5 rows 1-4 of block A; accelerator is right-most in block F; the wheel's layout box is square with diameter equal to block D's pixel height, horizontally centered with equal margins and flush bottom at a 2400x1080 constraint; and every slot with a non-null control names a `ControlId` that exists in `ControlId.values`. Satisfies REQ-015, REQ-012, and REQ-003. | | |
 
 ### Implementation Phase 3
 
@@ -234,10 +279,10 @@ camera control types beyond the D-pad — is recorded in
 | TASK-041 | Append to `protocol/schema/controls.json`: `driver_window_up`, `driver_window_down`, `passenger_window_up`, `passenger_window_down`, `navigation_zoom_in`, `overlay_activation`, `chat_activation`, `quick_replies`, `name_tags`, `push_to_talk`. Satisfies CON-003. | | |
 | TASK-042 | Append to `protocol/schema/controls.json`: `camera_interior`, `camera_chasing`, `camera_topdown`, `camera_roof`, `camera_leanout`, `dashboard_info`, `next_camera`, `menu`, `world_map`, `photo_mode`, `activate`. Satisfies CON-003. | | |
 | TASK-043 | Add all twenty-one identifiers from TASK-041 and TASK-042 to desktop `ControlId.cs` and mobile `ControlId`, using camelCase identifiers and snake_case wire values. Add a `_controlLabel` arm for each in `settings_screen.dart`. Run both contract tests. Satisfies CON-003. | | |
-| TASK-044 | Add the `KeyCode` members these controls need to `desktop/WheelDeck.Core/Output/KeyCode.cs`: `Tab`, `Comma`, `Dot`, `Slash`, `RightShift`, `RightCtrl`. Satisfies CON-002. | | |
-| TASK-045 | Add a row for each new `KeyCode` from TASK-044 in `SendInputKeySimulator.VirtualKeyCodes` (Windows virtual-key codes) and in `UinputBackend.KeyCodes` (Linux evdev codes). Verify `KeyCodeCoverageTests` passes. Satisfies CON-002. | | |
-| TASK-046 | Register all twenty-one controls in `InputMapper.DefaultKeyBindings` with the keys the Sequential preset specifies, and in `DefaultButtonBindings` with `ButtonId.None` for every control that has no gamepad equivalent. Satisfies CON-002 and REQ-020. | | |
-| TASK-047 | Add the matching keyboard entries to `controller_preset.dart`'s `ets2Keyboard` map for all twenty-one controls. Satisfies REQ-020. | | |
+| TASK-044 | Add the `KeyCode` members these controls need to `desktop/WheelDeck.Core/Output/KeyCode.cs`: `Tab`, `Comma`, `Dot`, `Slash`, `RightShift`, `RightCtrl`, `EqualSign` (menu resolves to the existing `Escape`, world map to `M`, activate to `Enter`; the camera keys reuse the existing `Digit1-5`/`Digit9`). Satisfies CON-002. | | |
+| TASK-045 | Add a row for each new `KeyCode` from TASK-044 in `SendInputKeySimulator.VirtualKeyCodes` (Windows virtual-key codes; `EqualSign` is `VK_OEM_PLUS` 0xBB) and in `UinputBackend.KeyCodes` (Linux evdev codes; `EqualSign` is `KEY_EQUAL`). Verify `KeyCodeCoverageTests` passes. Satisfies CON-002. | | |
+| TASK-046 | Register the twenty-one new controls in `InputMapper.DefaultKeyBindings`: driver_window_up RightShift, navigation_zoom_in Slash, driver_window_down RightCtrl, passenger_window_up Comma, passenger_window_down Dot, overlay_activation Tab, chat_activation Y, quick_replies Q, name_tags Z, push_to_talk X, camera_interior Digit1, camera_chasing Digit2, camera_topdown Digit3, camera_roof Digit4, camera_leanout Digit5, dashboard_info I, next_camera Digit9, menu Escape, world_map M, photo_mode EqualSign, activate Enter. Also give the five audio controls their Sequential-preset keys (audioVolumeDown L, audioPrevious J, audioPlayPause K, audioNext U, audioVolumeUp O), replacing their current `KeyCode.None`. Register all twenty-one in `DefaultButtonBindings` with `ButtonId.None` (no gamepad equivalents). Satisfies CON-002, REQ-022, and REQ-026. | | |
+| TASK-047 | Add the matching keyboard entries to `controller_preset.dart`'s `ets2Keyboard` map for all twenty-one controls (same keys as TASK-046) plus the five audio entries `L/J/K/U/O`. No `ets2Gamepad` additions. Satisfies REQ-020 and REQ-023. | | |
 | TASK-048 | In `driving_layout.dart`, replace the remaining `SlotKind.hole` placeholders in blocks B and E with their real `ControlId`s. Satisfies REQ-016. | | |
 | TASK-049 | Add the total new controls to `DashboardVisibility.toggleable` only if they should be user-toggleable in gyro mode. Decision rule: controls that make sense in a plain grid go in; camera and menu controls do not. Record which ones were added as a comment beside the list. Satisfies REQ-011. | | |
 
@@ -248,18 +293,30 @@ camera control types beyond the D-pad — is recorded in
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-050 | Append to `protocol/schema/controls.json`: `camera_pad_up`, `camera_pad_down`, `camera_pad_left`, `camera_pad_right`, `camera_pad_up_left`, `camera_pad_up_right`, `camera_pad_down_left`, `camera_pad_down_right`, `camera_pad_recenter`. Satisfies CON-003. | | |
-| TASK-051 | Add the nine identifiers to desktop `ControlId.cs` and mobile `ControlId`, plus a `_controlLabel` arm each. Run both contract tests. Satisfies CON-003. | | |
+| TASK-050 | Append to `protocol/schema/controls.json`: `camera_pad_up`, `camera_pad_down`, `camera_pad_left`, `camera_pad_right`, `camera_pad_up_left`, `camera_pad_up_right`, `camera_pad_down_left`, `camera_pad_down_right`, `camera_pad_recenter`, `camera_pad_arrow_up`, `camera_pad_arrow_down`, `camera_pad_arrow_left`, `camera_pad_arrow_right` — thirteen identifiers for the pad. Satisfies CON-003 and REQ-017. | | |
+| TASK-051 | Add the thirteen identifiers to desktop `ControlId.cs` and mobile `ControlId`, plus a `_controlLabel` arm each. Run both contract tests. Satisfies CON-003. | | |
 | TASK-052 | Add the `KeyCode` members `Numpad1` through `Numpad9`, plus `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`, to `KeyCode.cs`. Satisfies CON-002. | | |
 | TASK-053 | Add a row for each new `KeyCode` from TASK-052 in both backend tables. The Windows table needs the VK_NUMPAD1-9 values (0x61-0x69) and VK_LEFT/UP/RIGHT/DOWN (0x25-0x28); the Linux table needs the evdev codes `KEY_KP1`-`KEY_KP9` and `KEY_UP`/`KEY_DOWN`/`KEY_LEFT`/`KEY_RIGHT`. Verify `KeyCodeCoverageTests` passes. Satisfies CON-002. | | |
 | TASK-054 | Create `mobile/lib/data/services/camera_pad_mode.dart` following PAT-001: `enum CameraPadMode { numpad, arrow }` with wire values, a `prefsKey` of `wheeldeck.camera_pad_mode`, and a `fallback` of `numpad`. Satisfies REQ-017. | | |
-| TASK-055 | Create `mobile/lib/ui/features/driving/views/camera_pad.dart`. Render a 3x3 `Grid`-equivalent `Stack` of nine cells. Each direction cell is a `DashboardControl` in `momentary` mode. In arrow mode, disable the four diagonal cells. The center cell is a new `ControlMode.tapOrHold`. Satisfies REQ-017 and CON-006. | | |
+| TASK-055 | Create `mobile/lib/ui/features/driving/views/camera_pad.dart`. Render a 3x3 `Grid`-equivalent `Stack` of nine cells. Each direction cell is a `DashboardControl` in `momentary` mode. In arrow mode, disable the four diagonal cells, which carry no wire identifiers. The center cell is a new `ControlMode.tapOrHold`. Satisfies REQ-017 and CON-006. | | |
 | TASK-056 | In `dashboard_panel.dart`, add `tapOrHold` to the `ControlMode` enum and implement it in `_DashboardControlState`: on press, start a `Timer` of the widget's `holdDuration`; on release before it fires, send `ActionType.press`; on the timer firing, invoke a new `onHoldCompleted` callback, suppress the press, and fire `HapticFeedback.mediumImpact()`. Cancel the timer in `dispose`, satisfying PERF-002. Satisfies REQ-017. | | |
-| TASK-057 | In `camera_pad.dart`, implement the local input remap required by CON-006: the pad holds its own `CameraPadMode` state and calls `input.activate` with the `ControlId` whose desktop default binding matches the active mode. In arrow mode the four diagonals map to nothing and are disabled. Satisfies REQ-017 and CON-006. | | |
+| TASK-057 | In `camera_pad.dart`, resolve the mode through the driving view model (REQ-017's authority lives there): in numpad mode call `input.activate` with the numpad-set `ControlId`; in arrow mode call it with the `camera_pad_arrow_*` `ControlId`. In arrow mode the four diagonals are disabled and emit nothing. Satisfies REQ-017 and CON-006. | | |
 | TASK-058 | In `camera_pad.dart`, give the center cell a visual for both states: a progress indication during the three-second hold, and the active mode (`NUM` or `ARR`) otherwise, so the user can tell which keys the pad is sending. Satisfies REQ-017. | | |
-| TASK-059 | Wire the pad into `block_grid.dart`'s `cameraPad` case, replacing the Phase 1 placeholder from TASK-017. Satisfies REQ-017. | | |
+| TASK-059 | Wire the pad into `block_grid.dart`'s `cameraPad` case, replacing the Phase 2 placeholder from TASK-017. Satisfies REQ-017. | | |
 | TASK-060 | In `settings_view_model.dart` and `settings_screen.dart`, load and expose `CameraPadMode` and include it in `resetToDefaults`. No Settings UI is required — the pad is the switch surface — but the value must persist and reset. Satisfies REQ-017. | | |
-| TASK-061 | Create `mobile/test/ui/features/driving/camera_pad_test.dart` asserting: in numpad mode a tap on the up cell emits the `Numpad8` control; in arrow mode the same cell emits the arrow-valued control; in arrow mode the four diagonals are disabled and emit nothing; a tap on the center emits the recenter control; a three-second hold switches mode, emits no press action, and persists; a hold released early emits the press action and does not switch mode. Satisfies REQ-017 and PERF-002. | | |
+| TASK-061 | Create `mobile/test/ui/features/driving/camera_pad_test.dart` asserting: in numpad mode a tap on the up cell emits `camera_pad_up`; in arrow mode the same cell emits `camera_pad_arrow_up`; in arrow mode the four diagonals are disabled and emit nothing; a tap on the center emits `camera_pad_recenter`; a three-second hold switches mode, emits no press action, and persists; a hold released early emits the press action and does not switch mode. Satisfies REQ-017 and PERF-002. | | |
+
+### Implementation Phase 8
+
+- GOAL-008: Make bindings gamepad-first with hybrid routing. The mapping mode
+  becomes a route priority on the desktop and a display fallback on the phone.
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
+| TASK-062 | In `desktop/WheelDeck.Core/Input/InputMapper.cs`, change `ApplyButton` so `Mode` selects the preferred route with cross-table fallback: in `ControllerButton` mode route through `DefaultButtonBindings` when the control's `ButtonId` is not `None`, otherwise through `DefaultKeyBindings`; in `SimulatedKeyPress` mode the priority is reversed. A control bound to `None` in both tables stays inert. Add a code comment recording the hybrid-routing decision. Satisfies REQ-022. | | |
+| TASK-063 | In `mobile/lib/data/services/controller_preset.dart`, change `bindingFor` so gamepad mode consults `ets2Gamepad` first and falls back to `ets2Keyboard` for controls the gamepad map lacks. The send gate, Settings binder, and cell enabled-states follow automatically. Satisfies REQ-023. | | |
+| TASK-064 | In `mobile/lib/data/services/input_mapping.dart`, flip `fromWireValue`'s fallback from `keyboard` to `gamepad`, and include the mapping in settings `resetToDefaults` so it restores `gamepad`. Satisfies REQ-024. | | |
+| TASK-065 | Create `protocol/schema/mapping_message.json` describing the `{"type":"mapping","mode":"keyboard"|"gamepad"}` frame, mirroring `button_message.json`'s shape. Satisfies REQ-025. | | |
 
 ## 3. Alternatives
 
@@ -310,8 +367,7 @@ camera control types beyond the D-pad — is recorded in
 - **FILE-007**: `mobile/lib/data/services/driving_layout.dart` — new. Block and
   cell model plus the Sequential preset.
 - **FILE-008**: `mobile/lib/data/services/spring_back.dart` — new. Spring-back
-  preference. May be placed inside `wheel_mode.dart` if a separate file is not
-  warranted.
+  preference, in its own file.
 - **FILE-009**: `mobile/lib/data/services/camera_pad_mode.dart` — new. Camera
   pad input mode preference.
 - **FILE-010**: `mobile/lib/ui/features/driving/views/block_grid.dart` — new.
@@ -333,11 +389,13 @@ camera control types beyond the D-pad — is recorded in
   additions.
 - **FILE-019**: `desktop/WheelDeck.Core/Output/KeyCode.cs` — KeyCode additions.
 - **FILE-020**: `desktop/WheelDeck.Core/Input/InputMapper.cs` — key and button
-  binding registrations.
+  binding registrations, plus hybrid routing in `ApplyButton`.
 - **FILE-021**: `desktop/WheelDeck.Backends/Windows/SendInputKeySimulator.cs` —
   Windows virtual-key rows.
 - **FILE-022**: `desktop/WheelDeck.Backends/Linux/UinputBackend.cs` — evdev rows.
 - **FILE-023**: `protocol/schema/controls.json` — schema entries.
+- **FILE-024**: `protocol/schema/mapping_message.json` — new. Schema for the
+  mapping frame.
 
 ## 6. Testing
 
@@ -345,14 +403,17 @@ camera control types beyond the D-pad — is recorded in
   straight-arrow icon, and lights during the gate's blink phase.
 - **TEST-002**: `dashboard_send_gate_test.dart` — turning right on while left is
   on clears left's visual and emits no left-side event; the reverse also holds.
-- **TEST-003**: `dashboard_send_gate_test.dart` — hazard still suppresses
-  individual signals, preserving the existing regression test.
+- **TEST-003**: `dashboard_send_gate_test.dart` — reversed per REQ-021: signals
+  send during hazard, keep blinking their own state, and hazard is unaffected.
+  The old suppression regression test is replaced.
 - **TEST-004**: `pedal_panel_test.dart` — no label text renders; track and fill
   use the correct hue per pedal.
 - **TEST-005**: `driving_layout_test.dart` — the six block rects tile the 8x15
   grid without overlap; clutch occupies cols 4-5 rows 1-4 of block A;
-  accelerator is right-most in block F; the wheel slot is square at a 2400x1080
-  constraint; every non-null slot control exists in `ControlId.values`.
+  accelerator is right-most in block F; the wheel's layout box is square with
+  diameter equal to block D's pixel height, horizontally centered with equal
+  margins and flush bottom at a 2400x1080 constraint; every non-null slot
+  control exists in `ControlId.values`.
 - **TEST-006**: `rotatable_wheel_test.dart` — spring-back on animates to zero
   and reports zero; spring-back off holds the angle and reports it; an in-flight
   spring-back is cancelled by a new drag.
@@ -366,14 +427,24 @@ camera control types beyond the D-pad — is recorded in
   dashboard states; rotatable renders them as block A cells.
 - **TEST-011**: `control_mode_test.dart` — `tapOrHold` sends a press on a short
   tap and calls the hold callback on a long press without sending a press.
-- **TEST-012**: `camera_pad_test.dart` — mode-dependent control emission,
-  diagonals disabled in arrow mode, center-cell tap and hold behaviour, and
-  persistence across a reload.
+- **TEST-012**: `camera_pad_test.dart` — mode-dependent control emission
+  (`camera_pad_*` in numpad mode, `camera_pad_arrow_*` in arrow mode), diagonals
+  disabled in arrow mode, center-cell tap and hold behaviour, and persistence
+  across a reload.
 - **TEST-013**: `mobile/test/data/services/control_contract_test.dart` — must
   pass unchanged after every Phase 5, 6, and 7 enum addition.
 - **TEST-014**: `desktop/WheelDeck.Tests/ControlIdContractTests.cs` and
   `KeyCodeCoverageTests.cs` — must pass unchanged after every Phase 5, 6, and 7
   addition.
+- **TEST-015**: New test group in `desktop/WheelDeck.Tests/` — in gamepad mode a
+  dual-bound control fires its button and a key-only control fires its key; in
+  keyboard mode the reverse; a control bound to `None` in both tables stays
+  inert. Satisfies REQ-022.
+- **TEST-016**: `controller_preset_test.dart` (created if absent) — gamepad mode
+  resolves keyboard-only controls through the keyboard fallback map; a stored
+  override still wins. Satisfies REQ-023.
+- **TEST-017**: `input_mapping_test.dart` (created if absent) — the default
+  mapping is `gamepad` and `resetToDefaults` restores it. Satisfies REQ-024.
 
 ## 7. Risks & Assumptions
 
@@ -395,12 +466,14 @@ camera control types beyond the D-pad — is recorded in
   breakpoint that the current code special-cases. Mitigation: cell sizing is
   already rectangular at every width, so the `compact` branch is removed rather
   than ported; verify on a narrow binding in TEST-001.
-- **RISK-006**: The camera pad's local remap duplicates a mapping that also
-  exists in `InputMapper`, so the two can drift. Mitigation: the pad's remap is
-  the single source for pad keys; `InputMapper` holds `ButtonId.None` for the
-  pad controls so there is no second live mapping to drift.
-- **ASSUMPTION-001**: A 1x1 cell is 4:3 on the target landscape phone, so no
-  separate aspect correction is needed. At 2400x1080 this is exact.
+- **RISK-006**: The camera pad's two identifier sets could drift against the
+  desktop bindings that resolve them. Mitigation: the identifiers are the
+  single source of truth — `InputMapper` binds the numpad set to the Numpad
+  keys and the arrow set to the arrow keys, with `ButtonId.None` for every pad
+  control, so there is no second live mapping to drift.
+- **ASSUMPTION-001**: A 1x1 cell's aspect follows the screen; no aspect
+  correction is applied and none is needed — the grid tiles whatever the screen
+  is. At 2400x1080 a cell is 160x135.
 - **ASSUMPTION-002**: ETS2 cancels the opposite turn signal itself. Verified by
   the user in game. If this changes, REQ-009's no-send rule leaves app and truck
   desynced, and the fallback is to send the cleared signal's key.
@@ -410,6 +483,13 @@ camera control types beyond the D-pad — is recorded in
 - **ASSUMPTION-004**: The 700ms spring-back and its `easeOutCubic` curve are
   starting values, not calibrated ones. Expect to tune them once the wheel is in
   hand, in the same way the release curve in `PedalInput` is tunable.
+- **RISK-007**: Hybrid routing changes which path dual-bound controls take in
+  gamepad mode (button instead of key). Intended; keyboard-mode behaviour is
+  preserved because keys are checked first there, and no button-only controls
+  exist today, so the keyboard-mode fallback path is currently unused.
+- **ASSUMPTION-005**: ETS2's default gamepad bindings cover the driving core as
+  researched, and the phone-side `ets2Gamepad` map mirrors them; extras without
+  gamepad equivalents fall back to their keyboard keys.
 
 ## 8. Related Specifications / Further Reading
 
@@ -422,3 +502,5 @@ camera control types beyond the D-pad — is recorded in
   against.
 - `plan/controls/` and `plan/references/` — ETS2 control screenshots and the
   Logitech, Thrustmaster, and Fanatec button-layout research.
+- `docs/adr/0006-camera-pad-wire-identifiers.md` — why the camera pad's input
+  mode lives in the wire identifiers.

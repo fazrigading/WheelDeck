@@ -49,6 +49,39 @@ _Avoid_: Sensitivity, range, lock
 **Rotation indicator**: Rotating wheel graphic plus an arc above the ring showing rotation.
 _Avoid_: Angle readout, progress ring
 
+**Rotatable grid**: The rotatable-mode dashboard surface: six blocks in 2 rows x 3 columns tiling the landscape screen.
+_Avoid_: Block grid, cell grid, dashboard grid
+
+**Block**: One of the six 4-row x 5-column regions of the rotatable grid, addressed as block[row, col].
+_Avoid_: Region, panel, zone
+
+**Cell**: The 1x1 unit of the rotatable grid: screen width over 15 by screen height over 8. Aspect follows the screen.
+_Avoid_: Tile, square
+
+**Slot**: A rectangular run of cells in a block holding one dashboard item: a control, pedal, gear button, the wheel, or the camera pad.
+_Avoid_: Placement, area
+
+**Hole**: A slot with no control assigned yet; renders disabled.
+_Avoid_: Empty slot, placeholder
+
+**Layout preset**: The named, authoritative arrangement of slots for the rotatable screen; user binding overrides beat preset defaults.
+_Avoid_: Profile, theme, skin
+
+**Sequential**: The first layout preset: gear-up/gear-down sequential shifting, camera pad in the top-right block, wheel bottom-left, pedals bottom-right.
+_Avoid_: Default layout
+
+**Camera pad**: The 3x3 directional pad driving in-game camera look, with a Numpad mode and an Arrow mode and a center cell that recenters or switches mode.
+_Avoid_: D-pad, camera control
+
+**Numpad mode**: Camera pad mode sending numpad keys for directions.
+_Avoid_: Keypad mode
+
+**Arrow mode**: Camera pad mode sending arrow keys; diagonals disabled and no recenter key.
+_Avoid_: Arrow-key mode
+
+**Tap-or-hold**: Cell interaction where a short tap performs the tap action and holding past the threshold performs the hold action instead; never both.
+_Avoid_: Long press, press-and-hold
+
 **Controller visibility**: Independent show/hide for Clutch and Dashboard; Steering Wheel, Accelerator, and Brake always shown.
 _Avoid_: Controller type, toggles
 
@@ -64,7 +97,10 @@ _Avoid_: Hold to start, press to start
 **Tilt readout**: Horizontal X-axis line under the gyro wheel shifting with tilt angle.
 _Avoid_: X-axis line, tilt line
 
-**Hazard**: Both turn signals blinking together at ~1.5Hz; suppresses individual Left/Right until cleared.
+**Turn signal**: Left or Right blinking indicator; the two are mutually exclusive — turning one on while the other is on cancels the other, in the app and in game. Independent of hazard.
+_Avoid_: Blinker, indicator
+
+**Hazard**: Both turn signals blinking together at ~1.5Hz, independent of the individual Left/Right signals. A signal turned on while hazard is active keeps its own blink and does not cancel hazard; in-game light output shows hazard while both are active.
 _Avoid_: Hazard lights, emergency blink
 
 **Unbound control**: A control whose per-mode keybind is empty. The phone sends nothing; the desktop ignores unknown controls as safety net.
@@ -87,6 +123,9 @@ _Avoid_: Backend, driver, output
 
 **InputMapper**: Routes incoming axes and buttons to the virtual controller per mapping mode (virtual-controller buttons or simulated key presses).
 _Avoid_: Mapper, router, translator
+
+**Mapping mode**: How dashboard controls reach the truck: keyboard mode simulates key presses; gamepad mode presses virtual-controller buttons, using keyboard keys only for controls without a gamepad binding.
+_Avoid_: Input mode, control scheme
 
 **PairingManager**: Manages pairing and session state. Enforces 30-day inactivity expiry and the active/non-expired/non-revoked gate before input reaches the mapper.
 _Avoid_: Pairing service, device manager
