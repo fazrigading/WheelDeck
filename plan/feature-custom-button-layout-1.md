@@ -1,6 +1,6 @@
 ---
 goal: Let the user move, resize, and add or remove dashboard controls, with profiles, modules, additional layout presets, and selectable camera control types
-version: 1.0
+version: 1.1
 date_created: 2026-09-17
 last_updated: 2026-09-17
 owner: Fazri Gading
@@ -74,6 +74,12 @@ instead of replacing one.
   continuous axis, which the D-pad type does not.
 - **REQ-017**: The editor is reachable from the driving screen without
   disconnecting, and exiting the editor restores driving input.
+- **REQ-018**: When layout-preset switching ships (REQ-006), the desktop binding
+  tables become preset-scoped so each preset carries its own default key and
+  button assignments. Until then, `InputMapper`'s global tables plus the phone's
+  `controller_preset.dart` remain the Sequential preset's binding source. New
+  presets follow the hybrid routing rule of
+  `plan/feature-driving-dashboard-v2-1.md` REQ-022.
 
 ### Constraints
 
@@ -201,6 +207,7 @@ instead of replacing one.
   `plan/feature-driving-dashboard-v2-1.md` with the same structural assertions
   for each new preset: slots tile their blocks without overlap, and every
   non-null slot control exists in `ControlId.values`. Satisfies REQ-011. | | |
+| TASK-047 | Scope the desktop binding tables per active preset once REQ-011's presets exist: extend `InputMapper` with per-preset key and button tables (or a preset overlay applied at preset-selection time), so each preset carries its own defaults per REQ-018. Satisfies REQ-018. | | |
 
 ### Implementation Phase 7
 
@@ -255,6 +262,9 @@ instead of replacing one.
   Phases 5 through 7 add them. This blocks TASK-032.
 - **DEP-004**: `CAMERA_AXIS_PROTOCOL` — REQ-016's continuous axis is new protocol
   work on both sides. This blocks TASK-043 and TASK-044.
+- **DEP-005**: `PRESET_SCOPED_DESKTOP_TABLES` — REQ-018's per-preset desktop
+  tables require the hybrid-routing and preset machinery from the v2.1 plan to
+  be landed and judged. This blocks TASK-047.
 
 ## 5. Files
 
@@ -378,3 +388,6 @@ instead of replacing one.
   whose acceptance gates this plan.
 - `plan/references/steering-wheel-button-research.md` — button-layout research
   that informs the H-Shifter module's contents, which ASSUMPTION-006 leaves open.
+- `docs/adr/0006-camera-pad-wire-identifiers.md` — camera control types
+  (REQ-013, REQ-015, REQ-016) add their own wire identifier sets under the same
+  pattern.
