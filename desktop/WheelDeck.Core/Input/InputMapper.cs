@@ -5,8 +5,9 @@ namespace WheelDeck.Core.Input;
 
 /// <summary>
 /// Translates incoming state and button messages into virtual output calls. Axes always
-/// map to SetAxis; dashboard controls route to SetButton or SendKey based on MappingMode.
-/// Default mode is simulated key presses, matching ETS2's default keybindings.
+/// map to SetAxis; dashboard controls route through the hybrid priority described on
+/// <see cref="ApplyButton"/>. Default mode is simulated key presses, matching ETS2's
+/// default keybindings.
 /// </summary>
 public sealed class InputMapper
 {
@@ -186,23 +187,38 @@ public sealed class InputMapper
     }
 
     /// <summary>Routes a discrete button event according to the current mapping mode.</summary>
+    /// <remarks>
+    /// Hybrid routing: the mapping mode is a route priority, not an exclusivity
+    /// switch. In gamepad mode a control presses its virtual controller button
+    /// when one is bound, otherwise its keyboard key; in keyboard mode the
+    /// priority is reversed. A control bound to None in both tables stays
+    /// inert. Recorded here because this dispatch is the single point where
+    /// the mode meets the binding tables. The mode arrives from the phone's
+    /// mapping frame; switching modes mid-hold is a deliberate user action and
+    /// can strand a held key or button — accepted, as in the prior exclusive
+    /// dispatch.
+    /// </remarks>
     public void ApplyButton(ButtonMessage button)
     {
         if (Mode == MappingMode.ControllerButton)
         {
-            RouteButton(button);
+            if (!TryRouteButton(button))
+            {
+                TryRouteKey(button);
+            }
         }
-        else
+        else if (!TryRouteKey(button))
         {
-            RouteKey(button);
+            TryRouteButton(button);
         }
     }
 
-    private void RouteButton(ButtonMessage button)
+    private bool TryRouteButton(ButtonMessage button)
     {
-        if (!DefaultButtonBindings.TryGetValue(button.Control, out var buttonId))
+        if (!DefaultButtonBindings.TryGetValue(button.Control, out var buttonId) ||
+            buttonId == ButtonId.None)
         {
-            return;
+            return false;
         }
 
         switch (button.Action)
@@ -219,13 +235,16 @@ public sealed class InputMapper
                 _backend.SetButton(buttonId, false);
                 break;
         }
+
+        return true;
     }
 
-    private void RouteKey(ButtonMessage button)
+    private bool TryRouteKey(ButtonMessage button)
     {
-        if (!DefaultKeyBindings.TryGetValue(button.Control, out var keyCode))
+        if (!DefaultKeyBindings.TryGetValue(button.Control, out var keyCode) ||
+            keyCode == KeyCode.None)
         {
-            return;
+            return false;
         }
 
         switch (button.Action)
@@ -242,6 +261,8 @@ public sealed class InputMapper
                 _backend.SendKey(keyCode, false);
                 break;
         }
+
+        return true;
     }
 
     private static double Clamp(double value, double min, double max)
