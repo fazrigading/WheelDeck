@@ -10,7 +10,7 @@ tags: [feature, redesign, mobile, desktop, protocol]
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: In Progress](https://img.shields.io/badge/status-In%20Progress-yellow)
 
 This plan rebuilds the mobile driving screen's rotatable layout as a cell grid
 and resolves fourteen reported defects. The grid divides the landscape screen
