@@ -416,6 +416,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Audio vol -';
       case ControlId.audioFavorite:
         return 'Audio favorite';
+      case ControlId.cameraPadUp:
+        return 'Camera up';
+      case ControlId.cameraPadDown:
+        return 'Camera down';
+      case ControlId.cameraPadLeft:
+        return 'Camera left';
+      case ControlId.cameraPadRight:
+        return 'Camera right';
+      case ControlId.cameraPadUpLeft:
+        return 'Camera up-left';
+      case ControlId.cameraPadUpRight:
+        return 'Camera up-right';
+      case ControlId.cameraPadDownLeft:
+        return 'Camera down-left';
+      case ControlId.cameraPadDownRight:
+        return 'Camera down-right';
+      case ControlId.cameraPadRecenter:
+        return 'Recenter camera';
+      case ControlId.cameraPadArrowUp:
+        return 'Camera arrow up';
+      case ControlId.cameraPadArrowDown:
+        return 'Camera arrow down';
+      case ControlId.cameraPadArrowLeft:
+        return 'Camera arrow left';
+      case ControlId.cameraPadArrowRight:
+        return 'Camera arrow right';
     }
   }
 

@@ -53,7 +53,22 @@ enum ControlId {
   audioPrevious('audio_previous'),
   audioVolumeUp('audio_volume_up'),
   audioVolumeDown('audio_volume_down'),
-  audioFavorite('audio_favorite');
+  audioFavorite('audio_favorite'),
+  // Camera pad, numpad mode (ADR-0006: the mode lives in the identifiers).
+  cameraPadUp('camera_pad_up'),
+  cameraPadDown('camera_pad_down'),
+  cameraPadLeft('camera_pad_left'),
+  cameraPadRight('camera_pad_right'),
+  cameraPadUpLeft('camera_pad_up_left'),
+  cameraPadUpRight('camera_pad_up_right'),
+  cameraPadDownLeft('camera_pad_down_left'),
+  cameraPadDownRight('camera_pad_down_right'),
+  cameraPadRecenter('camera_pad_recenter'),
+  // Camera pad, arrow mode; the four diagonals are disabled and have none.
+  cameraPadArrowUp('camera_pad_arrow_up'),
+  cameraPadArrowDown('camera_pad_arrow_down'),
+  cameraPadArrowLeft('camera_pad_arrow_left'),
+  cameraPadArrowRight('camera_pad_arrow_right');
 
   const ControlId(this.wireValue);
 
