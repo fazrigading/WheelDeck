@@ -15,10 +15,12 @@ enum InputMapping {
 
   static const String prefsKey = 'wheeldeck.input_mapping';
 
-  static InputMapping fromWireValue(String? value) => InputMapping.values
-      .firstWhere((m) => m.wireValue == value, orElse: () => keyboard);
+  static const InputMapping fallback = gamepad;
 
-  /// Loads the persisted mapping, defaulting to keyboard.
+  static InputMapping fromWireValue(String? value) => InputMapping.values
+      .firstWhere((m) => m.wireValue == value, orElse: () => fallback);
+
+  /// Loads the persisted mapping, defaulting to gamepad.
   static Future<InputMapping> load() async {
     final prefs = await SharedPreferences.getInstance();
     return fromWireValue(prefs.getString(prefsKey));
