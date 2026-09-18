@@ -15,7 +15,6 @@ import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/steering_sensor.dart';
 import '../../../../ui/core/connection_coordinator.dart';
 import '../../../../ui/core/lifecycle_observer.dart';
-import '../../connection/views/connection_screen.dart';
 import '../../settings/views/binding_edit_dialog.dart';
 import '../../settings/views/settings_screen.dart';
 import '../view_models/driving_view_model.dart';
@@ -62,9 +61,7 @@ class _DrivingViewState extends State<DrivingView> {
   void initState() {
     super.initState();
 
-    _lifecycleObserver = LifecycleObserver(
-      coordinator: widget.coordinator,
-    );
+    _lifecycleObserver = LifecycleObserver(coordinator: widget.coordinator);
     WidgetsBinding.instance.addObserver(_lifecycleObserver);
 
     _lockOrientation();
@@ -78,9 +75,7 @@ class _DrivingViewState extends State<DrivingView> {
       _viewModel = DrivingViewModel(
         connectionRepository: widget.coordinator.connectionRepository,
         sensorRepository: SensorRepository(
-          sensor: SteeringSensor(
-            rawAngleStream: GyroscopeService().rawAngles,
-          ),
+          sensor: SteeringSensor(rawAngleStream: GyroscopeService().rawAngles),
         ),
         pedalRepository: PedalRepository(input: PedalInput()),
         dashboardInput: DashboardInput(),
@@ -117,20 +112,61 @@ class _DrivingViewState extends State<DrivingView> {
     }
   }
 
-  Future<void> _onDisconnect() async {
-    await _viewModel.disconnect();
-    if (!mounted) return;
-    // _Routing will switch to Menu on disconnected; push Connect so user lands on Connect, not Menu
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ConnectionScreen()),
+  /// Intercepts the system back gesture: driving is the navigator root, so a
+  /// back-press must ask instead of leaving or killing the app.
+  Future<void> _confirmExit() async {
+    final action = await showDialog<_ExitAction>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit driving?'),
+        content: const Text('Change settings, or disconnect from the desktop.'),
+        actions: [
+          TextButton(
+            key: const Key('exit-settings'),
+            onPressed: () => Navigator.of(context).pop(_ExitAction.settings),
+            child: const Text('Settings'),
+          ),
+          TextButton(
+            key: const Key('exit-disconnect'),
+            onPressed: () => Navigator.of(context).pop(_ExitAction.disconnect),
+            child: const Text('Disconnect'),
+          ),
+          TextButton(
+            key: const Key('exit-stay'),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Stay'),
+          ),
+        ],
+      ),
     );
+    if (!mounted || action == null) return;
+
+    if (action == _ExitAction.settings) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => SettingsScreen(coordinator: widget.coordinator),
+        ),
+      );
+      if (!mounted) return;
+      await _viewModel.refreshSettings();
+      return;
+    }
+
+    // resume() clears an outstanding lifecycle pause so _Routing lands on
+    // Menu (app home) even when Disconnect is tapped mid-pause; _Routing then
+    // switches on the disconnected status. No extra route is pushed.
+    widget.coordinator.resume();
+    await _viewModel.disconnect();
   }
 
   void _onRecalibrate() {
     HapticFeedback.lightImpact();
     _viewModel.recalibrate();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Steering re-centered'), duration: Duration(seconds: 1)),
+      const SnackBar(
+        content: Text('Steering re-centered'),
+        duration: Duration(seconds: 1),
+      ),
     );
   }
 
@@ -171,52 +207,28 @@ class _DrivingViewState extends State<DrivingView> {
         final calibrating = _viewModel.awaitingCalibration;
         // Rotatable steering cannot drift: no calibration gate, no recentering.
         final rotatable = _viewModel.isRotatable;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Driving'),
-            actions: [
-              if (!calibrating && !rotatable)
-                IconButton(
-                  key: const Key('recalibrate-button'),
-                  icon: const Icon(Icons.center_focus_strong),
-                  onPressed: _onRecalibrate,
-                  tooltip: 'Recalibrate',
-                ),
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          SettingsScreen(coordinator: widget.coordinator),
-                    ),
-                  );
-                  await _viewModel.refreshSettings();
-                },
-                tooltip: 'Settings',
-              ),
-              IconButton(
-                icon: const Icon(Icons.wifi_off),
-                onPressed: _onDisconnect,
-                tooltip: 'Disconnect',
-              ),
-            ],
-          ),
-          floatingActionButton: calibrating || rotatable
-              ? null
-              : FloatingActionButton.small(
-                  key: const Key('recalibrate-fab'),
-                  onPressed: _onRecalibrate,
-                  tooltip: 'Recalibrate',
-                  child: const Icon(Icons.center_focus_strong),
-                ),
-          body: SafeArea(
-            child: calibrating
-                ? CalibrationOverlay(
-                    angle: _viewModel.steering.angle,
-                    onConfirmed: _onCalibrationConfirmed,
-                  )
-                : _buildDrivingContent(),
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop) _confirmExit();
+          },
+          child: Scaffold(
+            floatingActionButton: calibrating || rotatable
+                ? null
+                : FloatingActionButton.small(
+                    key: const Key('recalibrate-fab'),
+                    onPressed: _onRecalibrate,
+                    tooltip: 'Recalibrate',
+                    child: const Icon(Icons.center_focus_strong),
+                  ),
+            body: SafeArea(
+              child: calibrating
+                  ? CalibrationOverlay(
+                      angle: _viewModel.steering.angle,
+                      onConfirmed: _onCalibrationConfirmed,
+                    )
+                  : _buildDrivingContent(),
+            ),
           ),
         );
       },
@@ -233,10 +245,8 @@ class _DrivingViewState extends State<DrivingView> {
           PedalType.brake,
           if (vis.showClutch) PedalType.clutch,
         ];
-        final left =
-            shown.where((p) => sides[p] == PedalSide.left).toList();
-        final right =
-            shown.where((p) => sides[p] != PedalSide.left).toList();
+        final left = shown.where((p) => sides[p] == PedalSide.left).toList();
+        final right = shown.where((p) => sides[p] != PedalSide.left).toList();
 
         if (_viewModel.isRotatable) {
           return _rotatableLayout(constraints, left, right);
@@ -248,16 +258,15 @@ class _DrivingViewState extends State<DrivingView> {
 
   /// Shared grid: core controls plus visible extras. Turn signals never
   /// appear here; [SignalArrows] owns them.
-  DashboardPanel _grid({Set<ControlId> excluded = const {}}) =>
-      DashboardPanel(
-        input: _viewModel.dashboardInput,
-        bindingFor: _viewModel.bindingFor,
-        gate: _viewModel.sendGate,
-        visibleExtras: _viewModel.visibleExtras,
-        excluded: excluded,
-        engineStartMode: _viewModel.engineStartMode,
-        onBindRequested: _openBinder,
-      );
+  DashboardPanel _grid({Set<ControlId> excluded = const {}}) => DashboardPanel(
+    input: _viewModel.dashboardInput,
+    bindingFor: _viewModel.bindingFor,
+    gate: _viewModel.sendGate,
+    visibleExtras: _viewModel.visibleExtras,
+    excluded: excluded,
+    engineStartMode: _viewModel.engineStartMode,
+    onBindRequested: _openBinder,
+  );
 
   Future<void> _openBinder(ControlId control) async {
     await BindingEditDialog.show(
@@ -270,10 +279,8 @@ class _DrivingViewState extends State<DrivingView> {
     await _viewModel.refreshSettings();
   }
 
-  SignalArrows get _arrows => SignalArrows(
-        input: _viewModel.dashboardInput,
-        gate: _viewModel.sendGate,
-      );
+  SignalArrows get _arrows =>
+      SignalArrows(input: _viewModel.dashboardInput, gate: _viewModel.sendGate);
 
   /// Rotatable: bottom-left 50% wheel with arrows above, clutch top-left,
   /// pedals bottom-right, gears vertical top-right, grid center-right.
@@ -301,15 +308,9 @@ class _DrivingViewState extends State<DrivingView> {
             children: [
               if (left.isNotEmpty)
                 Expanded(
-                  child: PedalPanel(
-                    input: _viewModel.pedalInput,
-                    layout: left,
-                  ),
+                  child: PedalPanel(input: _viewModel.pedalInput, layout: left),
                 ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: _arrows,
-              ),
+              Padding(padding: const EdgeInsets.all(8), child: _arrows),
               RotatableWheel(
                 degrees: _viewModel.rotationDegree,
                 size: wheelSize,
@@ -341,19 +342,17 @@ class _DrivingViewState extends State<DrivingView> {
                           children: [
                             for (final gear in gears)
                               Padding(
-                                padding:
-                                    const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.only(bottom: 8),
                                 child: DashboardControl(
                                   key: ValueKey('gear-${gear.name}'),
-                                  label:
-                                      DashboardPanel.labelFor(gear),
+                                  label: DashboardPanel.labelFor(gear),
                                   control: gear,
                                   input: _viewModel.dashboardInput,
                                   mode: DashboardControl.modeFor(gear),
                                   gate: _viewModel.sendGate,
-                                  enabled: !DashboardSendGate
-                                      .isUnbound(
-                                          _viewModel.bindingFor(gear)),
+                                  enabled: !DashboardSendGate.isUnbound(
+                                    _viewModel.bindingFor(gear),
+                                  ),
                                   onBindRequested: _openBinder,
                                 ),
                               ),
@@ -394,16 +393,10 @@ class _DrivingViewState extends State<DrivingView> {
         child: Column(
           children: [
             if (arrows)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: _arrows,
-              ),
+              Padding(padding: const EdgeInsets.all(8), child: _arrows),
             if (pedals.isNotEmpty)
               Expanded(
-                child: PedalPanel(
-                  input: _viewModel.pedalInput,
-                  layout: pedals,
-                ),
+                child: PedalPanel(input: _viewModel.pedalInput, layout: pedals),
               ),
           ],
         ),
@@ -422,12 +415,10 @@ class _DrivingViewState extends State<DrivingView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
-                    onHorizontalDragStart: (_) =>
-                        _viewModel.onWheelDragStart(),
+                    onHorizontalDragStart: (_) => _viewModel.onWheelDragStart(),
                     onHorizontalDragUpdate: (details) =>
                         _viewModel.onWheelDragUpdate(details.delta.dx),
-                    onHorizontalDragEnd: (_) =>
-                        _viewModel.onWheelDragEnd(),
+                    onHorizontalDragEnd: (_) => _viewModel.onWheelDragEnd(),
                     onDoubleTap: () => _viewModel.onWheelDragEnd(),
                     child: WheelView(
                       angle: _viewModel.steering.angle,
@@ -450,9 +441,7 @@ class _DrivingViewState extends State<DrivingView> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Center(
-            child: TiltReadout(angle: _viewModel.steering.angle),
-          ),
+          child: Center(child: TiltReadout(angle: _viewModel.steering.angle)),
         ),
         Expanded(
           child: Row(
@@ -474,3 +463,7 @@ class _DrivingViewState extends State<DrivingView> {
     );
   }
 }
+
+/// The dialog actions that trigger behavior; Stay and barrier dismissal pop
+/// with null.
+enum _ExitAction { settings, disconnect }
