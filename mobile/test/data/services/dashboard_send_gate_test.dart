@@ -117,7 +117,7 @@ void main() {
       expect(gate.rightOn, isFalse);
     });
 
-    test('hazard suppresses individuals until cleared', () {
+    test('signals send and hold their own state during hazard', () {
       final gate = buildGate();
       addTearDown(gate.dispose);
 
@@ -126,17 +126,65 @@ void main() {
       expect(gate.hazardOn, isTrue);
 
       gate.handle(ControlId.turnSignalLeft, ActionType.toggle);
-      gate.handle(ControlId.turnSignalRight, ActionType.toggle);
-      expect(sent, hasLength(1));
-      expect(gate.leftOn, isFalse);
-      expect(gate.rightOn, isFalse);
-
-      gate.handle(ControlId.hazardLights, ActionType.toggle);
-      expect(gate.hazardOn, isFalse);
-
-      gate.handle(ControlId.turnSignalLeft, ActionType.toggle);
+      expect(sent, hasLength(2));
       expect(sent.last, (ControlId.turnSignalLeft, ActionType.toggle));
       expect(gate.leftOn, isTrue);
+      expect(gate.hazardOn, isTrue);
+
+      // Both cells light on the shared phase while their states are held.
+      expect(gate.signalVisualActive(ControlId.turnSignalLeft), isTrue);
+      expect(gate.signalVisualActive(ControlId.hazardLights), isTrue);
+
+      // Exclusion applies during hazard too: right replaces left silently.
+      gate.handle(ControlId.turnSignalRight, ActionType.toggle);
+      expect(sent, hasLength(3));
+      expect(sent.last, (ControlId.turnSignalRight, ActionType.toggle));
+      expect(gate.rightOn, isTrue);
+      expect(gate.leftOn, isFalse);
+      expect(gate.hazardOn, isTrue);
+
+      gate.handle(ControlId.turnSignalRight, ActionType.toggle);
+      expect(sent, hasLength(4));
+      expect(gate.rightOn, isFalse);
+      expect(gate.hazardOn, isTrue);
+
+      // Left survives hazard clearing and blinks its own state afterward.
+      gate.handle(ControlId.turnSignalLeft, ActionType.toggle);
+      expect(sent, hasLength(5));
+      expect(gate.leftOn, isTrue);
+
+      gate.handle(ControlId.hazardLights, ActionType.toggle);
+      expect(sent, hasLength(6));
+      expect(gate.hazardOn, isFalse);
+      expect(gate.leftOn, isTrue);
+      expect(gate.signalVisualActive(ControlId.turnSignalLeft), isTrue);
+      expect(gate.signalVisualActive(ControlId.hazardLights), isFalse);
+      gate.advanceBlink();
+      expect(gate.signalVisualActive(ControlId.turnSignalLeft), isFalse);
+      gate.advanceBlink();
+      expect(gate.signalVisualActive(ControlId.turnSignalLeft), isTrue);
+    });
+
+    test('turning one signal on clears the other without sending it', () {
+      final gate = buildGate();
+      addTearDown(gate.dispose);
+
+      gate.handle(ControlId.turnSignalLeft, ActionType.toggle);
+      expect(gate.leftOn, isTrue);
+
+      gate.handle(ControlId.turnSignalRight, ActionType.toggle);
+      expect(sent, hasLength(2));
+      expect(sent.last, (ControlId.turnSignalRight, ActionType.toggle));
+      expect(gate.rightOn, isTrue);
+      expect(gate.leftOn, isFalse);
+      expect(gate.signalVisualActive(ControlId.turnSignalLeft), isFalse);
+
+      gate.handle(ControlId.turnSignalLeft, ActionType.toggle);
+      expect(sent, hasLength(3));
+      expect(sent.last, (ControlId.turnSignalLeft, ActionType.toggle));
+      expect(gate.leftOn, isTrue);
+      expect(gate.rightOn, isFalse);
+      expect(gate.signalVisualActive(ControlId.turnSignalRight), isFalse);
     });
 
     test('hazard drives both visuals, individuals drive their own', () {
