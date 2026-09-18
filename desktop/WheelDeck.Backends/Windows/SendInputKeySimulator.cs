@@ -40,6 +40,11 @@ public sealed class SendInputKeySimulator : IDisposable
             [KeyCode.LeftCtrl] = 0xA2,       // VK_LCONTROL
             [KeyCode.Semicolon] = 0xBA,      // VK_OEM_1 (US layout)
             [KeyCode.Quote] = 0xDE,          // VK_OEM_7 (US layout)
+            [KeyCode.Numpad1] = 0x61, [KeyCode.Numpad2] = 0x62, [KeyCode.Numpad3] = 0x63,
+            [KeyCode.Numpad4] = 0x64, [KeyCode.Numpad5] = 0x65, [KeyCode.Numpad6] = 0x66,
+            [KeyCode.Numpad7] = 0x67, [KeyCode.Numpad8] = 0x68, [KeyCode.Numpad9] = 0x69,
+            [KeyCode.ArrowUp] = 0x26, [KeyCode.ArrowDown] = 0x28,
+            [KeyCode.ArrowLeft] = 0x25, [KeyCode.ArrowRight] = 0x27, // VK_NUMPAD1..9, VK_UP/DOWN/LEFT/RIGHT
             [KeyCode.ScrollLock] = 0x91,     // VK_SCROLL
             [KeyCode.Pause] = 0x13           // VK_PAUSE
         };

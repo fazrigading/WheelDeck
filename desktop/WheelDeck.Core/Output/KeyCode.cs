@@ -28,6 +28,12 @@ public enum KeyCode
     Semicolon,
     Quote,
 
+    Numpad1, Numpad2, Numpad3,
+    Numpad4, Numpad5, Numpad6,
+    Numpad7, Numpad8, Numpad9,
+
+    ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
+
     ScrollLock,
     Pause
 }

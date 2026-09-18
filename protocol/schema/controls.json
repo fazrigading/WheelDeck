@@ -61,7 +61,20 @@
         "audio_previous",
         "audio_volume_up",
         "audio_volume_down",
-        "audio_favorite"
+        "audio_favorite",
+        "camera_pad_up",
+        "camera_pad_down",
+        "camera_pad_left",
+        "camera_pad_right",
+        "camera_pad_up_left",
+        "camera_pad_up_right",
+        "camera_pad_down_left",
+        "camera_pad_down_right",
+        "camera_pad_recenter",
+        "camera_pad_arrow_up",
+        "camera_pad_arrow_down",
+        "camera_pad_arrow_left",
+        "camera_pad_arrow_right"
       ]
     },
     "ActionType": {

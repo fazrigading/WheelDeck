@@ -92,6 +92,11 @@ public sealed class UinputBackend : VirtualOutputBackend
             [KeyCode.LeftCtrl] = 29,         // KEY_LEFTCTRL
             [KeyCode.Semicolon] = 39,        // KEY_SEMICOLON (US layout)
             [KeyCode.Quote] = 40,            // KEY_APOSTROPHE (US layout)
+            [KeyCode.Numpad1] = 79, [KeyCode.Numpad2] = 80, [KeyCode.Numpad3] = 81,
+            [KeyCode.Numpad4] = 75, [KeyCode.Numpad5] = 76, [KeyCode.Numpad6] = 77,
+            [KeyCode.Numpad7] = 71, [KeyCode.Numpad8] = 72, [KeyCode.Numpad9] = 73,
+            [KeyCode.ArrowUp] = 103, [KeyCode.ArrowDown] = 108,
+            [KeyCode.ArrowLeft] = 105, [KeyCode.ArrowRight] = 106, // KEY_KP1..KEY_KP9, KEY_UP/DOWN/LEFT/RIGHT
             [KeyCode.ScrollLock] = 70,       // KEY_SCROLLLOCK
             [KeyCode.Pause] = 119            // KEY_PAUSE
         };

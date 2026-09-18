@@ -71,7 +71,22 @@ public sealed class InputMapper
             [ControlId.AudioPrevious] = KeyCode.None,
             [ControlId.AudioVolumeUp] = KeyCode.None,
             [ControlId.AudioVolumeDown] = KeyCode.None,
-            [ControlId.AudioFavorite] = KeyCode.None
+            [ControlId.AudioFavorite] = KeyCode.None,
+            // Camera pad resolves to the numpad keys (REQ-017); the arrow set
+            // maps to the arrow keys. Both sets are keyboard-only.
+            [ControlId.CameraPadUp] = KeyCode.Numpad8,
+            [ControlId.CameraPadDown] = KeyCode.Numpad2,
+            [ControlId.CameraPadLeft] = KeyCode.Numpad4,
+            [ControlId.CameraPadRight] = KeyCode.Numpad6,
+            [ControlId.CameraPadUpLeft] = KeyCode.Numpad7,
+            [ControlId.CameraPadUpRight] = KeyCode.Numpad9,
+            [ControlId.CameraPadDownLeft] = KeyCode.Numpad1,
+            [ControlId.CameraPadDownRight] = KeyCode.Numpad3,
+            [ControlId.CameraPadRecenter] = KeyCode.Numpad5,
+            [ControlId.CameraPadArrowUp] = KeyCode.ArrowUp,
+            [ControlId.CameraPadArrowDown] = KeyCode.ArrowDown,
+            [ControlId.CameraPadArrowLeft] = KeyCode.ArrowLeft,
+            [ControlId.CameraPadArrowRight] = KeyCode.ArrowRight
         };
 
     private static readonly IReadOnlyDictionary<ControlId, ButtonId> DefaultButtonBindings =
@@ -134,7 +149,21 @@ public sealed class InputMapper
             [ControlId.AudioPrevious] = ButtonId.None,
             [ControlId.AudioVolumeUp] = ButtonId.None,
             [ControlId.AudioVolumeDown] = ButtonId.None,
-            [ControlId.AudioFavorite] = ButtonId.None
+            [ControlId.AudioFavorite] = ButtonId.None,
+            // The camera pad is keyboard-only: no gamepad equivalents.
+            [ControlId.CameraPadUp] = ButtonId.None,
+            [ControlId.CameraPadDown] = ButtonId.None,
+            [ControlId.CameraPadLeft] = ButtonId.None,
+            [ControlId.CameraPadRight] = ButtonId.None,
+            [ControlId.CameraPadUpLeft] = ButtonId.None,
+            [ControlId.CameraPadUpRight] = ButtonId.None,
+            [ControlId.CameraPadDownLeft] = ButtonId.None,
+            [ControlId.CameraPadDownRight] = ButtonId.None,
+            [ControlId.CameraPadRecenter] = ButtonId.None,
+            [ControlId.CameraPadArrowUp] = ButtonId.None,
+            [ControlId.CameraPadArrowDown] = ButtonId.None,
+            [ControlId.CameraPadArrowLeft] = ButtonId.None,
+            [ControlId.CameraPadArrowRight] = ButtonId.None
         };
 
     private readonly VirtualOutputBackend _backend;
