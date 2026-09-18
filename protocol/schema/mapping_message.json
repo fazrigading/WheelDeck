@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wheeldeck.dev/schema/mapping_message.json",
+  "title": "WheelDeck mapping message",
+  "description": "Mapping-mode switch sent by the phone. The desktop applies it to InputMapper.Mode for the session; the desktop restarts in keyboard mode.",
+  "type": "object",
+  "required": [
+    "type",
+    "mode"
+  ],
+  "properties": {
+    "type": {
+      "const": "mapping"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "keyboard",
+        "gamepad"
+      ],
+      "description": "keyboard: simulated key presses. gamepad: virtual-controller buttons with keyboard fallback for controls the button table leaves None."
+    }
+  },
+  "additionalProperties": false
+}

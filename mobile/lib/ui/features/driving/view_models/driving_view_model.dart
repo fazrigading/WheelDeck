@@ -33,7 +33,7 @@ class DrivingViewModel extends ChangeNotifier {
     required this._pedalRepository,
     required this._dashboardInput,
     bool initialAwaitingCalibration = false,
-  })  : _awaitingCalibration = initialAwaitingCalibration {
+  }) : _awaitingCalibration = initialAwaitingCalibration {
     _sendGate = DashboardSendGate(
       send: (control, action) =>
           _connectionRepository.sendButtonEvent(control, action),
@@ -60,7 +60,7 @@ class DrivingViewModel extends ChangeNotifier {
   Map<PedalType, PedalSide> _pedalSides = PedalSides.defaults().asMap();
   ControllerVisibility _visibility = ControllerVisibility.fallback;
   GamePreset _preset = GamePreset.fallback;
-  InputMapping _mapping = InputMapping.keyboard;
+  InputMapping _mapping = InputMapping.fallback;
   Map<String, String> _bindingOverrides = {};
   WheelMode _wheelMode = WheelMode.fallback;
   int _rotationDegree = RotationDegree.fallback;
@@ -119,8 +119,7 @@ class DrivingViewModel extends ChangeNotifier {
   /// Dashboard event forwarder for the dashboard panel.
   DashboardInput get dashboardInput => _dashboardInput;
 
-  Map<PedalType, PedalSide> get pedalSides =>
-      Map.unmodifiable(_pedalSides);
+  Map<PedalType, PedalSide> get pedalSides => Map.unmodifiable(_pedalSides);
   ControllerVisibility get visibility => _visibility;
 
   /// True in rotatable mode: the finger-drag wheel drives steering, the gyro
