@@ -64,12 +64,10 @@ class _ArrowButton extends StatelessWidget {
           final active = gate.signalVisualActive(control);
           return AnimatedContainer(
             duration: const Duration(milliseconds: 100),
-            width: DashboardControl.size,
-            height: DashboardControl.size,
+            width: DashboardControl.defaultSize,
+            height: DashboardControl.defaultSize,
             decoration: BoxDecoration(
-              color: active
-                  ? const Color(0xFFFFB300)
-                  : const Color(0xFF455A64),
+              color: active ? const Color(0xFFFFB300) : const Color(0xFF455A64),
               shape: BoxShape.circle,
               border: Border.all(
                 color: active
@@ -79,8 +77,11 @@ class _ArrowButton extends StatelessWidget {
               ),
             ),
             alignment: Alignment.center,
-            child: Icon(icon,
-                color: active ? Colors.black : Colors.white, size: 28),
+            child: Icon(
+              icon,
+              color: active ? Colors.black : Colors.white,
+              size: 28,
+            ),
           );
         },
       ),

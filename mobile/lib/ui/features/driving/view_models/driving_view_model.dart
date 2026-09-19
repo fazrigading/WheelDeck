@@ -266,9 +266,12 @@ class DrivingViewModel extends ChangeNotifier {
 
   /// Applies rotatable-wheel steering. Bypasses the gyro deadband so finger
   /// feedback stays 1:1; always transmits, so spring-back to zero is sent.
+  ///
+  /// Deliberately does not notify: the rotatable wheel owns its drag visuals
+  /// internally, so a notification would rebuild the whole block grid on
+  /// every drag update. Nothing else in rotatable mode reads the angle.
   void setRotatableSteering(double angle) {
     _steering = SteeringState(angle: angle.clamp(-1.0, 1.0).toDouble());
-    notifyListeners();
     _sendState();
   }
 
