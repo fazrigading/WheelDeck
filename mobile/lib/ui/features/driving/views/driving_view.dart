@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../../../data/repositories/pedal_repository.dart';
 import '../../../../data/repositories/sensor_repository.dart';
 import '../../../../data/services/dashboard_input.dart';
+import '../../../../data/services/dashboard_send_gate.dart';
 import '../../../../data/services/driving_layout.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_side.dart';
@@ -21,7 +22,6 @@ import 'block_grid.dart';
 import 'calibration_overlay.dart';
 import 'dashboard_panel.dart';
 import 'pedal_panel.dart';
-import 'signal_arrows.dart';
 import 'tilt_readout.dart';
 import 'wheel_view.dart';
 
@@ -272,7 +272,8 @@ class _DrivingViewState extends State<DrivingView> {
   }
 
   /// Shared grid: core controls plus visible extras. Turn signals never
-  /// appear here; [SignalArrows] owns them.
+  /// appear here; the rotatable grid's block A slots and the gyro signal row
+  /// render them instead.
   DashboardPanel _grid({Set<ControlId> excluded = const {}}) => DashboardPanel(
     input: _viewModel.dashboardInput,
     bindingFor: _viewModel.bindingFor,
@@ -294,23 +295,49 @@ class _DrivingViewState extends State<DrivingView> {
     await _viewModel.refreshSettings();
   }
 
-  SignalArrows get _arrows =>
-      SignalArrows(input: _viewModel.dashboardInput, gate: _viewModel.sendGate);
+  /// Gyro: the two turn-signal cells in a row, replacing the retired
+  /// bespoke arrows. Same gate-driven cells the rotatable grid renders.
+  Widget _signalRow() => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      for (final control in const [
+        ControlId.turnSignalLeft,
+        ControlId.turnSignalRight,
+      ])
+        Padding(
+          padding: EdgeInsets.only(
+            right: control == ControlId.turnSignalLeft ? 8 : 0,
+          ),
+          child: DashboardControl(
+            key: ValueKey('dashboard-${control.name}'),
+            label: DashboardPanel.gridLabel(control),
+            control: control,
+            input: _viewModel.dashboardInput,
+            mode: DashboardControl.modeFor(control),
+            gate: _viewModel.sendGate,
+            enabled: !DashboardSendGate.isUnbound(
+              _viewModel.bindingFor(control),
+            ),
+            onBindRequested: _openBinder,
+          ),
+        ),
+    ],
+  );
 
   /// Gyro: dashboard hidden shows wheel middle with tilt readout beneath;
-  /// dashboard shown drops the wheel for a top-center tilt readout. Arrows
-  /// sit above the left pedal; pedals follow their per-pedal sides.
+  /// dashboard shown drops the wheel for a top-center tilt readout. Signal
+  /// cells sit above the left pedal; pedals follow their per-pedal sides.
   Widget _gyroLayout(
     List<PedalType> left,
     List<PedalType> right,
     bool dashboardVisible,
   ) {
-    Widget pedalColumn(List<PedalType> pedals, {bool arrows = false}) {
+    Widget pedalColumn(List<PedalType> pedals, {bool signals = false}) {
       return Expanded(
         child: Column(
           children: [
-            if (arrows)
-              Padding(padding: const EdgeInsets.all(8), child: _arrows),
+            if (signals)
+              Padding(padding: const EdgeInsets.all(8), child: _signalRow()),
             if (pedals.isNotEmpty)
               Expanded(
                 child: PedalPanel(input: _viewModel.pedalInput, layout: pedals),
@@ -324,7 +351,7 @@ class _DrivingViewState extends State<DrivingView> {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          pedalColumn(left, arrows: true),
+          pedalColumn(left, signals: true),
           Expanded(
             flex: 2,
             child: Center(
@@ -364,7 +391,7 @@ class _DrivingViewState extends State<DrivingView> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              pedalColumn(left, arrows: true),
+              pedalColumn(left, signals: true),
               Expanded(
                 flex: 2,
                 child: SingleChildScrollView(
