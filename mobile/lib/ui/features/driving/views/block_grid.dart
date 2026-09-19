@@ -28,6 +28,7 @@ class BlockGrid extends StatelessWidget {
     required this.shownPedals,
     required this.degrees,
     required this.onSteering,
+    this.springBack = true,
     this.onBindRequested,
   });
 
@@ -49,6 +50,9 @@ class BlockGrid extends StatelessWidget {
   /// Selected lock-to-lock range in degrees for the wheel.
   final int degrees;
   final ValueChanged<double> onSteering;
+
+  /// Whether the wheel animates back to zero on release.
+  final bool springBack;
   final ValueChanged<ControlId>? onBindRequested;
 
   /// The global grid the layout slots address.
@@ -95,6 +99,7 @@ class BlockGrid extends StatelessWidget {
             degrees: degrees,
             onChanged: onSteering,
             size: rect.rowSpan * cellH,
+            springBack: springBack,
           ),
         );
       case SlotKind.pedal:

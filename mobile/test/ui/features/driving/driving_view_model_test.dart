@@ -83,6 +83,17 @@ void main() {
       expect(notified, 0);
       expect(viewModel.steering.angle, 0.5);
     });
+
+    test('loads the spring-back setting', () async {
+      SharedPreferences.setMockInitialValues({
+        'wheeldeck.wheel_mode': 'rotatable',
+        'wheeldeck.spring_back': false,
+      });
+      viewModel = buildViewModel();
+      await viewModel.init();
+
+      expect(viewModel.springBack, isFalse);
+    });
   });
 
   group('gyro mode', () {
