@@ -14,8 +14,10 @@ enum GamePreset {
   static const String prefsKey = 'wheeldeck.game_preset';
   static const GamePreset fallback = ets2;
 
-  static GamePreset fromWireValue(String? v) => GamePreset.values
-      .firstWhere((p) => p.wireValue == v, orElse: () => fallback);
+  static GamePreset fromWireValue(String? v) => GamePreset.values.firstWhere(
+    (p) => p.wireValue == v,
+    orElse: () => fallback,
+  );
 
   /// Loads the persisted preset, defaulting to ETS2. Needed so driving can
   /// resolve per-preset settings (e.g. rotation degrees).
@@ -94,8 +96,11 @@ enum GamePreset {
     ControlId.gearDown: 'DPadDown',
   };
 
+  /// Resolves the preset default for [id]. Gamepad mode is gamepad-first:
+  /// controls the gamepad map lacks fall back to their keyboard default, so
+  /// the phone agrees with the desktop's hybrid routing (REQ-023).
   String bindingFor(ControlId id, bool isGamepad) {
-    final map = isGamepad ? ets2Gamepad : ets2Keyboard;
-    return map[id] ?? '-';
+    if (isGamepad) return ets2Gamepad[id] ?? ets2Keyboard[id] ?? '-';
+    return ets2Keyboard[id] ?? '-';
   }
 }

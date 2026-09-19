@@ -1,3 +1,9 @@
+# AGENTS.md
+
+## Mandatory Commit Rules
+
+NEVER add a `Co-Authored-By` line to commit messages. NEVER credit agents or co-authors in the commit message body or footer.
+
 # context-mode — MANDATORY routing rules
 
 context-mode MCP tools available. Rules protect context window from flooding. One unrouted command dumps 56 KB into context.

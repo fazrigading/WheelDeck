@@ -21,8 +21,9 @@ void main() {
 
   DrivingViewModel buildViewModel() {
     final vm = DrivingViewModel(
-      connectionRepository:
-          ConnectionRepository(client: WheelDeckClient(deviceId: 'test')),
+      connectionRepository: ConnectionRepository(
+        client: WheelDeckClient(deviceId: 'test'),
+      ),
       sensorRepository: SensorRepository(
         sensor: SteeringSensor(rawAngleStream: rawAngles.stream),
       ),
@@ -75,8 +76,7 @@ void main() {
 
   group('gyro mode', () {
     setUp(() async {
-      SharedPreferences.setMockInitialValues(
-          {'wheeldeck.wheel_mode': 'gyro'});
+      SharedPreferences.setMockInitialValues({'wheeldeck.wheel_mode': 'gyro'});
       viewModel = buildViewModel();
       await viewModel.init();
     });
@@ -95,10 +95,8 @@ void main() {
     });
   });
 
-  test('refreshSettings picks up a mode switch and clears the gate',
-      () async {
-    SharedPreferences.setMockInitialValues(
-        {'wheeldeck.wheel_mode': 'gyro'});
+  test('refreshSettings picks up a mode switch and clears the gate', () async {
+    SharedPreferences.setMockInitialValues({'wheeldeck.wheel_mode': 'gyro'});
     viewModel = buildViewModel();
     await viewModel.init();
     viewModel.setAwaitingCalibration(true);
@@ -113,7 +111,9 @@ void main() {
   });
 
   test('setBinding persists an override the grid resolver sees', () async {
-    SharedPreferences.setMockInitialValues({});
+    // Explicit keyboard mode: the mapping default is gamepad.
+    SharedPreferences.setMockInitialValues(
+        {'wheeldeck.input_mapping': 'keyboard'});
     viewModel = buildViewModel();
     await viewModel.init();
 
@@ -124,6 +124,26 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('wheeldeck.binding.keyboard.horn'), 'J');
   });
+
+  test(
+    'gamepad mode resolves through the keyboard fallback and overrides win',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'wheeldeck.input_mapping': 'gamepad',
+      });
+      viewModel = buildViewModel();
+      await viewModel.init();
+
+      // Keyboard-only control resolves via the gamepad-first fallback.
+      expect(viewModel.bindingFor(ControlId.beaconLights), 'O');
+
+      // A stored override wins verbatim, including empty (unbound).
+      await viewModel.setBinding(ControlId.beaconLights, 'Q');
+      expect(viewModel.bindingFor(ControlId.beaconLights), 'Q');
+      await viewModel.setBinding(ControlId.beaconLights, '');
+      expect(viewModel.bindingFor(ControlId.beaconLights), '');
+    },
+  );
 
   test('dashboard state loads engine mode and visible extras', () async {
     SharedPreferences.setMockInitialValues({

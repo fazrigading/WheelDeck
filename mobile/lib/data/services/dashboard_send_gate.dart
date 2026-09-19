@@ -14,8 +14,11 @@ import 'dashboard_input.dart';
 ///   tap advances the stage and sends the matching distinct ID
 ///   (`lights_parking` / `lights_lowbeam` / `lights_off`) as a toggle pulse.
 ///   High-beam passes through untouched.
-/// - Holds turn/hazard state with a ~1.5Hz blink phase. Hazard drives both
-///   signal visuals and suppresses individual toggles until cleared.
+/// - Holds turn/hazard state with a ~1.5Hz blink phase. Hazard and the
+///   individual signals are independent: signals send and blink their own
+///   state during hazard. Left and right are mutually exclusive — turning one
+///   on clears the other without sending the cleared control's event (ETS2
+///   cancels the opposite signal itself).
 ///
 /// Blink visuals read [signalVisualActive]; the phase flips on [advanceBlink],
 /// driven by a periodic timer when any signal is active (disabled with
@@ -105,13 +108,15 @@ class DashboardSendGate extends ChangeNotifier {
         break;
       case ControlId.turnSignalLeft:
       case ControlId.turnSignalRight:
-        // Hazard suppresses individual signals until cleared.
-        if (_hazardOn) return;
+        // Independent of hazard; turning one on clears the other and sends
+        // nothing for the cleared side — ETS2 cancels it in game.
         if (action == ActionType.toggle) {
           if (control == ControlId.turnSignalLeft) {
             _leftOn = !_leftOn;
+            if (_leftOn) _rightOn = false;
           } else {
             _rightOn = !_rightOn;
+            if (_rightOn) _leftOn = false;
           }
           _syncBlinkTimer();
         }
