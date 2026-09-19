@@ -4,8 +4,9 @@ import 'package:wheeldeck/data/services/pedal_input.dart';
 import 'package:wheeldeck/ui/features/driving/views/pedal_panel.dart';
 
 void main() {
-  testWidgets('drags down to increase pressure and releases on drag end',
-      (tester) async {
+  testWidgets('drags down to increase pressure and releases on drag end', (
+    tester,
+  ) async {
     final pressures = <double>[];
     var released = false;
 
@@ -18,7 +19,6 @@ void main() {
               width: 80,
               child: PedalBar(
                 pedal: PedalType.accelerator,
-                label: 'ACC',
                 pressure: 0.0,
                 onDrag: (_, pressure) => pressures.add(pressure),
                 onRelease: (_) => released = true,
@@ -53,7 +53,6 @@ void main() {
               width: 80,
               child: PedalBar(
                 pedal: PedalType.brake,
-                label: 'BRK',
                 pressure: 1.0,
                 onDrag: (_, pressure) => pressures.add(pressure),
                 onRelease: (_) {},
@@ -75,17 +74,15 @@ void main() {
     expect(pressures.last, closeTo(0.0, 0.1));
   });
 
-  testWidgets('renders three pedals and wires drag to PedalInput',
-      (tester) async {
+  testWidgets('renders three pedals and wires drag to PedalInput', (
+    tester,
+  ) async {
     final input = PedalInput();
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: SizedBox(
-            height: 400,
-            child: PedalPanel(input: input),
-          ),
+          body: SizedBox(height: 400, child: PedalPanel(input: input)),
         ),
       ),
     );
@@ -102,5 +99,50 @@ void main() {
     input.dispose();
 
     expect(input.pressureOf(PedalType.accelerator), greaterThan(0.0));
+  });
+
+  testWidgets('renders no label text and the correct hue per pedal', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(height: 400, child: PedalPanel(input: PedalInput())),
+        ),
+      ),
+    );
+
+    expect(find.text('ACC'), findsNothing);
+    expect(find.text('BRK'), findsNothing);
+    expect(find.text('CLT'), findsNothing);
+
+    const hues = {
+      PedalType.accelerator: Color(0xFF1E88E5),
+      PedalType.brake: Color(0xFFE53935),
+      PedalType.clutch: Color(0xFFFDD835),
+    };
+
+    for (final MapEntry(key: pedal, value: hue) in hues.entries) {
+      final colors = tester
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byKey(ValueKey('pedal-${pedal.name}')),
+              matching: find.byType(Container),
+            ),
+          )
+          .map((c) => (c.decoration as BoxDecoration).color)
+          .whereType<Color>()
+          .toSet();
+
+      // Full-hue fill plus the hue-tinted track over the dark base.
+      expect(
+        colors,
+        containsAll([hue, hue.withValues(alpha: 0.25)]),
+        reason: '$pedal missing its hue',
+      );
+      for (final other in hues.values) {
+        if (other != hue) expect(colors, isNot(contains(other)));
+      }
+    }
   });
 }

@@ -129,7 +129,6 @@ void main() {
                   width: 80,
                   child: PedalBar(
                     pedal: PedalType.accelerator,
-                    label: 'ACC',
                     pressure: 0.0,
                     onDrag: (_, pressure) => pressures.add(pressure),
                     onRelease: (_) => released = true,
