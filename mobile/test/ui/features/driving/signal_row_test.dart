@@ -133,4 +133,18 @@ void main() {
     expect(center.dx, lessThan(800));
     expect(center.dy, lessThan(540));
   });
+
+  testWidgets('rotatable renders blocks B, C, and E regardless of '
+      'showDashboard', (tester) async {
+    await pumpView(tester, {
+      'wheeldeck.wheel_mode': 'rotatable',
+      'wheeldeck.show_dashboard': false,
+    });
+
+    // Block B audio, block C gears, block E services — the rotatable grid
+    // ignores the dashboard preference (REQ-019).
+    expect(signalCell(ControlId.audioPlayPause), findsOneWidget);
+    expect(signalCell(ControlId.gearUp), findsOneWidget);
+    expect(signalCell(ControlId.quickSave), findsOneWidget);
+  });
 }
