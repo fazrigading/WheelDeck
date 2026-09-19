@@ -56,7 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Reset to defaults?'),
-        content: const Text('This will restore keyboard, rotatable 900°, hidden clutch, shown dashboard, and default pedal sides.'),
+        content: const Text('This will restore keyboard, rotatable 900°, hidden clutch, shown dashboard, default pedal sides, and rotate-back-to-zero.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Reset')),
@@ -151,6 +151,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 4),
                 Text('Finger rotation for full lock-to-lock.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  title: const Text('Rotate back to zero', style: TextStyle(fontSize: 14)),
+                  subtitle: Text(
+                    'Animate the wheel back to center on release.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                  value: _viewModel.springBack,
+                  onChanged: (v) => _viewModel.selectSpringBack(v),
+                  contentPadding: EdgeInsets.zero,
+                ),
               ] else
                 Text('Gyro steering ignores rotation degrees.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),

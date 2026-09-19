@@ -8,6 +8,7 @@ import '../services/engine_start_mode.dart';
 import '../services/input_mapping.dart';
 import '../services/pedal_input.dart';
 import '../services/pedal_side.dart';
+import '../services/spring_back.dart';
 import '../services/wheel_mode.dart';
 
 /// Single source of truth for settings (mapping, visibility, pedal sides,
@@ -31,6 +32,9 @@ class SettingsRepository {
       RotationDegree.load(preset);
   Future<void> setRotationDegree(GamePreset preset, int degree) =>
       RotationDegree.save(preset, degree);
+
+  Future<bool> getSpringBack() => SpringBack.load();
+  Future<void> setSpringBack(bool value) => SpringBack.save(value);
 
   Future<PedalSides> getPedalSides() => PedalSides.load();
 
@@ -81,6 +85,7 @@ class SettingsRepository {
     ).save();
     await PedalSides({}).save();
     await WheelMode.rotatable.save();
+    await SpringBack.save(SpringBack.fallback);
     await EngineStartMode.holdConfirm.save();
     await const DashboardVisibility(DashboardVisibility.defaults).save();
     for (final preset in GamePreset.values) {

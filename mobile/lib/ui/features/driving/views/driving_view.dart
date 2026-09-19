@@ -266,6 +266,7 @@ class _DrivingViewState extends State<DrivingView> {
       shownPedals: shownPedals,
       degrees: _viewModel.rotationDegree,
       onSteering: _viewModel.setRotatableSteering,
+      springBack: _viewModel.springBack,
       onBindRequested: _openBinder,
     );
   }

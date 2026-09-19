@@ -17,6 +17,7 @@ import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/spring_back.dart';
 import '../../../../data/services/wheel_mode.dart';
 
 /// Presentation state for the driving view: steering angle, pedal pressures,
@@ -64,6 +65,7 @@ class DrivingViewModel extends ChangeNotifier {
   Map<String, String> _bindingOverrides = {};
   WheelMode _wheelMode = WheelMode.fallback;
   int _rotationDegree = RotationDegree.fallback;
+  bool _springBack = SpringBack.fallback;
   EngineStartMode _engineStartMode = EngineStartMode.fallback;
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
 
@@ -129,6 +131,10 @@ class DrivingViewModel extends ChangeNotifier {
   /// Selected lock-to-lock range in degrees for the rotatable wheel.
   int get rotationDegree => _rotationDegree;
 
+  /// Whether the rotatable wheel animates back to zero on release. When
+  /// off, the wheel holds its released angle until dragged back.
+  bool get springBack => _springBack;
+
   /// Engine-start interaction mode (hold-confirm vs single press).
   EngineStartMode get engineStartMode => _engineStartMode;
 
@@ -181,6 +187,9 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
     try {
       _rotationDegree = await RotationDegree.load(_preset);
+    } catch (_) {}
+    try {
+      _springBack = await SpringBack.load();
     } catch (_) {}
   }
 
