@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Mandatory Commit Rules
+
+NEVER add a `Co-Authored-By` line to commit messages. NEVER credit agents or co-authors in the commit message body or footer.
+
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
@@ -59,11 +63,6 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-## Important Note
-
-- Do not include a Co-Authored-By line in commit messages.
-- Do not co-author the source code.
 
 ---
 
