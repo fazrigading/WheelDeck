@@ -55,7 +55,11 @@ class SettingsRepository {
     return prefs.getString(bindingKey(c, isGamepad));
   }
 
-  Future<void> setBindingOverride(ControlId c, bool isGamepad, String value) async {
+  Future<void> setBindingOverride(
+    ControlId c,
+    bool isGamepad,
+    String value,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(bindingKey(c, isGamepad), value);
   }
@@ -69,10 +73,12 @@ class SettingsRepository {
   }
 
   Future<void> resetAll() async {
-    await InputMapping.keyboard.save();
+    await InputMapping.fallback.save();
     await GamePreset.ets2.save();
-    await const ControllerVisibility(showClutch: false, showDashboard: true)
-        .save();
+    await const ControllerVisibility(
+      showClutch: false,
+      showDashboard: true,
+    ).save();
     await PedalSides({}).save();
     await WheelMode.rotatable.save();
     await EngineStartMode.holdConfirm.save();

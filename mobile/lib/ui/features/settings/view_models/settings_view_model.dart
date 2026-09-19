@@ -26,7 +26,7 @@ class SettingsViewModel extends ChangeNotifier {
   final SettingsRepository _settingsRepository;
   final ConnectionRepository _connectionRepository;
 
-  InputMapping _mapping = InputMapping.keyboard;
+  InputMapping _mapping = InputMapping.gamepad;
   ControllerVisibility _visibility = ControllerVisibility.fallback;
   Map<PedalType, PedalSide> _pedalSides = PedalSides.defaults().asMap();
   GamePreset _preset = GamePreset.ets2;
@@ -65,8 +65,7 @@ class SettingsViewModel extends ChangeNotifier {
       _wheelMode = await _settingsRepository.getWheelMode();
     } catch (_) {}
     try {
-      _rotationDegree =
-          await _settingsRepository.getRotationDegree(_preset);
+      _rotationDegree = await _settingsRepository.getRotationDegree(_preset);
     } catch (_) {}
     try {
       _engineStartMode = await _settingsRepository.getEngineStartMode();
@@ -138,8 +137,7 @@ class SettingsViewModel extends ChangeNotifier {
     if (!next.remove(control)) next.add(control);
     _visibleExtras = next;
     notifyListeners();
-    await _settingsRepository
-        .setDashboardVisibility(DashboardVisibility(next));
+    await _settingsRepository.setDashboardVisibility(DashboardVisibility(next));
   }
 
   Future<void> selectPreset(GamePreset v) async {
@@ -167,7 +165,7 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> resetToDefaults() async {
-    _mapping = InputMapping.keyboard;
+    _mapping = InputMapping.gamepad;
     _visibility = ControllerVisibility.fallback;
     _pedalSides = PedalSides.defaults().asMap();
     _preset = GamePreset.ets2;

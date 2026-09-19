@@ -59,5 +59,21 @@ public enum ControlId
     AudioPrevious,
     AudioVolumeUp,
     AudioVolumeDown,
-    AudioFavorite
+    AudioFavorite,
+
+    // Camera pad, numpad mode (ADR-0006: the mode lives in the identifiers).
+    CameraPadUp,
+    CameraPadDown,
+    CameraPadLeft,
+    CameraPadRight,
+    CameraPadUpLeft,
+    CameraPadUpRight,
+    CameraPadDownLeft,
+    CameraPadDownRight,
+    CameraPadRecenter,
+    // Camera pad, arrow mode; the four diagonals are disabled and have none.
+    CameraPadArrowUp,
+    CameraPadArrowDown,
+    CameraPadArrowLeft,
+    CameraPadArrowRight
 }

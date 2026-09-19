@@ -1,3 +1,4 @@
+using System.Reflection;
 using WheelDeck.Core.Input;
 using WheelDeck.Core.Output;
 using WheelDeck.Core.Protocol;
@@ -151,39 +152,31 @@ public sealed class InputMapperTests
     }
 
     [Fact]
-    public void AllControlIds_HaveKeyBindings()
+    public void AllControlIds_HaveKeyBindingRows()
     {
-        _mapper.Mode = MappingMode.SimulatedKeyPress;
-
-        foreach (var control in Enum.GetValues<ControlId>())
-        {
-            _backend.Clear();
-            _mapper.ApplyButton(new ButtonMessage
-            {
-                Control = control,
-                Action = ActionType.Press
-            });
-
-            Assert.NotNull(_backend.LastKeyCode);
-        }
+        var keys = BindingTableKeys(typeof(InputMapper), "DefaultKeyBindings");
+        Assert.Empty(Enum.GetValues<ControlId>().Except(keys));
     }
 
     [Fact]
-    public void AllControlIds_HaveButtonBindings()
+    public void AllControlIds_HaveButtonBindingRows()
     {
-        _mapper.Mode = MappingMode.ControllerButton;
+        var buttons = BindingTableKeys(typeof(InputMapper), "DefaultButtonBindings");
+        Assert.Empty(Enum.GetValues<ControlId>().Except(buttons));
+    }
 
-        foreach (var control in Enum.GetValues<ControlId>())
+    private static HashSet<ControlId> BindingTableKeys(Type mapperType, string fieldName)
+    {
+        var field = mapperType.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.False(field is null, $"Expected private static table '{fieldName}' on InputMapper.");
+        var table = (System.Collections.IDictionary)field!.GetValue(null)!;
+        var keys = new HashSet<ControlId>();
+        foreach (ControlId control in table.Keys)
         {
-            _backend.Clear();
-            _mapper.ApplyButton(new ButtonMessage
-            {
-                Control = control,
-                Action = ActionType.Press
-            });
-
-            Assert.NotNull(_backend.LastButtonId);
+            keys.Add(control);
         }
+
+        return keys;
     }
 
     [Fact]
@@ -262,18 +255,95 @@ public sealed class InputMapperTests
     }
 
     [Fact]
-    public void ApplyButton_UnboundControl_SendsNone()
+    public void ApplyButton_NoneBoundControl_IsInertInBothModes()
     {
+        // ShiftToDrive is None in both binding tables: the phone gates these.
         _mapper.Mode = MappingMode.SimulatedKeyPress;
-
         _mapper.ApplyButton(new ButtonMessage
         {
             Control = ControlId.ShiftToDrive,
             Action = ActionType.Press
         });
+        Assert.Null(_backend.LastKeyCode);
+        Assert.Null(_backend.LastButtonId);
+        Assert.Empty(_backend.KeyEvents);
+        Assert.Empty(_backend.ButtonEvents);
 
-        // KeyCode.None is inert in every real backend; the phone gates these.
-        Assert.Equal(KeyCode.None, _backend.LastKeyCode);
+        _mapper.Mode = MappingMode.ControllerButton;
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ShiftToDrive,
+            Action = ActionType.Press
+        });
+        Assert.Null(_backend.LastKeyCode);
+        Assert.Null(_backend.LastButtonId);
+        Assert.Empty(_backend.KeyEvents);
+        Assert.Empty(_backend.ButtonEvents);
+    }
+
+    [Fact]
+    public void ApplyButton_ControllerButtonMode_DualBoundControl_FiresButtonNotKey()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(ButtonId.A, _backend.LastButtonId);
+        Assert.Null(_backend.LastKeyCode);
+        Assert.Empty(_backend.KeyEvents);
+    }
+
+    [Fact]
+    public void ApplyButton_ControllerButtonMode_KeyOnlyControl_FallsBackToKey()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.BeaconLights,
+            Action = ActionType.Toggle
+        });
+
+        Assert.Equal(2, _backend.KeyEvents.Count);
+        Assert.Equal((KeyCode.O, true), _backend.KeyEvents[0]);
+        Assert.Equal((KeyCode.O, false), _backend.KeyEvents[1]);
+        Assert.Empty(_backend.ButtonEvents);
+    }
+
+    [Fact]
+    public void ApplyButton_ControllerButtonMode_CameraPadControl_FallsBackToNumpadKey()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraPadUp,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Numpad8, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+        Assert.Null(_backend.LastButtonId);
+    }
+
+    [Fact]
+    public void ApplyButton_SimulatedKeyPressMode_DualBoundControl_FiresKeyNotButton()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Space, _backend.LastKeyCode);
+        Assert.Null(_backend.LastButtonId);
+        Assert.Empty(_backend.ButtonEvents);
     }
 
     [Fact]

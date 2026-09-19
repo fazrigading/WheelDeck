@@ -5,8 +5,9 @@ namespace WheelDeck.Core.Input;
 
 /// <summary>
 /// Translates incoming state and button messages into virtual output calls. Axes always
-/// map to SetAxis; dashboard controls route to SetButton or SendKey based on MappingMode.
-/// Default mode is simulated key presses, matching ETS2's default keybindings.
+/// map to SetAxis; dashboard controls route through the hybrid priority described on
+/// <see cref="ApplyButton"/>. Default mode is simulated key presses, matching ETS2's
+/// default keybindings.
 /// </summary>
 public sealed class InputMapper
 {
@@ -71,7 +72,22 @@ public sealed class InputMapper
             [ControlId.AudioPrevious] = KeyCode.None,
             [ControlId.AudioVolumeUp] = KeyCode.None,
             [ControlId.AudioVolumeDown] = KeyCode.None,
-            [ControlId.AudioFavorite] = KeyCode.None
+            [ControlId.AudioFavorite] = KeyCode.None,
+            // Camera pad resolves to the numpad keys (REQ-017); the arrow set
+            // maps to the arrow keys. Both sets are keyboard-only.
+            [ControlId.CameraPadUp] = KeyCode.Numpad8,
+            [ControlId.CameraPadDown] = KeyCode.Numpad2,
+            [ControlId.CameraPadLeft] = KeyCode.Numpad4,
+            [ControlId.CameraPadRight] = KeyCode.Numpad6,
+            [ControlId.CameraPadUpLeft] = KeyCode.Numpad7,
+            [ControlId.CameraPadUpRight] = KeyCode.Numpad9,
+            [ControlId.CameraPadDownLeft] = KeyCode.Numpad1,
+            [ControlId.CameraPadDownRight] = KeyCode.Numpad3,
+            [ControlId.CameraPadRecenter] = KeyCode.Numpad5,
+            [ControlId.CameraPadArrowUp] = KeyCode.ArrowUp,
+            [ControlId.CameraPadArrowDown] = KeyCode.ArrowDown,
+            [ControlId.CameraPadArrowLeft] = KeyCode.ArrowLeft,
+            [ControlId.CameraPadArrowRight] = KeyCode.ArrowRight
         };
 
     private static readonly IReadOnlyDictionary<ControlId, ButtonId> DefaultButtonBindings =
@@ -134,7 +150,21 @@ public sealed class InputMapper
             [ControlId.AudioPrevious] = ButtonId.None,
             [ControlId.AudioVolumeUp] = ButtonId.None,
             [ControlId.AudioVolumeDown] = ButtonId.None,
-            [ControlId.AudioFavorite] = ButtonId.None
+            [ControlId.AudioFavorite] = ButtonId.None,
+            // The camera pad is keyboard-only: no gamepad equivalents.
+            [ControlId.CameraPadUp] = ButtonId.None,
+            [ControlId.CameraPadDown] = ButtonId.None,
+            [ControlId.CameraPadLeft] = ButtonId.None,
+            [ControlId.CameraPadRight] = ButtonId.None,
+            [ControlId.CameraPadUpLeft] = ButtonId.None,
+            [ControlId.CameraPadUpRight] = ButtonId.None,
+            [ControlId.CameraPadDownLeft] = ButtonId.None,
+            [ControlId.CameraPadDownRight] = ButtonId.None,
+            [ControlId.CameraPadRecenter] = ButtonId.None,
+            [ControlId.CameraPadArrowUp] = ButtonId.None,
+            [ControlId.CameraPadArrowDown] = ButtonId.None,
+            [ControlId.CameraPadArrowLeft] = ButtonId.None,
+            [ControlId.CameraPadArrowRight] = ButtonId.None
         };
 
     private readonly VirtualOutputBackend _backend;
@@ -157,23 +187,38 @@ public sealed class InputMapper
     }
 
     /// <summary>Routes a discrete button event according to the current mapping mode.</summary>
+    /// <remarks>
+    /// Hybrid routing: the mapping mode is a route priority, not an exclusivity
+    /// switch. In gamepad mode a control presses its virtual controller button
+    /// when one is bound, otherwise its keyboard key; in keyboard mode the
+    /// priority is reversed. A control bound to None in both tables stays
+    /// inert. Recorded here because this dispatch is the single point where
+    /// the mode meets the binding tables. The mode arrives from the phone's
+    /// mapping frame; switching modes mid-hold is a deliberate user action and
+    /// can strand a held key or button — accepted, as in the prior exclusive
+    /// dispatch.
+    /// </remarks>
     public void ApplyButton(ButtonMessage button)
     {
         if (Mode == MappingMode.ControllerButton)
         {
-            RouteButton(button);
+            if (!TryRouteButton(button))
+            {
+                TryRouteKey(button);
+            }
         }
-        else
+        else if (!TryRouteKey(button))
         {
-            RouteKey(button);
+            TryRouteButton(button);
         }
     }
 
-    private void RouteButton(ButtonMessage button)
+    private bool TryRouteButton(ButtonMessage button)
     {
-        if (!DefaultButtonBindings.TryGetValue(button.Control, out var buttonId))
+        if (!DefaultButtonBindings.TryGetValue(button.Control, out var buttonId) ||
+            buttonId == ButtonId.None)
         {
-            return;
+            return false;
         }
 
         switch (button.Action)
@@ -190,13 +235,16 @@ public sealed class InputMapper
                 _backend.SetButton(buttonId, false);
                 break;
         }
+
+        return true;
     }
 
-    private void RouteKey(ButtonMessage button)
+    private bool TryRouteKey(ButtonMessage button)
     {
-        if (!DefaultKeyBindings.TryGetValue(button.Control, out var keyCode))
+        if (!DefaultKeyBindings.TryGetValue(button.Control, out var keyCode) ||
+            keyCode == KeyCode.None)
         {
-            return;
+            return false;
         }
 
         switch (button.Action)
@@ -213,6 +261,8 @@ public sealed class InputMapper
                 _backend.SendKey(keyCode, false);
                 break;
         }
+
+        return true;
     }
 
     private static double Clamp(double value, double min, double max)
