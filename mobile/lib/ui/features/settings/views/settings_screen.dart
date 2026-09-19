@@ -184,49 +184,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       dense: true,
                     ),
-                    SwitchListTile(
-                      title: const Text('Dashboard', style: TextStyle(fontSize: 14)),
-                      value: _viewModel.visibility.showDashboard,
-                      onChanged: (v) => _viewModel.selectVisibility(
-                        ControllerVisibility(
-                          showClutch: _viewModel.visibility.showClutch,
-                          showDashboard: v,
+                    if (_viewModel.wheelMode == WheelMode.gyro)
+                      SwitchListTile(
+                        title: const Text('Dashboard', style: TextStyle(fontSize: 14)),
+                        value: _viewModel.visibility.showDashboard,
+                        onChanged: (v) => _viewModel.selectVisibility(
+                          ControllerVisibility(
+                            showClutch: _viewModel.visibility.showClutch,
+                            showDashboard: v,
+                          ),
                         ),
+                        dense: true,
                       ),
-                      dense: true,
-                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Pedal sides
-              Text('Pedal sides', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              Card(
-                child: Column(
-                  children: [
-                    for (final pedal in PedalType.values)
-                      ListTile(
-                        dense: true,
-                        title: Text(_pedalLabel(pedal), style: const TextStyle(fontSize: 14)),
-                        trailing: SegmentedButton<PedalSide>(
-                          segments: const [
-                            ButtonSegment(value: PedalSide.left, label: Text('Left')),
-                            ButtonSegment(value: PedalSide.right, label: Text('Right')),
-                          ],
-                          selected: {_viewModel.pedalSides[pedal] ?? PedalSide.right},
-                          onSelectionChanged: (s) =>
-                              _viewModel.selectPedalSide(pedal, s.first),
-                          style: const ButtonStyle(
-                            visualDensity: VisualDensity.compact,
+              // Pedal sides: meaningless in rotatable mode, where the
+              // layout fixes clutch top-left and brake/accelerator
+              // bottom-right (REQ-010).
+              if (_viewModel.wheelMode == WheelMode.gyro) ...[
+                Text('Pedal sides', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: [
+                      for (final pedal in PedalType.values)
+                        ListTile(
+                          dense: true,
+                          title: Text(_pedalLabel(pedal), style: const TextStyle(fontSize: 14)),
+                          trailing: SegmentedButton<PedalSide>(
+                            segments: const [
+                              ButtonSegment(value: PedalSide.left, label: Text('Left')),
+                              ButtonSegment(value: PedalSide.right, label: Text('Right')),
+                            ],
+                            selected: {_viewModel.pedalSides[pedal] ?? PedalSide.right},
+                            onSelectionChanged: (s) =>
+                                _viewModel.selectPedalSide(pedal, s.first),
+                            style: const ButtonStyle(
+                              visualDensity: VisualDensity.compact,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
 
               // Engine start mode
               Text('Engine start', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
@@ -242,22 +247,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Dashboard controls
-              Text('Dashboard controls', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              Card(
-                child: Column(
-                  children: [
-                    for (final c in DashboardVisibility.toggleable)
-                      SwitchListTile(
-                        title: Text(_controlLabel(c), style: const TextStyle(fontSize: 14)),
-                        value: _viewModel.visibleExtras.contains(c),
-                        onChanged: (_) => _viewModel.toggleExtraControl(c),
-                        dense: true,
-                      ),
-                  ],
+              // Dashboard controls: gyro-only (REQ-011); the rotatable
+              // grid renders its blocks regardless.
+              if (_viewModel.wheelMode == WheelMode.gyro) ...[
+                Text('Dashboard controls', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: [
+                      for (final c in DashboardVisibility.toggleable)
+                        SwitchListTile(
+                          title: Text(_controlLabel(c), style: const TextStyle(fontSize: 14)),
+                          value: _viewModel.visibleExtras.contains(c),
+                          onChanged: (_) => _viewModel.toggleExtraControl(c),
+                          dense: true,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
               const SizedBox(height: 24),
 
               // Per-control bindings
