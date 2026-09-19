@@ -219,22 +219,120 @@ void main() {
     );
     expect(container.constraints,
         BoxConstraints.tight(const Size(64, 64)));
-  });
-
-  testWidgets('small phones fall back to rounded rectangles', (tester) async {
-    tester.view.physicalSize = const Size(360, 640);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    await pumpPanel(tester);
-
-    final container = tester.widget<AnimatedContainer>(
-      find.descendant(
-        of: find.byKey(const ValueKey('dashboard-wipers')),
-        matching: find.byType(AnimatedContainer),
-      ),
-    );
     final decoration = container.decoration as BoxDecoration;
     expect(decoration.shape, BoxShape.rectangle);
-    expect(decoration.borderRadius, BorderRadius.circular(16));
+    expect(decoration.borderRadius, BorderRadius.circular(12));
+  });
+
+  group('ported signal cells', () {
+    Future<void> pumpSignals(
+      WidgetTester tester, {
+      DashboardSendGate? gate,
+    }) =>
+        tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DashboardControl(
+                      key: const ValueKey('signal-left'),
+                      label: 'LEFT',
+                      control: ControlId.turnSignalLeft,
+                      input: input,
+                      mode: ControlMode.toggle,
+                      gate: gate,
+                    ),
+                    DashboardControl(
+                      key: const ValueKey('signal-right'),
+                      label: 'RIGHT',
+                      control: ControlId.turnSignalRight,
+                      input: input,
+                      mode: ControlMode.toggle,
+                      gate: gate,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+    Color colorOf(WidgetTester tester, String key) =>
+        ((tester.widget<AnimatedContainer>(
+          find.descendant(
+            of: find.byKey(ValueKey(key)),
+            matching: find.byType(AnimatedContainer),
+          ),
+        )).decoration as BoxDecoration)
+            .color!;
+
+    testWidgets('inert without a gate', (tester) async {
+      await pumpSignals(tester);
+
+      expect(colorOf(tester, 'signal-left'), isNot(const Color(0xFFFFB300)));
+
+      await tester.tap(find.byKey(const ValueKey('signal-left')));
+      await tester.pump();
+
+      // The tap still sends, but the visual derives from the gate only.
+      expect(events, [(ControlId.turnSignalLeft, ActionType.toggle)]);
+      expect(colorOf(tester, 'signal-left'), isNot(const Color(0xFFFFB300)));
+    });
+
+    testWidgets('icon plus own-state blink with a gate', (tester) async {
+      final sent = <(ControlId, ActionType)>[];
+      final gate = buildGate(sent);
+      await pumpSignals(tester, gate: gate);
+
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('signal-left')),
+          matching: find.byIcon(Icons.arrow_back),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('signal-right')),
+          matching: find.byIcon(Icons.arrow_forward),
+        ),
+        findsOneWidget,
+      );
+
+      gate.handle(ControlId.turnSignalLeft, ActionType.toggle);
+      await tester.pump();
+      // Lit immediately on activation; the other side stays idle.
+      expect(colorOf(tester, 'signal-left'), const Color(0xFFFFB300));
+      expect(colorOf(tester, 'signal-right'), isNot(const Color(0xFFFFB300)));
+
+      gate.advanceBlink();
+      await tester.pump();
+      expect(colorOf(tester, 'signal-left'), isNot(const Color(0xFFFFB300)));
+    });
+
+    testWidgets('sends normally during hazard', (tester) async {
+      final sent = <(ControlId, ActionType)>[];
+      final gate = buildGate(sent);
+      // Mirror the production wiring: input events flow through the gate.
+      input.onControlActivated((control, action) {
+        events.add((control, action));
+        gate.handle(control, action);
+      });
+      await pumpSignals(tester, gate: gate);
+
+      gate.handle(ControlId.hazardLights, ActionType.toggle);
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('signal-left')));
+      await tester.pump();
+
+      expect(events, [(ControlId.turnSignalLeft, ActionType.toggle)]);
+      expect(sent, contains((ControlId.turnSignalLeft, ActionType.toggle)));
+      // Hazard keeps driving both cells; the left signal blinks its own state.
+      expect(colorOf(tester, 'signal-left'), const Color(0xFFFFB300));
+      expect(colorOf(tester, 'signal-right'), const Color(0xFFFFB300));
+    });
   });
 }

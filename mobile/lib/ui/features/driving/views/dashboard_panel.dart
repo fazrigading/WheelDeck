@@ -11,9 +11,12 @@ import '../../../../data/services/engine_start_mode.dart';
 ///
 /// Renders the always-shown [coreControls] plus the visible
 /// [DashboardVisibility.toggleable] extras, and forwards activation events to
-/// [DashboardInput]. Turn signals never appear here: [SignalArrows] owns them.
-/// Unbound controls (empty per-mode binding) render disabled with a "—" badge;
-/// tapping one calls [onBindRequested] instead of sending.
+/// [DashboardInput]. Turn signals never appear in this shared wrap — the
+/// rotatable grid's block A slots and the gyro signal row own them — but
+/// signal cells rendered elsewhere are [DashboardControl]s with the gate's
+/// straight-arrow icons and blink. Unbound controls (empty per-mode binding)
+/// render disabled with a "—" badge; tapping one calls [onBindRequested]
+/// instead of sending.
 class DashboardPanel extends StatelessWidget {
   const DashboardPanel({
     super.key,
@@ -42,7 +45,8 @@ class DashboardPanel extends StatelessWidget {
   final ValueChanged<ControlId>? onBindRequested;
 
   /// Always-shown grid controls (labels + IDs). Turn signals are excluded by
-  /// design; [SignalArrows] is their single source of truth.
+  /// design; the rotatable grid's block A slots and the gyro signal row render
+  /// them as [DashboardControl]s instead.
   static const coreEntries = [
     _DashboardEntry('LIGHT', ControlId.headlightToggle),
     _DashboardEntry('BEAM', ControlId.highBeamToggle),
@@ -61,7 +65,8 @@ class DashboardPanel extends StatelessWidget {
   ];
 
   /// Test seam: IDs the grid always renders.
-  static const coreControls = [    ControlId.headlightToggle,
+  static const coreControls = [
+    ControlId.headlightToggle,
     ControlId.highBeamToggle,
     ControlId.cruiseToggle,
     ControlId.cruiseSetResume,
@@ -84,6 +89,13 @@ class DashboardPanel extends StatelessWidget {
     }
     return labelFor(control);
   }
+
+  /// Straight-arrow icon for the turn-signal cells; null for everything else.
+  static IconData? iconFor(ControlId control) => switch (control) {
+    ControlId.turnSignalLeft => Icons.arrow_back,
+    ControlId.turnSignalRight => Icons.arrow_forward,
+    _ => null,
+  };
 
   /// Short grid labels for the toggleable extras.
   static String labelFor(ControlId control) {
@@ -153,8 +165,7 @@ class DashboardPanel extends StatelessWidget {
             input: input,
             mode: _modeFor(entry.control),
             gate: gate,
-            enabled:
-                !DashboardSendGate.isUnbound(bindingFor(entry.control)),
+            enabled: !DashboardSendGate.isUnbound(bindingFor(entry.control)),
             onBindRequested: onBindRequested,
           ),
       ],
@@ -181,7 +192,9 @@ class _DashboardEntry {
 /// Emits [ActionType.toggle] on tap, [ActionType.press]/[ActionType.release] on
 /// momentary press, or [ActionType.holdConfirm] after a held press. When
 /// [enabled] is false the button renders disabled with a "—" badge and taps
-/// call [onBindRequested] instead of sending.
+/// call [onBindRequested] instead of sending. Turn-signal cells render the
+/// straight-arrow icon and blink from the gate's phase; without a gate they
+/// stay visually inert.
 class DashboardControl extends StatefulWidget {
   const DashboardControl({
     super.key,
@@ -242,17 +255,29 @@ class _DashboardControlState extends State<DashboardControl> {
   bool _toggled = false;
   Timer? _holdTimer;
 
-  /// Gate-driven visuals apply to hazard (blink) and the headlight cycle.
-  bool get _gateDriven =>
-      widget.gate != null &&
-      (widget.control == ControlId.hazardLights ||
-          widget.control == ControlId.headlightToggle);
+  /// Controls whose visuals read the gate: signal blink, hazard blink, and
+  /// the headlight cycle.
+  static bool _isGateDriven(ControlId control) =>
+      control == ControlId.hazardLights ||
+      control == ControlId.headlightToggle ||
+      control == ControlId.turnSignalLeft ||
+      control == ControlId.turnSignalRight;
+
+  /// Gate-driven visuals apply to the signals' blink, hazard blink, and the
+  /// headlight cycle.
+  bool get _gateDriven => widget.gate != null && _isGateDriven(widget.control);
 
   /// Active when held down (momentary/hold), switched on (toggle), or lit by
-  /// the phone-held blink/cycle state.
+  /// the phone-held blink/cycle state. Signal visuals derive from the gate
+  /// alone: inert without one.
   bool get _active {
     final gate = widget.gate;
-    if (gate != null && widget.control == ControlId.hazardLights) {
+    final control = widget.control;
+    if (control == ControlId.turnSignalLeft ||
+        control == ControlId.turnSignalRight) {
+      return gate?.signalVisualActive(control) ?? false;
+    }
+    if (gate != null && control == ControlId.hazardLights) {
       return gate.signalVisualActive(ControlId.hazardLights);
     }
     return _pressed || _toggled;
@@ -286,9 +311,7 @@ class _DashboardControlState extends State<DashboardControl> {
   }
 
   bool _listened(DashboardControl w) =>
-      w.gate != null &&
-      (w.control == ControlId.hazardLights ||
-          w.control == ControlId.headlightToggle);
+      w.gate != null && _isGateDriven(w.control);
 
   void _onGate() {
     if (mounted) setState(() {});
@@ -303,16 +326,15 @@ class _DashboardControlState extends State<DashboardControl> {
 
   @override
   Widget build(BuildContext context) {
-    // Rounded-rectangle fallback on small phones (REQ-005).
-    final compact = MediaQuery.sizeOf(context).width < 380;
     final isPressable = widget.enabled && widget.mode != ControlMode.toggle;
+    final icon = DashboardPanel.iconFor(widget.control);
 
     return GestureDetector(
       onTap: !widget.enabled
           ? () => widget.onBindRequested?.call(widget.control)
           : widget.mode == ControlMode.toggle
-              ? _toggle
-              : null,
+          ? _toggle
+          : null,
       onTapDown: isPressable ? (_) => _pressDown() : null,
       onTapUp: isPressable ? (_) => _pressUp() : null,
       onTapCancel: isPressable ? _pressUp : null,
@@ -327,11 +349,10 @@ class _DashboardControlState extends State<DashboardControl> {
               color: !widget.enabled
                   ? const Color(0xFF37474F)
                   : _active
-                      ? const Color(0xFFFFB300)
-                      : const Color(0xFF455A64),
-              shape: compact ? BoxShape.rectangle : BoxShape.circle,
-              borderRadius:
-                  compact ? BorderRadius.circular(16) : null,
+                  ? const Color(0xFFFFB300)
+                  : const Color(0xFF455A64),
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _active && widget.enabled
                     ? const Color(0xFFFFE082)
@@ -349,24 +370,34 @@ class _DashboardControlState extends State<DashboardControl> {
                   : null,
             ),
             alignment: Alignment.center,
-            child: Text(
-              _label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-                color: _active && widget.enabled
-                    ? Colors.black
-                    : Colors.white,
-              ),
-            ),
+            child: icon != null
+                ? Icon(
+                    icon,
+                    size: 28,
+                    color: _active && widget.enabled
+                        ? Colors.black
+                        : Colors.white,
+                  )
+                : Text(
+                    _label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: _active && widget.enabled
+                          ? Colors.black
+                          : Colors.white,
+                    ),
+                  ),
           ),
           if (!widget.enabled)
             const Positioned(
               right: 2,
               top: 2,
-              child: Text('—',
-                  style: TextStyle(fontSize: 12, color: Colors.white70)),
+              child: Text(
+                '—',
+                style: TextStyle(fontSize: 12, color: Colors.white70),
+              ),
             ),
         ],
       ),
