@@ -91,7 +91,7 @@ class DashboardPanel extends StatelessWidget {
   }
 
   /// Straight-arrow icon for the turn-signal cells; null for everything else.
-  static IconData? iconFor(ControlId control) => switch (control) {
+  static IconData? iconFor(ControlId? control) => switch (control) {
     ControlId.turnSignalLeft => Icons.arrow_back,
     ControlId.turnSignalRight => Icons.arrow_forward,
     _ => null,
@@ -187,14 +187,15 @@ class _DashboardEntry {
   final ControlId control;
 }
 
-/// A single dashboard control button (64px).
+/// A single dashboard control button.
 ///
 /// Emits [ActionType.toggle] on tap, [ActionType.press]/[ActionType.release] on
 /// momentary press, or [ActionType.holdConfirm] after a held press. When
 /// [enabled] is false the button renders disabled with a "—" badge and taps
-/// call [onBindRequested] instead of sending. Turn-signal cells render the
-/// straight-arrow icon and blink from the gate's phase; without a gate they
-/// stay visually inert.
+/// call [onBindRequested] instead of sending — except hole cells, which pass
+/// a null [control] and no binder callback, so they are fully inert.
+/// Turn-signal cells render the straight-arrow icon and blink from the gate's
+/// phase; without a gate they stay visually inert.
 class DashboardControl extends StatefulWidget {
   const DashboardControl({
     super.key,
@@ -205,6 +206,8 @@ class DashboardControl extends StatefulWidget {
     this.holdDuration = const Duration(milliseconds: 500),
     this.enabled = true,
     this.gate,
+    this.width = DashboardControl.defaultSize,
+    this.height = DashboardControl.defaultSize,
     this.onBindRequested,
   });
 
@@ -233,7 +236,10 @@ class DashboardControl extends StatefulWidget {
   }
 
   final String label;
-  final ControlId control;
+
+  /// The control this cell sends. Null for layout holes: the cell renders
+  /// disabled and never activates anything.
+  final ControlId? control;
   final DashboardInput input;
   final ControlMode mode;
   final Duration holdDuration;
@@ -241,8 +247,12 @@ class DashboardControl extends StatefulWidget {
   final DashboardSendGate? gate;
   final ValueChanged<ControlId>? onBindRequested;
 
-  /// Compact 64px control size (REQ-005).
-  static const double size = 64;
+  /// Sides of the rectangular cell box. Grid renderers size cells from
+  /// their layout slot, so the box follows the screen-derived cell aspect;
+  /// the compact square default (REQ-005) is [defaultSize].
+  final double width;
+  final double height;
+  static const double defaultSize = 64;
 
   @override
   State<DashboardControl> createState() => _DashboardControlState();
@@ -257,7 +267,7 @@ class _DashboardControlState extends State<DashboardControl> {
 
   /// Controls whose visuals read the gate: signal blink, hazard blink, and
   /// the headlight cycle.
-  static bool _isGateDriven(ControlId control) =>
+  static bool _isGateDriven(ControlId? control) =>
       control == ControlId.hazardLights ||
       control == ControlId.headlightToggle ||
       control == ControlId.turnSignalLeft ||
@@ -273,8 +283,9 @@ class _DashboardControlState extends State<DashboardControl> {
   bool get _active {
     final gate = widget.gate;
     final control = widget.control;
-    if (control == ControlId.turnSignalLeft ||
-        control == ControlId.turnSignalRight) {
+    if (control != null &&
+        (control == ControlId.turnSignalLeft ||
+            control == ControlId.turnSignalRight)) {
       return gate?.signalVisualActive(control) ?? false;
     }
     if (gate != null && control == ControlId.hazardLights) {
@@ -331,7 +342,10 @@ class _DashboardControlState extends State<DashboardControl> {
 
     return GestureDetector(
       onTap: !widget.enabled
-          ? () => widget.onBindRequested?.call(widget.control)
+          ? () {
+              final control = widget.control;
+              if (control != null) widget.onBindRequested?.call(control);
+            }
           : widget.mode == ControlMode.toggle
           ? _toggle
           : null,
@@ -343,8 +357,8 @@ class _DashboardControlState extends State<DashboardControl> {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 100),
-            width: DashboardControl.size,
-            height: DashboardControl.size,
+            width: widget.width,
+            height: widget.height,
             decoration: BoxDecoration(
               color: !widget.enabled
                   ? const Color(0xFF37474F)
@@ -405,21 +419,25 @@ class _DashboardControlState extends State<DashboardControl> {
   }
 
   void _toggle() {
+    final control = widget.control;
+    if (control == null) return;
     setState(() => _toggled = !_toggled);
-    widget.input.activate(widget.control, ActionType.toggle);
+    widget.input.activate(control, ActionType.toggle);
   }
 
   void _pressDown() {
+    final control = widget.control;
+    if (control == null) return;
     setState(() => _pressed = true);
 
     if (widget.mode == ControlMode.holdConfirm) {
       _holdTimer = Timer(widget.holdDuration, () {
         if (mounted && _pressed) {
-          widget.input.activate(widget.control, ActionType.holdConfirm);
+          widget.input.activate(control, ActionType.holdConfirm);
         }
       });
     } else {
-      widget.input.activate(widget.control, ActionType.press);
+      widget.input.activate(control, ActionType.press);
     }
   }
 
@@ -434,7 +452,8 @@ class _DashboardControlState extends State<DashboardControl> {
     setState(() => _pressed = false);
 
     if (widget.mode == ControlMode.momentary) {
-      widget.input.activate(widget.control, ActionType.release);
+      final control = widget.control;
+      if (control != null) widget.input.activate(control, ActionType.release);
     }
   }
 }
