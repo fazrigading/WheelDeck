@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/camera_pad_mode.dart';
 import '../services/controller_preset.dart';
 import '../services/controller_visibility.dart';
 import '../services/dashboard_input.dart';
@@ -35,6 +36,9 @@ class SettingsRepository {
 
   Future<bool> getSpringBack() => SpringBack.load();
   Future<void> setSpringBack(bool value) => SpringBack.save(value);
+
+  Future<CameraPadMode> getCameraPadMode() => CameraPadMode.load();
+  Future<void> setCameraPadMode(CameraPadMode mode) => mode.save();
 
   Future<PedalSides> getPedalSides() => PedalSides.load();
 
@@ -86,6 +90,7 @@ class SettingsRepository {
     await PedalSides({}).save();
     await WheelMode.rotatable.save();
     await SpringBack.save(SpringBack.fallback);
+    await CameraPadMode.fallback.save();
     await EngineStartMode.holdConfirm.save();
     await const DashboardVisibility(DashboardVisibility.defaults).save();
     for (final preset in GamePreset.values) {

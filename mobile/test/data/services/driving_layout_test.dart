@@ -69,22 +69,23 @@ void main() {
       expect(slotCovering(1, 9).control, ControlId.audioNext);
       expect(slotCovering(1, 10).control, ControlId.audioVolumeUp);
 
-      // Windows and nav zoom in do not exist yet (Phase 6).
-      expect(slotCovering(2, 6).kind, SlotKind.hole);
-      expect(slotCovering(2, 7).kind, SlotKind.hole);
+      expect(slotCovering(2, 6).control, ControlId.driverWindowUp);
+      expect(slotCovering(2, 7).control, ControlId.navigationZoomIn);
       expect(slotCovering(2, 8).control, ControlId.cruiseSpeedIncrease);
       expect(slotCovering(2, 9).control, ControlId.retarderIncrease);
-      expect(slotCovering(2, 10).kind, SlotKind.hole);
+      expect(slotCovering(2, 10).control, ControlId.passengerWindowUp);
 
-      expect(slotCovering(3, 6).kind, SlotKind.hole);
+      expect(slotCovering(3, 6).control, ControlId.driverWindowDown);
       expect(slotCovering(3, 7).control, ControlId.navigationZoomOut);
       expect(slotCovering(3, 8).control, ControlId.cruiseSpeedDecrease);
       expect(slotCovering(3, 9).control, ControlId.retarderDecrease);
-      expect(slotCovering(3, 10).kind, SlotKind.hole);
+      expect(slotCovering(3, 10).control, ControlId.passengerWindowDown);
 
-      for (var col = 6; col <= 10; col++) {
-        expect(slotCovering(4, col).kind, SlotKind.hole, reason: 'col $col');
-      }
+      expect(slotCovering(4, 6).control, ControlId.overlayActivation);
+      expect(slotCovering(4, 7).control, ControlId.chatActivation);
+      expect(slotCovering(4, 8).control, ControlId.quickReplies);
+      expect(slotCovering(4, 9).control, ControlId.nameTags);
+      expect(slotCovering(4, 10).control, ControlId.pushToTalk);
     });
 
     test('block C matches the researched table', () {
@@ -133,14 +134,15 @@ void main() {
     });
 
     test('block E matches the researched table', () {
-      // Camera row does not exist yet (Phase 6).
-      for (var col = 6; col <= 10; col++) {
-        expect(slotCovering(5, col).kind, SlotKind.hole, reason: 'col $col');
-      }
+      expect(slotCovering(5, 6).control, ControlId.cameraInterior);
+      expect(slotCovering(5, 7).control, ControlId.cameraChasing);
+      expect(slotCovering(5, 8).control, ControlId.cameraTopdown);
+      expect(slotCovering(5, 9).control, ControlId.cameraRoof);
+      expect(slotCovering(5, 10).control, ControlId.cameraLeanout);
 
       expect(slotCovering(6, 6).control, ControlId.quickSave);
-      expect(slotCovering(6, 7).kind, SlotKind.hole);
-      expect(slotCovering(6, 8).kind, SlotKind.hole);
+      expect(slotCovering(6, 7).control, ControlId.dashboardInfo);
+      expect(slotCovering(6, 8).control, ControlId.nextCamera);
       expect(slotCovering(6, 9).control, ControlId.hudWidgets);
       expect(slotCovering(6, 10).control, ControlId.cruiseSetResume);
 
@@ -150,11 +152,11 @@ void main() {
       expect(slotCovering(7, 9).control, ControlId.widgetOptions);
       expect(slotCovering(7, 10).control, ControlId.services);
 
-      expect(slotCovering(8, 6).kind, SlotKind.hole);
-      expect(slotCovering(8, 7).kind, SlotKind.hole);
-      expect(slotCovering(8, 8).kind, SlotKind.hole);
+      expect(slotCovering(8, 6).control, ControlId.menu);
+      expect(slotCovering(8, 7).control, ControlId.worldMap);
+      expect(slotCovering(8, 8).control, ControlId.photoMode);
       expect(slotCovering(8, 9).control, ControlId.garageManager);
-      expect(slotCovering(8, 10).kind, SlotKind.hole);
+      expect(slotCovering(8, 10).control, ControlId.activate);
     });
 
     test('block F matches the researched table', () {
@@ -238,10 +240,9 @@ void main() {
           expect(slot.pedal, isNull, reason: 'only pedals carry a pedal');
         }
       }
-      expect(
-        layout.slots.where((slot) => slot.kind == SlotKind.hole).length,
-        21,
-      );
+      // Every Sequential slot now binds a real control or structure; no
+      // holes remain.
+      expect(layout.slots.where((slot) => slot.kind == SlotKind.hole), isEmpty);
     });
 
     test('controlAt resolves the slot covering a probed cell', () {

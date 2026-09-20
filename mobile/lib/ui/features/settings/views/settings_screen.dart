@@ -437,6 +437,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Audio favorite';
       case ControlId.trailerAxle:
         return 'Trailer axle';
+      case ControlId.driverWindowUp:
+        return 'Driver window up';
+      case ControlId.driverWindowDown:
+        return 'Driver window down';
+      case ControlId.passengerWindowUp:
+        return 'Passenger window up';
+      case ControlId.passengerWindowDown:
+        return 'Passenger window down';
+      case ControlId.navigationZoomIn:
+        return 'Nav zoom in';
+      case ControlId.overlayActivation:
+        return 'Overlay';
+      case ControlId.chatActivation:
+        return 'Chat';
+      case ControlId.quickReplies:
+        return 'Quick replies';
+      case ControlId.nameTags:
+        return 'Name tags';
+      case ControlId.pushToTalk:
+        return 'Push to talk';
+      case ControlId.cameraInterior:
+        return 'Camera interior';
+      case ControlId.cameraChasing:
+        return 'Camera chasing';
+      case ControlId.cameraTopdown:
+        return 'Camera top-down';
+      case ControlId.cameraRoof:
+        return 'Camera roof';
+      case ControlId.cameraLeanout:
+        return 'Camera lean-out';
+      case ControlId.dashboardInfo:
+        return 'Dashboard info';
+      case ControlId.nextCamera:
+        return 'Next camera';
+      case ControlId.menu:
+        return 'Menu';
+      case ControlId.worldMap:
+        return 'World map';
+      case ControlId.photoMode:
+        return 'Photo mode';
+      case ControlId.activate:
+        return 'Activate';
       case ControlId.cameraPadUp:
         return 'Camera up';
       case ControlId.cameraPadDown:

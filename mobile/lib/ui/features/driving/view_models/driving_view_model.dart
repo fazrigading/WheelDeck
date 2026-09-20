@@ -17,6 +17,7 @@ import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/spring_back.dart';
 import '../../../../data/services/wheel_mode.dart';
 
@@ -66,6 +67,7 @@ class DrivingViewModel extends ChangeNotifier {
   WheelMode _wheelMode = WheelMode.fallback;
   int _rotationDegree = RotationDegree.fallback;
   bool _springBack = SpringBack.fallback;
+  CameraPadMode _cameraPadMode = CameraPadMode.fallback;
   EngineStartMode _engineStartMode = EngineStartMode.fallback;
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
 
@@ -134,6 +136,7 @@ class DrivingViewModel extends ChangeNotifier {
   /// Whether the rotatable wheel animates back to zero on release. When
   /// off, the wheel holds its released angle until dragged back.
   bool get springBack => _springBack;
+  CameraPadMode get cameraPadMode => _cameraPadMode;
 
   /// Engine-start interaction mode (hold-confirm vs single press).
   EngineStartMode get engineStartMode => _engineStartMode;
@@ -191,12 +194,24 @@ class DrivingViewModel extends ChangeNotifier {
     try {
       _springBack = await SpringBack.load();
     } catch (_) {}
+    try {
+      _cameraPadMode = await CameraPadMode.load();
+    } catch (_) {}
   }
 
   Future<void> refreshWheel() async {
     await _loadWheelState();
     if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
+  }
+
+  /// The camera pad's center hold switches the key set; the driving view
+  /// model owns the mode (REQ-017) and persists the change.
+  Future<void> toggleCameraPadMode() async {
+    final next = _cameraPadMode.other;
+    _cameraPadMode = next;
+    notifyListeners();
+    await next.save();
   }
 
   Future<void> refreshSettings() async {

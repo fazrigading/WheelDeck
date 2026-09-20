@@ -105,11 +105,8 @@ void main() {
         ControlId.laneKeeping,
         ControlId.emergencyBrake,
         ControlId.wipersBack,
-        ControlId.audioPlayPause,
-        ControlId.audioNext,
-        ControlId.audioPrevious,
-        ControlId.audioVolumeUp,
-        ControlId.audioVolumeDown,
+        // The audio row controls carry their REQ-026 keys now; only
+        // audioFavorite remains unbound.
         ControlId.audioFavorite,
       ];
       for (final control in empty) {
