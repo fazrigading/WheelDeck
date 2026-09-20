@@ -54,6 +54,7 @@ enum ControlId {
   audioVolumeUp('audio_volume_up'),
   audioVolumeDown('audio_volume_down'),
   audioFavorite('audio_favorite'),
+  trailerAxle('trailer_axle'),
   // Camera pad, numpad mode (ADR-0006: the mode lives in the identifiers).
   cameraPadUp('camera_pad_up'),
   cameraPadDown('camera_pad_down'),
