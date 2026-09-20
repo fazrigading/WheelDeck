@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../../../data/services/pedal_input.dart';
 
+/// Returns the pedal's hue: blue accelerator, red brake, yellow clutch.
+Color _hue(PedalType pedal) => switch (pedal) {
+  PedalType.accelerator => const Color(0xFF1E88E5),
+  PedalType.brake => const Color(0xFFE53935),
+  PedalType.clutch => const Color(0xFFFDD835),
+};
+
 /// Three vertical draggable pedal bars: accelerator, brake, and clutch.
 ///
 /// Each bar maps touch position to analog pressure (0.0 at the top, 1.0 at the
 /// bottom) and drives [PedalInput] while dragging, releasing to spring back on
-/// drag end.
+/// drag end. Bars are hue-coded instead of labeled.
 class PedalPanel extends StatelessWidget {
   const PedalPanel({super.key, required this.input, this.layout});
 
@@ -15,15 +22,12 @@ class PedalPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final order = layout ?? const [PedalType.clutch, PedalType.brake, PedalType.accelerator];
+    final order =
+        layout ??
+        const [PedalType.clutch, PedalType.brake, PedalType.accelerator];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: order.map((pedal) {
-        final label = switch (pedal) {
-          PedalType.clutch => 'CLT',
-          PedalType.brake => 'BRK',
-          PedalType.accelerator => 'ACC',
-        };
         final keyName = switch (pedal) {
           PedalType.clutch => 'pedal-clutch',
           PedalType.brake => 'pedal-brake',
@@ -32,7 +36,6 @@ class PedalPanel extends StatelessWidget {
         return PedalBar(
           key: ValueKey(keyName),
           pedal: pedal,
-          label: label,
           pressure: input.pressureOf(pedal),
           onDrag: input.setPressure,
           onRelease: input.release,
@@ -48,17 +51,20 @@ class PedalBar extends StatefulWidget {
   const PedalBar({
     super.key,
     required this.pedal,
-    required this.label,
     required this.pressure,
     required this.onDrag,
     required this.onRelease,
+    this.width = 64,
   });
 
   final PedalType pedal;
-  final String label;
   final double pressure;
   final void Function(PedalType pedal, double pressure) onDrag;
   final void Function(PedalType pedal) onRelease;
+
+  /// Bar width. Null lets the bar fill the width its parent gives it, which
+  /// is how slot-sized grid renderers place it.
+  final double? width;
 
   @override
   State<PedalBar> createState() => _PedalBarState();
@@ -71,62 +77,66 @@ class _PedalBarState extends State<PedalBar> {
   @override
   Widget build(BuildContext context) {
     final pressure = _dragging ? _dragPressure : widget.pressure;
+    final hue = _hue(widget.pedal);
 
-    return SizedBox(
-      width: 64,
-      child: Column(
-        children: [
-          Text(
-            widget.label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final height = constraints.maxHeight;
+    final Widget bar = Column(
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final height = constraints.maxHeight;
 
-                return GestureDetector(
-                  onVerticalDragStart: (details) =>
-                      _setFromPosition(details.localPosition, height),
-                  onVerticalDragUpdate: (details) =>
-                      _setFromPosition(details.localPosition, height),
-                  onVerticalDragEnd: (_) {
-                    setState(() => _dragging = false);
-                    widget.onRelease(widget.pedal);
-                  },
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2A2A2A),
-                          borderRadius: BorderRadius.circular(10),
+              return GestureDetector(
+                onVerticalDragStart: (details) =>
+                    _setFromPosition(details.localPosition, height),
+                onVerticalDragUpdate: (details) =>
+                    _setFromPosition(details.localPosition, height),
+                onVerticalDragEnd: (_) {
+                  setState(() => _dragging = false);
+                  widget.onRelease(widget.pedal);
+                },
+                child: Stack(
+                  children: [
+                    // Dark base with the pedal's hue tinted at 25% on top.
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF2A2A2A),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: hue.withValues(alpha: 0.25),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
                         ),
                       ),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: FractionallySizedBox(
-                          heightFactor: pressure.clamp(0.0, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE53935),
-                              borderRadius: BorderRadius.circular(10),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FractionallySizedBox(
+                        heightFactor: pressure.clamp(0.0, 1.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: hue,
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(10),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
+
+    final width = widget.width;
+    return width == null ? bar : SizedBox(width: width, child: bar);
   }
 
   void _setFromPosition(Offset localPosition, double height) {

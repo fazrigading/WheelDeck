@@ -72,6 +72,28 @@ void main() {
       viewModel.setRotatableSteering(0.0);
       expect(viewModel.steering.angle, 0.0);
     });
+
+    test('steering updates notify no listeners — the wheel subtree owns '
+        'its visuals', () {
+      var notified = 0;
+      viewModel.addListener(() => notified++);
+
+      viewModel.setRotatableSteering(0.5);
+
+      expect(notified, 0);
+      expect(viewModel.steering.angle, 0.5);
+    });
+
+    test('loads the spring-back setting', () async {
+      SharedPreferences.setMockInitialValues({
+        'wheeldeck.wheel_mode': 'rotatable',
+        'wheeldeck.spring_back': false,
+      });
+      viewModel = buildViewModel();
+      await viewModel.init();
+
+      expect(viewModel.springBack, isFalse);
+    });
   });
 
   group('gyro mode', () {
@@ -112,8 +134,9 @@ void main() {
 
   test('setBinding persists an override the grid resolver sees', () async {
     // Explicit keyboard mode: the mapping default is gamepad.
-    SharedPreferences.setMockInitialValues(
-        {'wheeldeck.input_mapping': 'keyboard'});
+    SharedPreferences.setMockInitialValues({
+      'wheeldeck.input_mapping': 'keyboard',
+    });
     viewModel = buildViewModel();
     await viewModel.init();
 
