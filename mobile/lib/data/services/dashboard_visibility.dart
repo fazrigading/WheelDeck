@@ -30,6 +30,19 @@ class DashboardVisibility {
     ControlId.screenshot,
     ControlId.garageManager,
     ControlId.audioPlayer,
+    // Comfort and chat batch (TASK-049): all ten are plain momentary
+    // buttons that make sense in a gyro grid, so they are toggleable. The
+    // camera and menu controls of the block E batch are not (REQ-011).
+    ControlId.driverWindowUp,
+    ControlId.driverWindowDown,
+    ControlId.passengerWindowUp,
+    ControlId.passengerWindowDown,
+    ControlId.navigationZoomIn,
+    ControlId.overlayActivation,
+    ControlId.chatActivation,
+    ControlId.quickReplies,
+    ControlId.nameTags,
+    ControlId.pushToTalk,
   ];
 
   static const Set<ControlId> defaults = {

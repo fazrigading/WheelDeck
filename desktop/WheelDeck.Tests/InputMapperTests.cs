@@ -165,11 +165,46 @@ public sealed class InputMapperTests
         Assert.Empty(Enum.GetValues<ControlId>().Except(buttons));
     }
 
-    private static HashSet<ControlId> BindingTableKeys(Type mapperType, string fieldName)
+    [Fact]
+    public void ComfortChatBatch_BindsResearchedKeys()
+    {
+        Assert.Equal(KeyCode.RightShift, KeyBindingFor(ControlId.DriverWindowUp));
+        Assert.Equal(KeyCode.Slash, KeyBindingFor(ControlId.NavigationZoomIn));
+        Assert.Equal(KeyCode.RightCtrl, KeyBindingFor(ControlId.DriverWindowDown));
+        Assert.Equal(KeyCode.Comma, KeyBindingFor(ControlId.PassengerWindowUp));
+        Assert.Equal(KeyCode.Dot, KeyBindingFor(ControlId.PassengerWindowDown));
+        Assert.Equal(KeyCode.Tab, KeyBindingFor(ControlId.OverlayActivation));
+        Assert.Equal(KeyCode.Y, KeyBindingFor(ControlId.ChatActivation));
+        Assert.Equal(KeyCode.Q, KeyBindingFor(ControlId.QuickReplies));
+        Assert.Equal(KeyCode.Z, KeyBindingFor(ControlId.NameTags));
+        Assert.Equal(KeyCode.X, KeyBindingFor(ControlId.PushToTalk));
+    }
+
+    [Fact]
+    public void AudioRow_UsesSequentialPresetKeys()
+    {
+        Assert.Equal(KeyCode.L, KeyBindingFor(ControlId.AudioVolumeDown));
+        Assert.Equal(KeyCode.J, KeyBindingFor(ControlId.AudioPrevious));
+        Assert.Equal(KeyCode.K, KeyBindingFor(ControlId.AudioPlayPause));
+        Assert.Equal(KeyCode.U, KeyBindingFor(ControlId.AudioNext));
+        Assert.Equal(KeyCode.O, KeyBindingFor(ControlId.AudioVolumeUp));
+        // audioFavorite stays unbound; it has no researched key.
+        Assert.Equal(KeyCode.None, KeyBindingFor(ControlId.AudioFavorite));
+    }
+
+    private KeyCode KeyBindingFor(ControlId control) =>
+        (KeyCode)BindingTable(typeof(InputMapper), "DefaultKeyBindings")[control]!;
+
+    private static System.Collections.IDictionary BindingTable(Type mapperType, string fieldName)
     {
         var field = mapperType.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Static);
         Assert.False(field is null, $"Expected private static table '{fieldName}' on InputMapper.");
-        var table = (System.Collections.IDictionary)field!.GetValue(null)!;
+        return (System.Collections.IDictionary)field!.GetValue(null)!;
+    }
+
+    private static HashSet<ControlId> BindingTableKeys(Type mapperType, string fieldName)
+    {
+        var table = BindingTable(mapperType, fieldName);
         var keys = new HashSet<ControlId>();
         foreach (ControlId control in table.Keys)
         {

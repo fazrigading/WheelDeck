@@ -88,6 +88,25 @@ void main() {
       ),
       findsOneWidget,
     );
+
+    // The audio row renders symbol icons instead of text labels.
+    final audioIcons = {
+      'dashboard-audioVolumeDown': Icons.volume_down,
+      'dashboard-audioPrevious': Icons.skip_previous,
+      'dashboard-audioPlayPause': Icons.play_arrow,
+      'dashboard-audioNext': Icons.skip_next,
+      'dashboard-audioVolumeUp': Icons.volume_up,
+    };
+    for (final MapEntry(key: key, value: icon) in audioIcons.entries) {
+      expect(
+        find.descendant(
+          of: find.byKey(ValueKey(key)),
+          matching: find.byIcon(icon),
+        ),
+        findsOneWidget,
+        reason: key,
+      );
+    }
   });
 
   testWidgets('wheel box is square at the block height, centered, flush '
@@ -135,9 +154,9 @@ void main() {
     bindings[ControlId.horn] = '-';
     await pumpGrid(tester);
 
-    // A hole cell (block D, row 2 col 6) and the unbound horn control.
+    // A hole cell (block B, row 5 col 6) and the unbound horn control.
     final hole = tester.widget<DashboardControl>(
-      find.byKey(const ValueKey('hole-r2c6')),
+      find.byKey(const ValueKey('hole-r5c6')),
     );
     final horn = tester.widget<DashboardControl>(
       find.byKey(const ValueKey('dashboard-horn')),
@@ -156,12 +175,12 @@ void main() {
                 as BoxDecoration)
             .color!;
     expect(
-      cellColor(const ValueKey('hole-r2c6')),
+      cellColor(const ValueKey('hole-r5c6')),
       cellColor(const ValueKey('dashboard-horn')),
     );
 
     // Tapping a hole sends nothing and opens no binder.
-    await tester.tap(find.byKey(const ValueKey('hole-r2c6')));
+    await tester.tap(find.byKey(const ValueKey('hole-r5c6')));
     await tester.pump();
     expect(events, isEmpty);
   });

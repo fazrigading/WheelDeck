@@ -52,6 +52,23 @@ enum GamePreset {
     ControlId.trailer: 'T',
     // Shares T with trailer, mirroring the desktop InputMapper.
     ControlId.trailerAxle: 'T',
+    // Audio row keys per REQ-026, replacing inert defaults.
+    ControlId.audioVolumeDown: 'L',
+    ControlId.audioPrevious: 'J',
+    ControlId.audioPlayPause: 'K',
+    ControlId.audioNext: 'U',
+    ControlId.audioVolumeUp: 'O',
+    // Comfort and chat batch, mirroring the desktop InputMapper.
+    ControlId.driverWindowUp: 'Right Shift',
+    ControlId.navigationZoomIn: '/',
+    ControlId.driverWindowDown: 'Right Ctrl',
+    ControlId.passengerWindowUp: ',',
+    ControlId.passengerWindowDown: '.',
+    ControlId.overlayActivation: 'Tab',
+    ControlId.chatActivation: 'Y',
+    ControlId.quickReplies: 'Q',
+    ControlId.nameTags: 'Z',
+    ControlId.pushToTalk: 'X',
     ControlId.liftDropAxle: 'U',
     ControlId.cameraView: '9',
     ControlId.gearUp: 'Left Shift',

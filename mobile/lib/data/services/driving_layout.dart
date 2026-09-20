@@ -274,14 +274,15 @@ class DrivingLayout {
         kind: SlotKind.button,
         control: ControlId.audioVolumeUp,
       ),
-      // Driver window up, nav zoom in: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 2, colStart: 6, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.driverWindowUp,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 2, colStart: 7, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.navigationZoomIn,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 2, colStart: 8, rowSpan: 1, colSpan: 1),
@@ -293,15 +294,15 @@ class DrivingLayout {
         kind: SlotKind.button,
         control: ControlId.retarderIncrease,
       ),
-      // Passenger window up: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 2, colStart: 10, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.passengerWindowUp,
       ),
-      // Driver window down: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 3, colStart: 6, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.driverWindowDown,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 3, colStart: 7, rowSpan: 1, colSpan: 1),
@@ -318,31 +319,35 @@ class DrivingLayout {
         kind: SlotKind.button,
         control: ControlId.retarderDecrease,
       ),
-      // Passenger window down: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 3, colStart: 10, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.passengerWindowDown,
       ),
-      // Overlay, chat, quick replies, name tags, push to talk: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 4, colStart: 6, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.overlayActivation,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 4, colStart: 7, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.chatActivation,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 4, colStart: 8, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.quickReplies,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 4, colStart: 9, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.nameTags,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 4, colStart: 10, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.pushToTalk,
       ),
 
       // Block C — gears, camera pad, brakes, cruise.

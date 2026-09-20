@@ -69,22 +69,23 @@ void main() {
       expect(slotCovering(1, 9).control, ControlId.audioNext);
       expect(slotCovering(1, 10).control, ControlId.audioVolumeUp);
 
-      // Windows and nav zoom in do not exist yet (Phase 6).
-      expect(slotCovering(2, 6).kind, SlotKind.hole);
-      expect(slotCovering(2, 7).kind, SlotKind.hole);
+      expect(slotCovering(2, 6).control, ControlId.driverWindowUp);
+      expect(slotCovering(2, 7).control, ControlId.navigationZoomIn);
       expect(slotCovering(2, 8).control, ControlId.cruiseSpeedIncrease);
       expect(slotCovering(2, 9).control, ControlId.retarderIncrease);
-      expect(slotCovering(2, 10).kind, SlotKind.hole);
+      expect(slotCovering(2, 10).control, ControlId.passengerWindowUp);
 
-      expect(slotCovering(3, 6).kind, SlotKind.hole);
+      expect(slotCovering(3, 6).control, ControlId.driverWindowDown);
       expect(slotCovering(3, 7).control, ControlId.navigationZoomOut);
       expect(slotCovering(3, 8).control, ControlId.cruiseSpeedDecrease);
       expect(slotCovering(3, 9).control, ControlId.retarderDecrease);
-      expect(slotCovering(3, 10).kind, SlotKind.hole);
+      expect(slotCovering(3, 10).control, ControlId.passengerWindowDown);
 
-      for (var col = 6; col <= 10; col++) {
-        expect(slotCovering(4, col).kind, SlotKind.hole, reason: 'col $col');
-      }
+      expect(slotCovering(4, 6).control, ControlId.overlayActivation);
+      expect(slotCovering(4, 7).control, ControlId.chatActivation);
+      expect(slotCovering(4, 8).control, ControlId.quickReplies);
+      expect(slotCovering(4, 9).control, ControlId.nameTags);
+      expect(slotCovering(4, 10).control, ControlId.pushToTalk);
     });
 
     test('block C matches the researched table', () {
@@ -240,7 +241,7 @@ void main() {
       }
       expect(
         layout.slots.where((slot) => slot.kind == SlotKind.hole).length,
-        21,
+        11,
       );
     });
 

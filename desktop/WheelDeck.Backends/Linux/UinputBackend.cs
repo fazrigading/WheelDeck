@@ -90,8 +90,14 @@ public sealed class UinputBackend : VirtualOutputBackend
             [KeyCode.Digit9] = 10,           // KEY_0..KEY_9 (top row)
             [KeyCode.LeftShift] = 42,        // KEY_LEFTSHIFT
             [KeyCode.LeftCtrl] = 29,         // KEY_LEFTCTRL
+            [KeyCode.RightShift] = 54,       // KEY_RIGHTSHIFT
+            [KeyCode.RightCtrl] = 97,        // KEY_RIGHTCTRL
             [KeyCode.Semicolon] = 39,        // KEY_SEMICOLON (US layout)
             [KeyCode.Quote] = 40,            // KEY_APOSTROPHE (US layout)
+            [KeyCode.Tab] = 15,              // KEY_TAB
+            [KeyCode.Comma] = 51,            // KEY_COMMA (US layout)
+            [KeyCode.Dot] = 52,              // KEY_DOT (US layout)
+            [KeyCode.Slash] = 53,            // KEY_SLASH (US layout)
             [KeyCode.Numpad1] = 79, [KeyCode.Numpad2] = 80, [KeyCode.Numpad3] = 81,
             [KeyCode.Numpad4] = 75, [KeyCode.Numpad5] = 76, [KeyCode.Numpad6] = 77,
             [KeyCode.Numpad7] = 71, [KeyCode.Numpad8] = 72, [KeyCode.Numpad9] = 73,
