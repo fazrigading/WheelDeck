@@ -71,6 +71,17 @@ public enum ControlId
     QuickReplies,
     NameTags,
     PushToTalk,
+    CameraInterior,
+    CameraChasing,
+    CameraTopdown,
+    CameraRoof,
+    CameraLeanout,
+    DashboardInfo,
+    NextCamera,
+    Menu,
+    WorldMap,
+    PhotoMode,
+    Activate,
 
     // Camera pad, numpad mode (ADR-0006: the mode lives in the identifiers).
     CameraPadUp,

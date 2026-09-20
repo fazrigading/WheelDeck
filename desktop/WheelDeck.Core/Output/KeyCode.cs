@@ -33,6 +33,7 @@ public enum KeyCode
     Comma,
     Dot,
     Slash,
+    EqualSign,
 
     Numpad1, Numpad2, Numpad3,
     Numpad4, Numpad5, Numpad6,

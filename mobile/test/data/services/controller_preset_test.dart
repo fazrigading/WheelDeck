@@ -28,6 +28,17 @@ void main() {
       expect(GamePreset.ets2.bindingFor(ControlId.pushToTalk, false), 'X');
     });
 
+    test('cameras and menu batch reads the keyboard map', () {
+      expect(GamePreset.ets2.bindingFor(ControlId.cameraInterior, false), '1');
+      expect(GamePreset.ets2.bindingFor(ControlId.cameraLeanout, false), '5');
+      expect(GamePreset.ets2.bindingFor(ControlId.dashboardInfo, false), 'I');
+      expect(GamePreset.ets2.bindingFor(ControlId.nextCamera, false), '9');
+      expect(GamePreset.ets2.bindingFor(ControlId.menu, false), 'Escape');
+      expect(GamePreset.ets2.bindingFor(ControlId.worldMap, false), 'M');
+      expect(GamePreset.ets2.bindingFor(ControlId.photoMode, false), '=');
+      expect(GamePreset.ets2.bindingFor(ControlId.activate, false), 'Enter');
+    });
+
     test('audio row keys replace the inert defaults', () {
       expect(GamePreset.ets2.bindingFor(ControlId.audioVolumeDown, false), 'L');
       expect(GamePreset.ets2.bindingFor(ControlId.audioPrevious, false), 'J');

@@ -457,6 +457,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Name tags';
       case ControlId.pushToTalk:
         return 'Push to talk';
+      case ControlId.cameraInterior:
+        return 'Camera interior';
+      case ControlId.cameraChasing:
+        return 'Camera chasing';
+      case ControlId.cameraTopdown:
+        return 'Camera top-down';
+      case ControlId.cameraRoof:
+        return 'Camera roof';
+      case ControlId.cameraLeanout:
+        return 'Camera lean-out';
+      case ControlId.dashboardInfo:
+        return 'Dashboard info';
+      case ControlId.nextCamera:
+        return 'Next camera';
+      case ControlId.menu:
+        return 'Menu';
+      case ControlId.worldMap:
+        return 'World map';
+      case ControlId.photoMode:
+        return 'Photo mode';
+      case ControlId.activate:
+        return 'Activate';
       case ControlId.cameraPadUp:
         return 'Camera up';
       case ControlId.cameraPadDown:

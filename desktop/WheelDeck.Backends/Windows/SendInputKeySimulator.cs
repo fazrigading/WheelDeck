@@ -46,6 +46,7 @@ public sealed class SendInputKeySimulator : IDisposable
             [KeyCode.Comma] = 0xBC,          // VK_OEM_COMMA (US layout)
             [KeyCode.Dot] = 0xBE,            // VK_OEM_PERIOD (US layout)
             [KeyCode.Slash] = 0xBF,          // VK_OEM_2 (US layout)
+            [KeyCode.EqualSign] = 0xBB,       // VK_OEM_PLUS (US layout)
             [KeyCode.Numpad1] = 0x61, [KeyCode.Numpad2] = 0x62, [KeyCode.Numpad3] = 0x63,
             [KeyCode.Numpad4] = 0x64, [KeyCode.Numpad5] = 0x65, [KeyCode.Numpad6] = 0x66,
             [KeyCode.Numpad7] = 0x67, [KeyCode.Numpad8] = 0x68, [KeyCode.Numpad9] = 0x69,
