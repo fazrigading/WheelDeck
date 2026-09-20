@@ -10,6 +10,7 @@ import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/spring_back.dart';
 import '../../../../data/services/wheel_mode.dart';
 
@@ -34,6 +35,7 @@ class SettingsViewModel extends ChangeNotifier {
   WheelMode _wheelMode = WheelMode.rotatable;
   int _rotationDegree = RotationDegree.fallback;
   bool _springBack = SpringBack.fallback;
+  CameraPadMode _cameraPadMode = CameraPadMode.fallback;
   EngineStartMode _engineStartMode = EngineStartMode.fallback;
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
   final Map<String, String> _bindingOverrides = {};
@@ -48,6 +50,7 @@ class SettingsViewModel extends ChangeNotifier {
 
   /// Whether the rotatable wheel animates back to zero on release.
   bool get springBack => _springBack;
+  CameraPadMode get cameraPadMode => _cameraPadMode;
   EngineStartMode get engineStartMode => _engineStartMode;
   Set<ControlId> get visibleExtras => Set.unmodifiable(_visibleExtras);
   bool get loaded => _loaded;
@@ -74,6 +77,9 @@ class SettingsViewModel extends ChangeNotifier {
     } catch (_) {}
     try {
       _springBack = await _settingsRepository.getSpringBack();
+    } catch (_) {}
+    try {
+      _cameraPadMode = await _settingsRepository.getCameraPadMode();
     } catch (_) {}
     try {
       _engineStartMode = await _settingsRepository.getEngineStartMode();
@@ -140,6 +146,12 @@ class SettingsViewModel extends ChangeNotifier {
     await _settingsRepository.setSpringBack(value);
   }
 
+  Future<void> selectCameraPadMode(CameraPadMode mode) async {
+    _cameraPadMode = mode;
+    notifyListeners();
+    await _settingsRepository.setCameraPadMode(mode);
+  }
+
   Future<void> selectEngineStartMode(EngineStartMode mode) async {
     _engineStartMode = mode;
     notifyListeners();
@@ -186,6 +198,7 @@ class SettingsViewModel extends ChangeNotifier {
     _wheelMode = WheelMode.rotatable;
     _rotationDegree = RotationDegree.fallback;
     _springBack = SpringBack.fallback;
+    _cameraPadMode = CameraPadMode.fallback;
     _engineStartMode = EngineStartMode.fallback;
     _visibleExtras = DashboardVisibility.defaults;
     _bindingOverrides.clear();

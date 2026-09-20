@@ -5,6 +5,7 @@ import 'package:wheeldeck/data/services/dashboard_send_gate.dart';
 import 'package:wheeldeck/data/services/driving_layout.dart';
 import 'package:wheeldeck/data/services/pedal_input.dart';
 import 'package:wheeldeck/ui/features/driving/views/block_grid.dart';
+import 'package:wheeldeck/ui/features/driving/views/camera_pad.dart';
 import 'package:wheeldeck/ui/features/driving/views/dashboard_panel.dart';
 import 'package:wheeldeck/ui/features/driving/views/pedal_panel.dart';
 import 'package:wheeldeck/ui/features/driving/views/rotatable_wheel.dart';
@@ -53,6 +54,7 @@ void main() {
             shownPedals: shownPedals,
             degrees: 270,
             onSteering: steering.add,
+            onCameraPadModeSwitch: () {},
           ),
         ),
       ),
@@ -67,18 +69,22 @@ void main() {
     await pumpGrid(tester);
 
     final layout = DrivingLayout.sequential();
-    final cellCount = layout.slots
-        .where(
-          (s) =>
-              s.kind == SlotKind.button ||
-              s.kind == SlotKind.gearUp ||
-              s.kind == SlotKind.gearDown ||
-              s.kind == SlotKind.hole,
-        )
-        .length;
+    final cellCount =
+        layout.slots
+            .where(
+              (s) =>
+                  s.kind == SlotKind.button ||
+                  s.kind == SlotKind.gearUp ||
+                  s.kind == SlotKind.gearDown ||
+                  s.kind == SlotKind.hole,
+            )
+            .length +
+        // The camera pad slot renders nine cells of its own.
+        9;
 
     expect(find.byType(DashboardControl), findsNWidgets(cellCount));
     expect(find.byType(RotatableWheel), findsOneWidget);
+    expect(find.byType(CameraPad), findsOneWidget);
     expect(find.byType(PedalBar), findsNWidgets(3));
     // Signals are ordinary grid entries with their straight arrows.
     expect(
@@ -88,6 +94,25 @@ void main() {
       ),
       findsOneWidget,
     );
+
+    // The audio row renders symbol icons instead of text labels.
+    final audioIcons = {
+      'dashboard-audioVolumeDown': Icons.volume_down,
+      'dashboard-audioPrevious': Icons.skip_previous,
+      'dashboard-audioPlayPause': Icons.play_arrow,
+      'dashboard-audioNext': Icons.skip_next,
+      'dashboard-audioVolumeUp': Icons.volume_up,
+    };
+    for (final MapEntry(key: key, value: icon) in audioIcons.entries) {
+      expect(
+        find.descendant(
+          of: find.byKey(ValueKey(key)),
+          matching: find.byIcon(icon),
+        ),
+        findsOneWidget,
+        reason: key,
+      );
+    }
   });
 
   testWidgets('wheel box is square at the block height, centered, flush '
@@ -132,12 +157,43 @@ void main() {
   testWidgets('holes render disabled, matching the unbound visual', (
     tester,
   ) async {
+    // The Sequential preset has no holes left, so pump a synthetic layout
+    // with one hole and one unbound control to compare against.
+    const layout = DrivingLayout(
+      name: 'Hole fixture',
+      slots: [
+        LayoutSlot(
+          rect: CellRect(rowStart: 1, colStart: 1, rowSpan: 1, colSpan: 1),
+          kind: SlotKind.hole,
+        ),
+        LayoutSlot(
+          rect: CellRect(rowStart: 1, colStart: 2, rowSpan: 1, colSpan: 1),
+          kind: SlotKind.button,
+          control: ControlId.horn,
+        ),
+      ],
+    );
     bindings[ControlId.horn] = '-';
-    await pumpGrid(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BlockGrid(
+            layout: layout,
+            input: input,
+            bindingFor: (control) => bindings[control] ?? '-',
+            pedalInput: PedalInput(),
+            shownPedals: const {},
+            degrees: 270,
+            onSteering: steering.add,
+            onCameraPadModeSwitch: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
 
-    // A hole cell (block D, row 2 col 6) and the unbound horn control.
     final hole = tester.widget<DashboardControl>(
-      find.byKey(const ValueKey('hole-r2c6')),
+      find.byKey(const ValueKey('hole-r1c1')),
     );
     final horn = tester.widget<DashboardControl>(
       find.byKey(const ValueKey('dashboard-horn')),
@@ -156,12 +212,12 @@ void main() {
                 as BoxDecoration)
             .color!;
     expect(
-      cellColor(const ValueKey('hole-r2c6')),
+      cellColor(const ValueKey('hole-r1c1')),
       cellColor(const ValueKey('dashboard-horn')),
     );
 
     // Tapping a hole sends nothing and opens no binder.
-    await tester.tap(find.byKey(const ValueKey('hole-r2c6')));
+    await tester.tap(find.byKey(const ValueKey('hole-r1c1')));
     await tester.pump();
     expect(events, isEmpty);
   });
