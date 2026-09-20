@@ -197,10 +197,10 @@ class DrivingLayout {
         kind: SlotKind.button,
         control: ControlId.laneAssistant,
       ),
-      // Lift/drop trailer axle: control arrives in the Phase 5 enum work.
       LayoutSlot(
         rect: CellRect(rowStart: 2, colStart: 1, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.trailerAxle,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 2, colStart: 2, rowSpan: 1, colSpan: 1),

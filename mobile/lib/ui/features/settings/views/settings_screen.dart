@@ -435,6 +435,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Audio vol -';
       case ControlId.audioFavorite:
         return 'Audio favorite';
+      case ControlId.trailerAxle:
+        return 'Trailer axle';
       case ControlId.cameraPadUp:
         return 'Camera up';
       case ControlId.cameraPadDown:

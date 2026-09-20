@@ -60,6 +60,7 @@ public enum ControlId
     AudioVolumeUp,
     AudioVolumeDown,
     AudioFavorite,
+    TrailerAxle,
 
     // Camera pad, numpad mode (ADR-0006: the mode lives in the identifiers).
     CameraPadUp,

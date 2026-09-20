@@ -42,9 +42,7 @@ void main() {
       expect(slotCovering(1, 1).control, ControlId.adaptiveCruise);
       expect(slotCovering(1, 2).control, ControlId.laneKeeping);
       expect(slotCovering(1, 3).control, ControlId.laneAssistant);
-      // Lift/drop trailer axle: control does not exist yet (Phase 5).
-      expect(slotCovering(2, 1).kind, SlotKind.hole);
-      expect(slotCovering(2, 1).control, isNull);
+      expect(slotCovering(2, 1).control, ControlId.trailerAxle);
       expect(slotCovering(2, 2).control, ControlId.liftDropAxle);
       expect(slotCovering(2, 3).control, ControlId.trailer);
       expect(slotCovering(3, 1).control, ControlId.hazardLights);
@@ -242,7 +240,7 @@ void main() {
       }
       expect(
         layout.slots.where((slot) => slot.kind == SlotKind.hole).length,
-        22,
+        21,
       );
     });
 
@@ -253,18 +251,19 @@ void main() {
         ),
         ControlId.turnSignalLeft,
       );
-      // Pedal and hole slots carry no ControlId.
+      // Pedal slots carry no ControlId.
       expect(
         layout.controlAt(
           const CellRect(rowStart: 1, colStart: 5, rowSpan: 1, colSpan: 1),
         ),
         isNull,
       );
+      // The former trailer-axle hole is now a live control (TASK-040).
       expect(
         layout.controlAt(
           const CellRect(rowStart: 2, colStart: 1, rowSpan: 1, colSpan: 1),
         ),
-        isNull,
+        ControlId.trailerAxle,
       );
     });
   });
