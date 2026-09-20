@@ -90,10 +90,16 @@ class DashboardPanel extends StatelessWidget {
     return labelFor(control);
   }
 
-  /// Straight-arrow icon for the turn-signal cells; null for everything else.
+  /// Symbol icons for the turn-signal and audio-row cells; null renders the
+  /// text label.
   static IconData? iconFor(ControlId? control) => switch (control) {
     ControlId.turnSignalLeft => Icons.arrow_back,
     ControlId.turnSignalRight => Icons.arrow_forward,
+    ControlId.audioVolumeDown => Icons.volume_down,
+    ControlId.audioPrevious => Icons.skip_previous,
+    ControlId.audioPlayPause => Icons.play_arrow,
+    ControlId.audioNext => Icons.skip_next,
+    ControlId.audioVolumeUp => Icons.volume_up,
     _ => null,
   };
 

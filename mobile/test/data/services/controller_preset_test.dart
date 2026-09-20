@@ -12,6 +12,38 @@ void main() {
       expect(GamePreset.ets2.bindingFor(ControlId.gearUp, false), 'Left Shift');
     });
 
+    test('comfort and chat batch reads the keyboard map', () {
+      expect(
+        GamePreset.ets2.bindingFor(ControlId.driverWindowUp, false),
+        'Right Shift',
+      );
+      expect(
+        GamePreset.ets2.bindingFor(ControlId.navigationZoomIn, false),
+        '/',
+      );
+      expect(
+        GamePreset.ets2.bindingFor(ControlId.overlayActivation, false),
+        'Tab',
+      );
+      expect(GamePreset.ets2.bindingFor(ControlId.pushToTalk, false), 'X');
+    });
+
+    test('audio row keys replace the inert defaults', () {
+      expect(GamePreset.ets2.bindingFor(ControlId.audioVolumeDown, false), 'L');
+      expect(GamePreset.ets2.bindingFor(ControlId.audioPrevious, false), 'J');
+      expect(GamePreset.ets2.bindingFor(ControlId.audioPlayPause, false), 'K');
+      expect(GamePreset.ets2.bindingFor(ControlId.audioNext, false), 'U');
+      expect(GamePreset.ets2.bindingFor(ControlId.audioVolumeUp, false), 'O');
+    });
+
+    test('batch controls fall back to keyboard in gamepad mode', () {
+      expect(
+        GamePreset.ets2.bindingFor(ControlId.driverWindowUp, true),
+        'Right Shift',
+      );
+      expect(GamePreset.ets2.bindingFor(ControlId.chatActivation, true), 'Y');
+    });
+
     test('gamepad mode reads the gamepad map', () {
       expect(GamePreset.ets2.bindingFor(ControlId.parkingBrake, true), 'A');
       expect(GamePreset.ets2.bindingFor(ControlId.hazardLights, true), 'Back');

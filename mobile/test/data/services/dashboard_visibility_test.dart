@@ -65,5 +65,24 @@ void main() {
             reason: control.name);
       }
     });
+
+    test('comfort and chat batch is toggleable (TASK-049)', () {
+      const batch = [
+        ControlId.driverWindowUp,
+        ControlId.driverWindowDown,
+        ControlId.passengerWindowUp,
+        ControlId.passengerWindowDown,
+        ControlId.navigationZoomIn,
+        ControlId.overlayActivation,
+        ControlId.chatActivation,
+        ControlId.quickReplies,
+        ControlId.nameTags,
+        ControlId.pushToTalk,
+      ];
+      for (final control in batch) {
+        expect(DashboardVisibility.toggleable.contains(control), isTrue,
+            reason: control.name);
+      }
+    });
   });
 }

@@ -61,6 +61,16 @@ public enum ControlId
     AudioVolumeDown,
     AudioFavorite,
     TrailerAxle,
+    DriverWindowUp,
+    DriverWindowDown,
+    PassengerWindowUp,
+    PassengerWindowDown,
+    NavigationZoomIn,
+    OverlayActivation,
+    ChatActivation,
+    QuickReplies,
+    NameTags,
+    PushToTalk,
 
     // Camera pad, numpad mode (ADR-0006: the mode lives in the identifiers).
     CameraPadUp,

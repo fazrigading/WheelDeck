@@ -24,9 +24,15 @@ public enum KeyCode
 
     LeftShift,
     LeftCtrl,
+    RightShift,
+    RightCtrl,
 
     Semicolon,
     Quote,
+    Tab,
+    Comma,
+    Dot,
+    Slash,
 
     Numpad1, Numpad2, Numpad3,
     Numpad4, Numpad5, Numpad6,
