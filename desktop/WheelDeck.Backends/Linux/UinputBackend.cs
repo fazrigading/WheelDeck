@@ -98,6 +98,7 @@ public sealed class UinputBackend : VirtualOutputBackend
             [KeyCode.Comma] = 51,            // KEY_COMMA (US layout)
             [KeyCode.Dot] = 52,              // KEY_DOT (US layout)
             [KeyCode.Slash] = 53,            // KEY_SLASH (US layout)
+            [KeyCode.EqualSign] = 13,         // KEY_EQUAL (US layout)
             [KeyCode.Numpad1] = 79, [KeyCode.Numpad2] = 80, [KeyCode.Numpad3] = 81,
             [KeyCode.Numpad4] = 75, [KeyCode.Numpad5] = 76, [KeyCode.Numpad6] = 77,
             [KeyCode.Numpad7] = 71, [KeyCode.Numpad8] = 72, [KeyCode.Numpad9] = 73,

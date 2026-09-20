@@ -63,6 +63,7 @@ enum SlotKind {
   cameraPad,
 
   /// A reserved cell whose control does not exist yet; rendered disabled.
+  /// The Sequential preset currently emits none, but custom presets may.
   hole,
 }
 
@@ -408,40 +409,45 @@ class DrivingLayout {
       ),
 
       // Block E — cameras, info, services, menu.
-      // Camera row: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 5, colStart: 6, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.cameraInterior,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 5, colStart: 7, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.cameraChasing,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 5, colStart: 8, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.cameraTopdown,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 5, colStart: 9, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.cameraRoof,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 5, colStart: 10, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.cameraLeanout,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 6, colStart: 6, rowSpan: 1, colSpan: 1),
         kind: SlotKind.button,
         control: ControlId.quickSave,
       ),
-      // Dashboard info, next camera: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 6, colStart: 7, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.dashboardInfo,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 6, colStart: 8, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.nextCamera,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 6, colStart: 9, rowSpan: 1, colSpan: 1),
@@ -478,28 +484,30 @@ class DrivingLayout {
         kind: SlotKind.button,
         control: ControlId.services,
       ),
-      // Menu, world map, photo mode: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 8, colStart: 6, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.menu,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 8, colStart: 7, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.worldMap,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 8, colStart: 8, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.photoMode,
       ),
       LayoutSlot(
         rect: CellRect(rowStart: 8, colStart: 9, rowSpan: 1, colSpan: 1),
         kind: SlotKind.button,
         control: ControlId.garageManager,
       ),
-      // Activate: Phase 6.
       LayoutSlot(
         rect: CellRect(rowStart: 8, colStart: 10, rowSpan: 1, colSpan: 1),
-        kind: SlotKind.hole,
+        kind: SlotKind.button,
+        control: ControlId.activate,
       ),
 
       // Block F — engine column, brake, accelerator.

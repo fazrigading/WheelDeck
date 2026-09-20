@@ -66,6 +66,29 @@ void main() {
       }
     });
 
+    test('block E split: dashboard info and activate are toggleable, the '
+        'camera and menu controls are not (TASK-049)', () {
+      expect(DashboardVisibility.toggleable.contains(ControlId.dashboardInfo),
+          isTrue);
+      expect(DashboardVisibility.toggleable.contains(ControlId.activate),
+          isTrue);
+      const excluded = [
+        ControlId.cameraInterior,
+        ControlId.cameraChasing,
+        ControlId.cameraTopdown,
+        ControlId.cameraRoof,
+        ControlId.cameraLeanout,
+        ControlId.nextCamera,
+        ControlId.menu,
+        ControlId.worldMap,
+        ControlId.photoMode,
+      ];
+      for (final control in excluded) {
+        expect(DashboardVisibility.toggleable.contains(control), isFalse,
+            reason: control.name);
+      }
+    });
+
     test('comfort and chat batch is toggleable (TASK-049)', () {
       const batch = [
         ControlId.driverWindowUp,

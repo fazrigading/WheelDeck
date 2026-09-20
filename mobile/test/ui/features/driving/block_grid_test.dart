@@ -151,12 +151,42 @@ void main() {
   testWidgets('holes render disabled, matching the unbound visual', (
     tester,
   ) async {
+    // The Sequential preset has no holes left, so pump a synthetic layout
+    // with one hole and one unbound control to compare against.
+    const layout = DrivingLayout(
+      name: 'Hole fixture',
+      slots: [
+        LayoutSlot(
+          rect: CellRect(rowStart: 1, colStart: 1, rowSpan: 1, colSpan: 1),
+          kind: SlotKind.hole,
+        ),
+        LayoutSlot(
+          rect: CellRect(rowStart: 1, colStart: 2, rowSpan: 1, colSpan: 1),
+          kind: SlotKind.button,
+          control: ControlId.horn,
+        ),
+      ],
+    );
     bindings[ControlId.horn] = '-';
-    await pumpGrid(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BlockGrid(
+            layout: layout,
+            input: input,
+            bindingFor: (control) => bindings[control] ?? '-',
+            pedalInput: PedalInput(),
+            shownPedals: const {},
+            degrees: 270,
+            onSteering: steering.add,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
 
-    // A hole cell (block B, row 5 col 6) and the unbound horn control.
     final hole = tester.widget<DashboardControl>(
-      find.byKey(const ValueKey('hole-r5c6')),
+      find.byKey(const ValueKey('hole-r1c1')),
     );
     final horn = tester.widget<DashboardControl>(
       find.byKey(const ValueKey('dashboard-horn')),
@@ -175,12 +205,12 @@ void main() {
                 as BoxDecoration)
             .color!;
     expect(
-      cellColor(const ValueKey('hole-r5c6')),
+      cellColor(const ValueKey('hole-r1c1')),
       cellColor(const ValueKey('dashboard-horn')),
     );
 
     // Tapping a hole sends nothing and opens no binder.
-    await tester.tap(find.byKey(const ValueKey('hole-r5c6')));
+    await tester.tap(find.byKey(const ValueKey('hole-r1c1')));
     await tester.pump();
     expect(events, isEmpty);
   });
