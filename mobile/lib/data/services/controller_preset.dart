@@ -50,6 +50,8 @@ enum GamePreset {
     ControlId.flasher: 'J',
     ControlId.horn: 'H',
     ControlId.trailer: 'T',
+    // Shares T with trailer, mirroring the desktop InputMapper.
+    ControlId.trailerAxle: 'T',
     ControlId.liftDropAxle: 'U',
     ControlId.cameraView: '9',
     ControlId.gearUp: 'Left Shift',

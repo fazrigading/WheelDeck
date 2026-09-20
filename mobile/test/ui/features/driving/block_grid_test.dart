@@ -135,9 +135,9 @@ void main() {
     bindings[ControlId.horn] = '-';
     await pumpGrid(tester);
 
-    // A hole cell (block A, row 2 col 1) and the unbound horn control.
+    // A hole cell (block D, row 2 col 6) and the unbound horn control.
     final hole = tester.widget<DashboardControl>(
-      find.byKey(const ValueKey('hole-r2c1')),
+      find.byKey(const ValueKey('hole-r2c6')),
     );
     final horn = tester.widget<DashboardControl>(
       find.byKey(const ValueKey('dashboard-horn')),
@@ -156,12 +156,12 @@ void main() {
                 as BoxDecoration)
             .color!;
     expect(
-      cellColor(const ValueKey('hole-r2c1')),
+      cellColor(const ValueKey('hole-r2c6')),
       cellColor(const ValueKey('dashboard-horn')),
     );
 
     // Tapping a hole sends nothing and opens no binder.
-    await tester.tap(find.byKey(const ValueKey('hole-r2c1')));
+    await tester.tap(find.byKey(const ValueKey('hole-r2c6')));
     await tester.pump();
     expect(events, isEmpty);
   });

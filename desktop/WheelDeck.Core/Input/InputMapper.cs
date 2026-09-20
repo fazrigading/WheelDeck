@@ -73,6 +73,8 @@ public sealed class InputMapper
             [ControlId.AudioVolumeUp] = KeyCode.None,
             [ControlId.AudioVolumeDown] = KeyCode.None,
             [ControlId.AudioFavorite] = KeyCode.None,
+            // Trailer and trailer axle share T per the researched defaults.
+            [ControlId.TrailerAxle] = KeyCode.T,
             // Camera pad resolves to the numpad keys (REQ-017); the arrow set
             // maps to the arrow keys. Both sets are keyboard-only.
             [ControlId.CameraPadUp] = KeyCode.Numpad8,
@@ -151,6 +153,7 @@ public sealed class InputMapper
             [ControlId.AudioVolumeUp] = ButtonId.None,
             [ControlId.AudioVolumeDown] = ButtonId.None,
             [ControlId.AudioFavorite] = ButtonId.None,
+            [ControlId.TrailerAxle] = ButtonId.None,
             // The camera pad is keyboard-only: no gamepad equivalents.
             [ControlId.CameraPadUp] = ButtonId.None,
             [ControlId.CameraPadDown] = ButtonId.None,
