@@ -32,7 +32,7 @@
 - Uses the `exit_plan_mode` tool to signal plan completion and explicitly await go-ahead before implementing. Confidence: 0.7
 - Batches exploration tool calls in parallel (multiple read_directory/read_file/glob calls fired together) to gather codebase context efficiently before writing code. Confidence: 0.7
 - Prefers PRs created for the current branch to follow the repo's PULL_REQUEST_TEMPLATE (e.g. `.github/PULL_REQUEST_TEMPLATE/template.md`). Confidence: 0.6
-- Prefers atomic commits split by concern (e.g., separate docs commit from script/behavior change; taste-store updates committed as their own `chore(taste)` commit before the feature commit) rather than bundling unrelated changes in one commit. Confidence: 0.8
+- Prefers atomic commits split by concern (e.g., separate docs commit from script/behavior change) rather than bundling unrelated changes in one commit. Confidence: 0.8
 - Closes GitHub issues from commit messages with a closing keyword (`Closes #xx` / `Fixes #N`) on the relevant commit, matching established commit style. Confidence: 0.9
 - Treats real in-game (ETS2) behavior as the authoritative spec: when plan text, glossary, or existing code contradicts actual game behavior (e.g. hazard and turn signals are independent — a signal tap during hazard doesn't cancel hazard), the game wins and docs/tests are corrected to mirror it. Confidence: 0.8
 - Pragmatic, minimal-mechanism design choices: accepts imperceptible deviations over enforced constraints (dropped the exact 4:3 cell requirement for screen-derived aspect) and consistently picks the option with a single source of truth — one render path, pure contract data over new mechanisms, one state owner (e.g. DrivingViewModel owns camera-pad mode). Confidence: 0.7
@@ -55,6 +55,5 @@
 - Widget tests pin exact geometry at the reference resolution (2400x1080, hand-computed slot rects, flush-bottom/centering assertions) and custom painters are tested by painting into a `PictureRecorder` canvas and pixel-scanning the raw RGBA for color regions. Confidence: 0.7
 - Widget-test idioms: prefer `pumpAndSettle()` over fixed-duration pumps for animation completion, and when a test fails because its harness diverges from production, fix the harness to mirror the production wiring (e.g. routing input events through the gate like the view model does) rather than changing production code. Confidence: 0.6
 - Runs `graphify update .` to refresh the repo knowledge graph before committing, per AGENTS.md. Confidence: 0.7
-ate like the view model does) rather than changing production code. Confidence: 0.6
-- Runs `graphify update .` to refresh the repo knowledge graph before committing, per AGENTS.md. Confidence: 0.7
- repo knowledge graph before committing, per AGENTS.md. Confidence: 0.7
+- Manages GitHub PRs and issue state through the `gh` CLI (`gh pr view/edit/create/list`), passing multi-line PR bodies via a quoted heredoc (`--body "$(cat <<'EOF' ... EOF)"`). Confidence: 0.7
+- When a PR's head branch carries commits beyond what the user wants to merge, splits it before merging: pushes the displaced commits to a new `feature/<name>` branch first so nothing is lost, rewinds the PR branch (`git reset --hard` to the last in-scope commit) and force-pushes with `--force-with-lease` (never bare `--force`), then edits the PR title/body to describe only the tickets it now closes and opens a separate PR for the displaced work. Confidence: 0.6
