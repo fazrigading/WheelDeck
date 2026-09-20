@@ -1,5 +1,92 @@
 # WheelDeck project structure
 
+```mermaid
+flowchart TD
+
+subgraph group_mobile["Mobile Experience"]
+  node_android_client["Android Client<br/>[MainActivity.kt]"]
+  node_ios_client["iOS Client"]
+end
+
+subgraph group_desktop["Desktop Shell"]
+  node_desktop_app["Desktop App<br/>[CompositionRoot.cs]"]
+  node_desktop_ui["Desktop UI<br/>[MainWindow.cs]"]
+end
+
+subgraph group_network["Network Session"]
+  node_mdns["mDNS Advertiser<br/>[MdnsAdvertiser.cs]"]
+  node_websocket["WebSocket Listener"]
+  node_pairing_service["Pairing Service<br/>[PairingService.cs]"]
+  node_session_gate["Session Gate<br/>[SessionGate.cs]"]
+  node_heartbeat["Heartbeat Monitor"]
+end
+
+subgraph group_pairing["Pairing State"]
+  node_protocol["Protocol Messages<br/>[SessionMessages.cs]"]
+  node_pairing_manager["Pairing Manager<br/>[PairingManager.cs]"]
+  node_pairing_store[("Pairing Store")]
+end
+
+subgraph group_output["Input Output"]
+  node_input_mapper["Input Mapper<br/>[InputMapper.cs]"]
+  node_windows_backend["Windows Backend"]
+  node_linux_backend["Linux Backend<br/>[UinputBackend.cs]"]
+end
+
+node_desktop_user(("Desktop User"))
+node_simulator(("Racing Simulator"))
+
+node_desktop_user -->|"configures"| node_desktop_ui
+node_mdns -->|"advertises"| node_android_client
+node_mdns -.->|"advertises"| node_ios_client
+node_android_client -->|"streams messages"| node_websocket
+node_ios_client -.->|"streams messages"| node_websocket
+node_websocket -->|"decodes messages"| node_protocol
+node_websocket -->|"dispatches pairing"| node_pairing_service
+node_websocket -->|"dispatches input"| node_session_gate
+node_pairing_service -->|"validates pairing"| node_pairing_manager
+node_pairing_manager -->|"reads and writes"| node_pairing_store
+node_pairing_service -->|"binds session"| node_session_gate
+node_session_gate -->|"checks authorization"| node_pairing_manager
+node_session_gate -->|"forwards input"| node_input_mapper
+node_session_gate -->|"signals heartbeat"| node_heartbeat
+node_input_mapper -.->|"uses backend"| node_windows_backend
+node_input_mapper -.->|"uses backend"| node_linux_backend
+node_windows_backend -->|"emits controller"| node_simulator
+node_linux_backend -->|"emits joystick"| node_simulator
+node_desktop_app -->|"starts server"| node_websocket
+node_desktop_app -->|"starts discovery"| node_mdns
+
+click node_android_client "https://github.com/fazrigading/wheeldeck/blob/main/mobile/android/app/src/main/kotlin/dev/fazrigading/wheeldeck/MainActivity.kt"
+click node_ios_client "https://github.com/fazrigading/wheeldeck/tree/main/mobile"
+click node_desktop_app "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.App/CompositionRoot.cs"
+click node_desktop_ui "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.App/MainWindow.cs"
+click node_mdns "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Network/MdnsAdvertiser.cs"
+click node_websocket "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Network/WebSocketListener.cs"
+click node_pairing_service "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Network/PairingService.cs"
+click node_session_gate "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Network/SessionGate.cs"
+click node_heartbeat "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Network/HeartbeatMonitor.cs"
+click node_protocol "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Protocol/SessionMessages.cs"
+click node_pairing_manager "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Pairing/PairingManager.cs"
+click node_pairing_store "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Pairing/JsonFilePairingStore.cs"
+click node_input_mapper "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Input/InputMapper.cs"
+click node_windows_backend "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Backends/Windows/HidMaestroBackend.cs"
+click node_linux_backend "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Backends/Linux/UinputBackend.cs"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_android_client,node_ios_client,node_desktop_user toneBlue
+class node_desktop_app,node_desktop_ui toneAmber
+class node_mdns,node_websocket,node_pairing_service,node_session_gate,node_heartbeat toneMint
+class node_protocol,node_pairing_manager,node_pairing_store toneRose
+class node_input_mapper,node_windows_backend,node_linux_backend,node_simulator toneIndigo
+```
+
 ## Repository layout
 
 Single monorepo covering the mobile app, the desktop server, and the shared protocol definitions.
