@@ -4,4 +4,5 @@
 - Prefers concrete, runnable verification/test instructions when a task is done, so they can test changes themselves rather than relying on the agent's completion summary. Confidence: 0.7
 - Flags ambiguous spec wording and states the interpretation chosen when requirements can be read multiple ways. Confidence: 0.6
 - References files in requests using @-mention syntax (e.g. `@README.md`, `@CLAUDE.md`, `@docs/agents/`), expecting the agent to resolve them to repo paths. Confidence: 0.6
+- When the user disputes a conclusion, don't restate it — re-verify against the authoritative primary source and present the raw evidence (e.g. remote branch state via `git ls-remote` / GitHub API branch endpoints when a push-destination claim is challenged); user issued an explicit "Check again" rather than accepting the diagnosis. Confidence: 0.6
 - Answers structured decision questions tersely by option letter keyed to the question number (e.g. "Q3. (a)", "Q7. Yes, that split is acceptable"), writing prose only when supplying domain knowledge; present grilling/interview questions as numbered Qs with lettered options and a stated recommendation. Confidence: 0.8
