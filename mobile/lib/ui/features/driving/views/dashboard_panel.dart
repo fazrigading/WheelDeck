@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
@@ -210,6 +211,7 @@ class DashboardControl extends StatefulWidget {
     required this.input,
     required this.mode,
     this.holdDuration = const Duration(milliseconds: 500),
+    this.onHoldCompleted,
     this.enabled = true,
     this.gate,
     this.width = DashboardControl.defaultSize,
@@ -249,6 +251,10 @@ class DashboardControl extends StatefulWidget {
   final DashboardInput input;
   final ControlMode mode;
   final Duration holdDuration;
+
+  /// Called when a tap-or-hold press is held for [holdDuration]; the press
+  /// itself is suppressed. Null where the hold has no meaning.
+  final VoidCallback? onHoldCompleted;
   final bool enabled;
   final DashboardSendGate? gate;
   final ValueChanged<ControlId>? onBindRequested;
@@ -264,12 +270,15 @@ class DashboardControl extends StatefulWidget {
   State<DashboardControl> createState() => _DashboardControlState();
 }
 
-enum ControlMode { toggle, momentary, holdConfirm }
+enum ControlMode { toggle, momentary, holdConfirm, tapOrHold }
 
-class _DashboardControlState extends State<DashboardControl> {
+class _DashboardControlState extends State<DashboardControl>
+    with SingleTickerProviderStateMixin {
   bool _pressed = false;
   bool _toggled = false;
+  bool _holdFired = false;
   Timer? _holdTimer;
+  AnimationController? _holdProgress;
 
   /// Controls whose visuals read the gate: signal blink, hazard blink, and
   /// the headlight cycle.
@@ -337,6 +346,7 @@ class _DashboardControlState extends State<DashboardControl> {
   @override
   void dispose() {
     _holdTimer?.cancel();
+    _holdProgress?.dispose();
     if (_gateDriven) widget.gate!.removeListener(_onGate);
     super.dispose();
   }
@@ -357,7 +367,7 @@ class _DashboardControlState extends State<DashboardControl> {
           : null,
       onTapDown: isPressable ? (_) => _pressDown() : null,
       onTapUp: isPressable ? (_) => _pressUp() : null,
-      onTapCancel: isPressable ? _pressUp : null,
+      onTapCancel: isPressable ? _pressCancel : null,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -419,6 +429,22 @@ class _DashboardControlState extends State<DashboardControl> {
                 style: TextStyle(fontSize: 12, color: Colors.white70),
               ),
             ),
+          if (widget.mode == ControlMode.tapOrHold &&
+              _pressed &&
+              _holdProgress != null)
+            Positioned(
+              left: 6,
+              right: 6,
+              bottom: 4,
+              child: AnimatedBuilder(
+                animation: _holdProgress!,
+                builder: (_, _) => LinearProgressIndicator(
+                  value: _holdProgress!.value,
+                  minHeight: 3,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -432,6 +458,23 @@ class _DashboardControlState extends State<DashboardControl> {
   }
 
   void _pressDown() {
+    if (widget.mode == ControlMode.tapOrHold) {
+      // The center camera-pad cell: hold to switch mode. A null control
+      // (arrow-mode center) still holds, but an early release sends
+      // nothing.
+      setState(() {
+        _pressed = true;
+        _holdFired = false;
+      });
+      final controller = _holdProgress ??= AnimationController(
+        vsync: this,
+        duration: widget.holdDuration,
+      )..addStatusListener(_onHoldProgress);
+      controller.duration = widget.holdDuration;
+      controller.forward(from: 0);
+      return;
+    }
+
     final control = widget.control;
     if (control == null) return;
     setState(() => _pressed = true);
@@ -447,6 +490,37 @@ class _DashboardControlState extends State<DashboardControl> {
     }
   }
 
+  /// Fires the hold when the progress controller completes; the press
+  /// action is suppressed.
+  void _onHoldProgress(AnimationStatus status) {
+    if (status != AnimationStatus.completed || !_pressed || _holdFired) return;
+    _holdFired = true;
+    HapticFeedback.mediumImpact();
+    widget.onHoldCompleted?.call();
+  }
+
+  /// The gesture left the cell (or the widget is going away): a tap-or-hold
+  /// press is cancelled outright — no press action, no hold.
+  void _pressCancel() {
+    if (widget.mode == ControlMode.tapOrHold) {
+      _resetHold();
+      if (_pressed) {
+        setState(() {
+          _pressed = false;
+          _holdFired = false;
+        });
+      }
+      return;
+    }
+    _pressUp();
+  }
+
+  /// Stops the hold animation and clears the progress bar.
+  void _resetHold() {
+    _holdProgress?.stop();
+    _holdProgress?.reset();
+  }
+
   void _pressUp() {
     _holdTimer?.cancel();
     _holdTimer = null;
@@ -456,6 +530,20 @@ class _DashboardControlState extends State<DashboardControl> {
     }
 
     setState(() => _pressed = false);
+
+    if (widget.mode == ControlMode.tapOrHold) {
+      _resetHold();
+      if (!_holdFired) {
+        // A short tap: a complete press-and-release, so the game never
+        // sees a stuck key.
+        final control = widget.control;
+        if (control != null) {
+          widget.input.activate(control, ActionType.press);
+          widget.input.activate(control, ActionType.release);
+        }
+      }
+      return;
+    }
 
     if (widget.mode == ControlMode.momentary) {
       final control = widget.control;

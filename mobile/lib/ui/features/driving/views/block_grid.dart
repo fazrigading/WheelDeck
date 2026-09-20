@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
 import '../../../../data/services/driving_layout.dart';
 import '../../../../data/services/pedal_input.dart';
+import 'camera_pad.dart';
 import 'dashboard_panel.dart';
 import 'pedal_panel.dart';
 import 'rotatable_wheel.dart';
@@ -15,7 +17,7 @@ import 'rotatable_wheel.dart';
 /// available size and stacks the slot widgets: buttons (including the gear
 /// 2x2 cells and the turn signals, which render as ordinary grid entries),
 /// slot-sized pedal bars, the wheel, and disabled holes for controls that do
-/// not exist yet. Camera-pad slots stay placeholders until the pad widget
+/// not exist yet. Camera-pad slots render the 3x3 pad widget.
 /// lands.
 class BlockGrid extends StatelessWidget {
   const BlockGrid({
@@ -29,6 +31,8 @@ class BlockGrid extends StatelessWidget {
     required this.degrees,
     required this.onSteering,
     this.springBack = true,
+    this.cameraPadMode = CameraPadMode.fallback,
+    required this.onCameraPadModeSwitch,
     this.onBindRequested,
   });
 
@@ -53,6 +57,10 @@ class BlockGrid extends StatelessWidget {
 
   /// Whether the wheel animates back to zero on release.
   final bool springBack;
+
+  /// Which key set the camera pad sends; the pad's center hold toggles it.
+  final CameraPadMode cameraPadMode;
+  final VoidCallback onCameraPadModeSwitch;
   final ValueChanged<ControlId>? onBindRequested;
 
   /// The global grid the layout slots address.
@@ -120,8 +128,13 @@ class BlockGrid extends StatelessWidget {
           ),
         );
       case SlotKind.cameraPad:
-        // Placeholder until the camera pad widget lands.
-        return const SizedBox.shrink();
+        return CameraPad(
+          mode: cameraPadMode,
+          input: input,
+          bindingFor: bindingFor,
+          onModeSwitch: onCameraPadModeSwitch,
+          onBindRequested: onBindRequested,
+        );
       case SlotKind.hole:
         return DashboardControl(
           key: ValueKey('hole-r${rect.rowStart}c${rect.colStart}'),
