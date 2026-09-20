@@ -5,6 +5,7 @@ import 'package:wheeldeck/data/services/dashboard_send_gate.dart';
 import 'package:wheeldeck/data/services/driving_layout.dart';
 import 'package:wheeldeck/data/services/pedal_input.dart';
 import 'package:wheeldeck/ui/features/driving/views/block_grid.dart';
+import 'package:wheeldeck/ui/features/driving/views/camera_pad.dart';
 import 'package:wheeldeck/ui/features/driving/views/dashboard_panel.dart';
 import 'package:wheeldeck/ui/features/driving/views/pedal_panel.dart';
 import 'package:wheeldeck/ui/features/driving/views/rotatable_wheel.dart';
@@ -53,6 +54,7 @@ void main() {
             shownPedals: shownPedals,
             degrees: 270,
             onSteering: steering.add,
+            onCameraPadModeSwitch: () {},
           ),
         ),
       ),
@@ -67,18 +69,22 @@ void main() {
     await pumpGrid(tester);
 
     final layout = DrivingLayout.sequential();
-    final cellCount = layout.slots
-        .where(
-          (s) =>
-              s.kind == SlotKind.button ||
-              s.kind == SlotKind.gearUp ||
-              s.kind == SlotKind.gearDown ||
-              s.kind == SlotKind.hole,
-        )
-        .length;
+    final cellCount =
+        layout.slots
+            .where(
+              (s) =>
+                  s.kind == SlotKind.button ||
+                  s.kind == SlotKind.gearUp ||
+                  s.kind == SlotKind.gearDown ||
+                  s.kind == SlotKind.hole,
+            )
+            .length +
+        // The camera pad slot renders nine cells of its own.
+        9;
 
     expect(find.byType(DashboardControl), findsNWidgets(cellCount));
     expect(find.byType(RotatableWheel), findsOneWidget);
+    expect(find.byType(CameraPad), findsOneWidget);
     expect(find.byType(PedalBar), findsNWidgets(3));
     // Signals are ordinary grid entries with their straight arrows.
     expect(
@@ -179,6 +185,7 @@ void main() {
             shownPedals: const {},
             degrees: 270,
             onSteering: steering.add,
+            onCameraPadModeSwitch: () {},
           ),
         ),
       ),

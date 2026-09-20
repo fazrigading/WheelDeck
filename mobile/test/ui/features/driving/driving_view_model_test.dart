@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wheeldeck/data/repositories/connection_repository.dart';
 import 'package:wheeldeck/data/repositories/pedal_repository.dart';
 import 'package:wheeldeck/data/repositories/sensor_repository.dart';
+import 'package:wheeldeck/data/services/camera_pad_mode.dart';
 import 'package:wheeldeck/data/services/dashboard_input.dart';
 import 'package:wheeldeck/data/services/engine_start_mode.dart';
 import 'package:wheeldeck/data/services/pedal_input.dart';
@@ -57,6 +58,20 @@ void main() {
     test('skips the calibration gate', () {
       viewModel.setAwaitingCalibration(true);
       expect(viewModel.awaitingCalibration, isFalse);
+    });
+
+    test('camera pad mode loads and toggles with persistence', () async {
+      SharedPreferences.setMockInitialValues({
+        'wheeldeck.wheel_mode': 'rotatable',
+        'wheeldeck.camera_pad_mode': 'arrow',
+      });
+      final arrowModel = buildViewModel();
+      await arrowModel.init();
+      expect(arrowModel.cameraPadMode, CameraPadMode.arrow);
+
+      await arrowModel.toggleCameraPadMode();
+      expect(arrowModel.cameraPadMode, CameraPadMode.numpad);
+      expect(await CameraPadMode.load(), CameraPadMode.numpad);
     });
 
     test('accepts wheel steering and ignores the gyro sensor', () async {

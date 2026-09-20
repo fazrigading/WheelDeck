@@ -267,6 +267,8 @@ class _DrivingViewState extends State<DrivingView> {
       degrees: _viewModel.rotationDegree,
       onSteering: _viewModel.setRotatableSteering,
       springBack: _viewModel.springBack,
+      cameraPadMode: _viewModel.cameraPadMode,
+      onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
       onBindRequested: _openBinder,
     );
   }
