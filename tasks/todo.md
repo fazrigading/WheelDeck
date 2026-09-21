@@ -4,7 +4,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 
 ## Phase 1: Foundation
 
-- [ ] Task 1: Scaffold Android project (`android/`, Gradle KTS, Compose M3, theme port, CI job)
+- [x] Task 1: Scaffold Android project (`android/`, Gradle KTS, Compose M3, theme port, CI job)
 - [ ] Task 2: Protocol models + contract tests (kotlinx.serialization vs `protocol/schema/`)
 
 ## Checkpoint: Foundation

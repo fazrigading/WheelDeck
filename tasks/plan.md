@@ -1,6 +1,6 @@
 # Implementation Plan: Flutter → Kotlin (Android-native) Migration
 
-Status: **approved** — 2026-09-22. Implementation not started.
+Status: **ongoing** — Task 1 complete (2026-09-22).
 
 Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose app in `android/`, slice by slice, against the same `protocol/schema/` contract. Flutter stays runnable as the working reference until Kotlin reaches functional parity **plus the seven known fixes from `TODO.md`**, then `mobile/` is deleted. Desktop (.NET) is untouched. Local data starts fresh — no SharedPreferences migration.
 
@@ -10,7 +10,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 - **Mirror the existing layering.** `data/` (services + repositories), `domain/` (models), `ui/` (features with `views/` + `view_models/`). One `:app` module, no multi-module.
 - **No DI framework.** Manual `AppContainer` with constructor injection, matching the Dart codebase's style.
 - **Coroutines + Flow** replace Dart Streams and ChangeNotifiers; **ViewModel + StateFlow** replace `provider`; **data classes** replace `freezed`.
-- **Version catalog** (`gradle/libs.versions.toml`); Kotlin 2.x + Compose compiler plugin; minSdk 26, targetSdk 36, compileSdk 36, package `dev.fazrigading.wheeldeck` (already the Flutter applicationId).
+- **Version catalog** (`gradle/libs.versions.toml`); Kotlin 2.x + Compose compiler plugin; minSdk 26, targetSdk 36, compileSdk 37 (Compose BOM 2026.09.00 / compose-ui 1.12.1 requires 37), package `dev.fazrigading.wheeldeck` (already the Flutter applicationId).
 - **Tests:** JUnit + `kotlinx-coroutines-test` + OkHttp `MockWebServer` + Robolectric (sensor/permission seams); Compose UI tests only where gestures need them. The 27 Dart test files are ported 1:1 as the parity gate.
 - **Protocol contract:** `protocol/schema/*.json` stays the single source of truth. Kotlin message models must encode/decode compatible with the desktop; contract tests pin this.
 - **Freeze rule:** Flutter gets no new features and no bug fixes during migration. The seven `TODO.md` Mobile items are built right the first time in Kotlin as acceptance criteria — no bug-for-bug parity, no double work.
@@ -32,7 +32,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 
 ### Phase 1: Foundation
 
-- [ ] **Task 1: Scaffold Android project** (S)
+- [x] **Task 1: Scaffold Android project** (S)
   - New `android/` Gradle KTS project: version catalog, Kotlin 2.x, Compose BOM, Material 3, package `dev.fazrigading.wheeldeck`, minSdk 26 / targetSdk 36. Manifest permissions (INTERNET, CHANGE_WIFI_MULTICAST_STATE). `data/domain/ui` package skeleton, `AppContainer`, M3 theme ported from `mobile/lib/ui/core/theme/app_theme.dart`, empty shell screen. Extend `.github` CI with an Android build+test job.
   - **Acceptance criteria:**
     - [ ] `./gradlew assembleDebug` builds; app installs and launches on a device
