@@ -1,93 +1,33 @@
-# TODO — Mobile & Desktop UI Revamp
+# TODO
 
 Remember to update the future plan status to `draft` or `ongoing` or `finished`
 
-## 1. branch: feature/rotatable-steering-and-dashboard
+## New Issues
 
-Rotatable means: finger-drag circular steering wheel.
+### Mobile
 
-- [x] Prepare the backend/system for the virtual steering wheel in windows and desktop, which will have two options: gyro or rotatable. If current system state already sufficient for the feature, it shouldn't be updated. (Wire unchanged; desktop steering untouched.)
-- [x] For ETS2, rotatable is the default option, with 900 degrees.
-- [x] add function for 180 degrees, 270 degrees, 1080 degrees, 1800 degrees, and 2520 degrees.
-- [x] Change the `controller type` options to toggle (hide/show) for Clutch and Dashboard; except Steering Wheel, Acceleration, and Brake.
-- [x] Steering Wheel has a toggle for `Rotatable` or `Gyro`
-- [x] create a visual indicator for the rotation in mobile-view
-- [x] create a desktop widget showing the wheel rotation for manual testing, only enabled when pressed the button.
+Dashboard:
+
+- [ ] Resize gear button size to be 2 rows x 1 cols instead of 2 rows x 2 cols
+- [ ] Resize ACC + BRK pedals size to be 4 rows x 1.5 cols instead of 4 rows x 2 cols; we can create it as a one group so it will be 4 rows and 3 cols
+- [ ] Create a padding between blocks, except alongside to the screen.
+- [ ] Camera Pad keybinds for Up/Down/Left/Right must be set by default alias auto, not manual. Currently it's asking for keybinds after pressing the button in Driving page.
+- [ ] When modal of above problem (edit keybinds) pops up, keyboard must afloat, must not resize the whole dashboard.
+
+Controls:
+- [ ] "Rotate back to zero" feature in steering wheel is good at lower degrees value, but in higher value, it's still too fast. Create a constant turning back speed, slow and steady.
+
+Settings:
+- [ ] Create new page for Keybind Configuration inside Setting page
+
+### Desktop 
+
+Note: this is done on `Linux Fedora 43 7.2.5-100.fc43.x86_64`
+1. Steam detected "WheelDeck Virtual Controller" when it's not "Enabled via Steam Input". After enabling the Steam input, it's detected as Xbox 360 Controller.
+2. Game detected that hardware name too if not enabled via steam input. But, the game cannot set it neither as steering wheel nor gamepad.
+3. Maybe use a fake Hardware ID, like "MOZA TSW Truck Wheel" or "Logitech G923" or something similar (this should correspond to the degrees chosen because each actual wheel sim has different config) to trick the game and Steam and allowing the wheel control.
+4. Wheel monitor is working, but the needle is not moving like it supposed to.
 
 ---
 
-## 2. dashboard revamp (same branch, see plan phases 4-7) :
 
-References of the dashboard images can be viewed at `plan/references/`.
-
-- [x] Light modes actually has 2 modes (Parking Lights & Low Beam), so toggling it should change the button visually: OFF -> Parking Lights -> Low Beam; High-Beam stay independent.
-- [x] Blinking button for Left-Right Turn Signal
-
-### a. Fix existing buttons:
-- [x] Decrease the size of all dashboard buttons
-- [x] Change "Cruise Toggle" keybind to `C`
-- [x] Change "Cruise set/resume" to "Cruise Resume", keybind is set-able
-- [x] Change "HI/Hl" button name to "High-beam" keybind to `K`
-
-### b. Add New Buttons:
-- [x] "Hazard Lights" (`F`)
-- [x] "Warning / Beacon Lights" (`O`)
-- [x] "Light Horn / Flasher" (`J`)
-- [x] "Horn" in the dashboard grid (`H`)
-- [x] "Trailer" (`T`)
-- [x] "Lift / Drop Axle" (`U`)
-- [x] "Camera View" (`9`)
-
-#### b.1. Create toggle for these buttons in the Settings page (These toggle should follow the M3 design guideline):
-- [x] For each pedal in `Pedal Layout`, second toggle appear: **Left** or **Right**.
-- [x] `Engine Start` toggle must be either **hold** or **press** to turn on engine.
-- [x] Gear Up (`Left Shift`)
-- [x] Gear Down (`Left Ctrl`)
-- [x] Engine Brake (`B`)
-- [x] Air Horn (`N`)
-- [x] Differential Lock (`V`)
-- [x] Retarder Increase (`;`)
-- [x] Retarder Decrease (`'`)
-- [x] Quick Info (`F1`)
-- [x] Mirror Toggle (`F2`)
-- [x] HUD Widgets (`F3`)
-- [x] Vehicle Adjustment (`F4`)
-- [x] Navigation Zoom Out (`F5`)
-- [x] Widget Options (`F6`)
-- [x] Services & Adjustments (`F7`)
-- [x] Quick Save (`Scroll Lock`)
-- [x] Quick Load (`Pause`)
-- [x] Screenshot (`F10`)
-- [x] Garage Manager (`G`)
-- [x] Audio/Radio Player (`R`)
-
-##### b.2. Set-able keybinds by user (default to empty keybinds):
-- [x] Shift to Drive
-- [x] Shift to Reverse
-- [x] Shift to Neutral
-- [x] Start/Stop Engine Electricity
-- [x] Adaptive Cruise Control Mode
-- [x] Cruise Control Speed Increase
-- [x] Cruise Control Speed Decrease
-- [x] Lane Assistant Mode
-- [x] Lane Keeping Assistant
-- [x] Emergency Brake
-- [x] Wipers Back
-- [x] Audio Player Play/Pause
-- [x] Audio Player Next
-- [x] Audio Player Previous
-- [x] Audio Player Volume Up
-- [x] Audio Player Volume Down
-- [x] Audio Player Add to/Remove From Favorites
-
-### c. In Gyro-mode:
-- [x] Steering wheel should shown in the middle with indicator of X-axis line under it (dashboard OFF).
-- [x] Selected pedal layout option should put each pedal in its preferred location, e.g. `Brake` toggled to `Left` means the `Brake` pedal placed at left side, not beside of the `Accelerator` pedal at the right side.
-- [x] If dashboard toggled ON in gyro-mode, drop the steering wheel and show only the horizontal tilt readout at top-center; dashboard shown in remaining space.
-- [x] L/R turn-signal arrows sit above the left pedal (not in the dashboard grid); dashboard grid never shows L/R.
-
-### d. In Rotatable-mode:
-- [x] Steering wheel must be placed in bottom-left corner, with size 50% of the device width resolution.
-- [x] Turn Signals placed above the steering wheel as left/right arrow icons that blink (replaces dashboard-grid L/R, which are removed entirely).
-- [x] Pedal layout (Accelerate and Brake) must placed on bottom-right of the screen, if Clutch pedal turned on, must placed on top-left above the turn signals.
-- [x] If `Gear Up` and `Gear Down` are toggled ON, both must be placed vertically above of the pedals (top-right corner).
