@@ -97,5 +97,8 @@ public enum ControlId
     CameraPadArrowUp,
     CameraPadArrowDown,
     CameraPadArrowLeft,
-    CameraPadArrowRight
+    CameraPadArrowRight,
+    // Simple camera type (REQ-013); recenter reuses CameraPadRecenter.
+    CameraSimpleLeft,
+    CameraSimpleRight
 }

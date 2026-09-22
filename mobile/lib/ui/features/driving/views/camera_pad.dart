@@ -143,9 +143,54 @@ class CameraPad extends StatelessWidget {
           );
         },
       ),
-      // Simple and Analog shapes land with their own issues.
-      CameraControlType.simple || CameraControlType.analog =>
-        const SizedBox.shrink(),
+      // Analog shape lands with its own issue.
+      CameraControlType.analog => const SizedBox.shrink(),
+      CameraControlType.simple => LayoutBuilder(
+        builder: (context, constraints) {
+          final cellSize = Size(
+            constraints.maxWidth / 3,
+            constraints.maxHeight,
+          );
+          return Stack(
+            children: [
+              for (var col = 0; col < 3; col++) _simpleCell(col, cellSize),
+            ],
+          );
+        },
+      ),
     };
+  }
+
+  /// Simple type (REQ-013): three full-height buttons — Look Left Window
+  /// (`Numpad/`), Recenter (`Numpad5`), Look Right Window (`Numpad*`).
+  /// The desktop resolves the keys from the control identifiers.
+  Widget _simpleCell(int col, Size cellSize) {
+    final control = switch (col) {
+      0 => ControlId.cameraSimpleLeft,
+      1 => ControlId.cameraPadRecenter,
+      _ => ControlId.cameraSimpleRight,
+    };
+    final label = switch (col) {
+      0 => '◀ WIN',
+      1 => 'REC',
+      _ => 'WIN ▶',
+    };
+    return Positioned(
+      left: col * cellSize.width,
+      top: 0,
+      width: cellSize.width,
+      height: cellSize.height,
+      child: DashboardControl(
+        key: ValueKey('camera-simple-${control.name}'),
+        label: label,
+        control: control,
+        input: input,
+        mode: ControlMode.momentary,
+        width: cellSize.width,
+        height: cellSize.height,
+        enabled: !DashboardSendGate.isUnbound(bindingFor(control)),
+        onBindRequested: onBindRequested,
+      ),
+    );
   }
 }

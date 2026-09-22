@@ -560,6 +560,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Camera arrow left';
       case ControlId.cameraPadArrowRight:
         return 'Camera arrow right';
+      case ControlId.cameraSimpleLeft:
+        return 'Look left window';
+      case ControlId.cameraSimpleRight:
+        return 'Look right window';
     }
   }
 

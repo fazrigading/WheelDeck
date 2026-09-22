@@ -96,7 +96,9 @@
         "camera_pad_arrow_up",
         "camera_pad_arrow_down",
         "camera_pad_arrow_left",
-        "camera_pad_arrow_right"
+        "camera_pad_arrow_right",
+        "camera_simple_left",
+        "camera_simple_right"
       ]
     },
     "ActionType": {
