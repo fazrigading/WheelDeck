@@ -74,3 +74,9 @@ data class Heartbeat(
 data class DeviceSwitch(
     @SerialName("device_id") val deviceId: String? = null,
 ) : WireMessage
+
+/// Sent by either side to revoke the pairing for the sending device: the phone
+/// when removing a paired receiver, the desktop when revoking from its list.
+@Serializable
+@SerialName("unpair")
+data object Unpair : WireMessage

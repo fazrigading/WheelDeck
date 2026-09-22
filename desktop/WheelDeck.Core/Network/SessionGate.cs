@@ -106,6 +106,20 @@ public sealed class SessionGate
         }
     }
 
+    /// <summary>Revokes the device bound to the sending socket: the phone asked
+    /// to remove this pairing from its side.</summary>
+    public void OnUnpair(WebSocket socket)
+    {
+        if (_connectionDevices.TryGetValue(socket, out var deviceId) && deviceId is not null)
+        {
+            _pairingManager.RevokeDevice(deviceId);
+        }
+    }
+
+    /// <summary>Live connections bound to the given device, for revoke notifications.</summary>
+    public IReadOnlyCollection<WebSocket> SocketsForDevice(string deviceId) =>
+        _connectionDevices.Where(kvp => kvp.Value == deviceId).Select(kvp => kvp.Key).ToList();
+
     /// <summary>Forgets a connection when it drops.</summary>
     public void OnConnectionClosed(WebSocket socket)
     {

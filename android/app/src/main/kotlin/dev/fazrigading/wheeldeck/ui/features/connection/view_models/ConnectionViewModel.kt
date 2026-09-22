@@ -11,6 +11,7 @@ import dev.fazrigading.wheeldeck.domain.models.ConnectionTarget
 import dev.fazrigading.wheeldeck.domain.models.DefaultWheelDeckPort
 import dev.fazrigading.wheeldeck.domain.models.DiscoveredServer
 import dev.fazrigading.wheeldeck.domain.models.PairingChallenge
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,6 +66,13 @@ class ConnectionViewModel(
                         it.copy(pairingChallenge = null, pairingError = false)
                     }
                     rememberPaired(connectionRepository.lastTarget)
+                } else if (status != ConnectionStatus.PairingRequired) {
+                    // Disconnect/reconnect ends any open pairing round; without
+                    // this the PIN modal lingers over a "Disconnected" card.
+                    pairingSubmitted = false
+                    _uiState.update {
+                        it.copy(pairingChallenge = null, pairingError = false)
+                    }
                 }
             }
         }
@@ -134,12 +142,42 @@ class ConnectionViewModel(
     }
 
     /// Removes a paired device and forgets its session token so the next
-    /// connect re-pairs from scratch.
+    /// connect re-pairs from scratch. When it is the currently connected
+    /// receiver, revokes the pairing on the desktop first and disconnects.
     fun forgetPaired(server: DiscoveredServer) {
         viewModelScope.launch {
+            val target = connectionRepository.lastTarget
+            val isConnectedHere = target?.ipAddress == server.host &&
+                (target.port ?: DefaultWheelDeckPort) == server.port
+            if (isConnectedHere) {
+                connectionRepository.sendUnpair()
+                // Let OkHttp flush the frame before the socket is cancelled.
+                delay(100)
+            }
+            disconnect()
             try {
                 sessionRepository.forgetSession()
                 pairedDeviceRepository.removePaired(server.host, server.port)
+                _uiState.update { it.copy(pairedIds = pairedDeviceRepository.load()) }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    /// The desktop revoked this pairing (removed from its device list). Drop
+    /// the token and paired entry, stop the reconnect loop, and stay on the
+    /// connection screen with the stale receiver now unpaired.
+    fun onRevokedByDesktop() {
+        viewModelScope.launch {
+            val target = connectionRepository.lastTarget
+            disconnect()
+            try {
+                sessionRepository.forgetSession()
+                val host = target?.ipAddress
+                val port = target?.port ?: DefaultWheelDeckPort
+                if (!host.isNullOrEmpty()) {
+                    pairedDeviceRepository.removePaired(host, port)
+                }
                 _uiState.update { it.copy(pairedIds = pairedDeviceRepository.load()) }
             } catch (_: Exception) {
             }

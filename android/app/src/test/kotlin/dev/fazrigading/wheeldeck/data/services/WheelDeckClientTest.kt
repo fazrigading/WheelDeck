@@ -31,6 +31,7 @@ class WheelDeckClientTest {
     private val statuses = CopyOnWriteArrayList<ConnectionStatus>()
     private val acceptedTokens = CopyOnWriteArrayList<String>()
     private val pairingChallenged = AtomicBoolean(false)
+    private val unpaired = AtomicBoolean(false)
     private var serverSocket: WebSocket? = null
 
     private val serverListener = object : WebSocketListener() {
@@ -65,6 +66,7 @@ class WheelDeckClientTest {
             it.onConnectionStatusChanged { statuses.add(it) }
             it.onPairingAccepted { acceptedTokens.add(it) }
             it.onPairingRequired { pairingChallenged.set(true) }
+            it.onUnpair { unpaired.set(true) }
         }
 
     private fun target() = ConnectionTarget(
@@ -214,6 +216,28 @@ class WheelDeckClientTest {
         client!!.disconnect()
 
         assertEquals(ConnectionStatus.Disconnected, statuses.last())
+    }
+
+    @Test
+    fun `sendUnpair frames an unpair message`() {
+        connectWithToken()
+        sent.clear()
+
+        client!!.sendUnpair()
+        await { framesOfType("unpair").isNotEmpty() }
+
+        assertEquals("unpair", framesOfType("unpair").single()["type"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `an unpair message from the desktop fires the unpair callback`() {
+        connectWithToken()
+        unpaired.set(false)
+
+        serverSocket!!.send("""{"type":"unpair"}""")
+        await { unpaired.get() }
+
+        assertTrue(unpaired.get())
     }
 
     @Test

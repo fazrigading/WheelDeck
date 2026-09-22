@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -55,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.fazrigading.wheeldeck.domain.models.ConnectionStatus
@@ -128,7 +130,11 @@ fun ConnectionScreen(viewModel: ConnectionViewModel) {
             }
             Spacer(Modifier.height(16.dp))
             if (state.pairingChallenge != null) {
-                PairingPrompt(viewModel = viewModel, state = state)
+                PairingModal(
+                    error = state.pairingError,
+                    onSubmit = viewModel::submitPairingCode,
+                    onCancel = { viewModel.disconnect() },
+                )
             } else {
                 DiscoveryList(viewModel = viewModel, state = state)
             }
@@ -350,37 +356,45 @@ private fun EmptyState(onScanAgain: () -> Unit) {
     }
 }
 
-/// PIN entry prompt; error text when a code was rejected.
+/// PIN entry modal (2FA-style 6-digit input); auto-submits at 6 digits.
+/// Shown only while a pairing challenge is active — a disconnect from any
+/// path dismisses it, so the prompt can never go stale.
 @Composable
-private fun PairingPrompt(viewModel: ConnectionViewModel, state: ConnectionUiState) {
+private fun PairingModal(error: Boolean, onSubmit: (String) -> Unit, onCancel: () -> Unit) {
     var pin by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-    ) {
-        Text("Enter the PIN shown on your desktop.")
-        if (state.pairingError) {
-            Spacer(Modifier.height(8.dp))
-            Text("PIN incorrect. Try again.", color = MaterialTheme.colorScheme.error)
-        }
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = pin,
-            onValueChange = { pin = it.filter(Char::isDigit) },
-            label = { Text("PIN") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(12.dp))
-        androidx.compose.material3.FilledTonalButton(onClick = {
-            if (pin.isNotEmpty()) {
-                viewModel.submitPairingCode(pin)
-                pin = ""
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("Pairing required") },
+        text = {
+            Column {
+                Text(
+                    "Enter PIN from Pairing menu > Generate Code button on the desktop",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = pin,
+                    onValueChange = { input ->
+                        val digits = input.filter(Char::isDigit).take(6)
+                        pin = digits
+                        if (digits.length == 6) onSubmit(digits)
+                    },
+                    label = { Text("PIN") },
+                    singleLine = true,
+                    isError = error,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (error) {
+                    Spacer(Modifier.height(8.dp))
+                    Text("PIN incorrect. Try again.", color = MaterialTheme.colorScheme.error)
+                }
             }
-        }) {
-            Text("Submit")
-        }
-    }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onCancel) { Text("Cancel") }
+        },
+    )
 }

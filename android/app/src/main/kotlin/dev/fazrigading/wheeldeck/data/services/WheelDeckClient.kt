@@ -10,6 +10,7 @@ import dev.fazrigading.wheeldeck.domain.models.Mapping
 import dev.fazrigading.wheeldeck.domain.models.PairRequest
 import dev.fazrigading.wheeldeck.domain.models.PairResponse
 import dev.fazrigading.wheeldeck.domain.models.State
+import dev.fazrigading.wheeldeck.domain.models.Unpair
 import dev.fazrigading.wheeldeck.domain.models.WireJson
 import dev.fazrigading.wheeldeck.domain.models.WireMessage
 import kotlinx.coroutines.CancellationException
@@ -58,6 +59,7 @@ class WheelDeckClient(
     private var onConnectionStatusChanged: ((ConnectionStatus) -> Unit)? = null
     private var onPairingRequired: (() -> Unit)? = null
     private var onPairingAccepted: ((String) -> Unit)? = null
+    private var onUnpair: (() -> Unit)? = null
 
     companion object {
         private const val TAG = "WheelDeckClient"
@@ -73,6 +75,10 @@ class WheelDeckClient(
 
     fun onPairingAccepted(callback: (String) -> Unit) {
         onPairingAccepted = callback
+    }
+
+    fun onUnpair(callback: () -> Unit) {
+        onUnpair = callback
     }
 
     fun setSessionToken(token: String?) {
@@ -99,6 +105,9 @@ class WheelDeckClient(
         cancelReconnectTimer()
         cancelHeartbeatTimer()
 
+        // Graceful close would wait on the close handshake and hang
+        // MockWebServer-based tests; cancel() is proven and the unpair frame
+        // is flushed with a short delay by the caller that needs it.
         webSocket?.cancel()
         webSocket = null
         setStatus(ConnectionStatus.Disconnected)
@@ -141,6 +150,12 @@ class WheelDeckClient(
             mode = mode,
         )
         sendMessage(message)
+    }
+
+    /// Tells the desktop to revoke this device's pairing. Send while the socket
+    /// is still open, before disconnecting.
+    fun sendUnpair() {
+        sendMessage(Unpair)
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -210,6 +225,10 @@ class WheelDeckClient(
                         setStatus(ConnectionStatus.PairingRequired)
                         onPairingRequired?.invoke()
                     }
+                }
+                is Unpair -> {
+                    Log.d(TAG, "Desktop revoked this pairing")
+                    onUnpair?.invoke()
                 }
                 else -> {
                     // Other message types are handled by the UI layer

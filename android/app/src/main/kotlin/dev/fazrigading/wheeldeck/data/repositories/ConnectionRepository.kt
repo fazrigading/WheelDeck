@@ -31,4 +31,7 @@ class ConnectionRepository(private val client: WheelDeckClient) {
 
     /// Sends the desired dashboard input mapping (`keyboard` or `gamepad`).
     fun sendMappingMode(mode: String) = client.sendMappingMode(mode)
+
+    /// Tells the desktop to revoke this pairing; send before disconnecting.
+    fun sendUnpair() = client.sendUnpair()
 }
