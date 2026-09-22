@@ -43,7 +43,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Files likely touched:** `android/**` (new), `.github/workflows/*`.
   - **Reference:** `mobile/lib/ui/core/theme/app_theme.dart`, `mobile/android/app/build.gradle*`.
 
-- [ ] **Task 2: Protocol models + contract tests** (M)
+- [x] **Task 2: Protocol models + contract tests** (M)
   - kotlinx.serialization models for all five schema files (`button_message`, `state_message`, `mapping_message`, `session_messages`, `controls` enums). Port `control_contract_test.dart` and `input_mapping_test.dart` — these define the wire contract with the desktop.
   - **Acceptance criteria:**
     - [ ] Every schema message type has a Kotlin model that round-trips JSON compatible with desktop expectations
