@@ -34,6 +34,8 @@ class BlockGrid extends StatelessWidget {
     this.cameraPadMode = CameraPadMode.fallback,
     required this.onCameraPadModeSwitch,
     this.onBindRequested,
+    this.editing = false,
+    this.onEditIntent,
   });
 
   final DrivingLayout layout;
@@ -63,6 +65,13 @@ class BlockGrid extends StatelessWidget {
   final VoidCallback onCameraPadModeSwitch;
   final ValueChanged<ControlId>? onBindRequested;
 
+  /// When true, slot gestures select instead of activating: every slot is
+  /// absorbed and a tap reports its rect through [onEditIntent].
+  final bool editing;
+
+  /// Fires with the tapped slot's rect while [editing]; null otherwise.
+  final ValueChanged<CellRect>? onEditIntent;
+
   /// The global grid the layout slots address.
   static const int gridRows = 8;
   static const int gridCols = 15;
@@ -81,7 +90,16 @@ class BlockGrid extends StatelessWidget {
                 top: (slot.rect.rowStart - 1) * cellH,
                 width: slot.rect.colSpan * cellW,
                 height: slot.rect.rowSpan * cellH,
-                child: _buildSlot(slot, cellW, cellH),
+                child:
+                    editing
+                        ? GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => onEditIntent?.call(slot.rect),
+                          child: AbsorbPointer(
+                            child: _buildSlot(slot, cellW, cellH),
+                          ),
+                        )
+                        : _buildSlot(slot, cellW, cellH),
               ),
           ],
         );
