@@ -286,4 +286,67 @@ void main() {
       expect(freeSpans(empty, 1, 1).length, 8 * 15);
     });
   });
+
+  group('TASK-027 through TASK-029 modules', () {
+    test('audio player places as one unit with offset slots', () {
+      const empty = DrivingLayout(name: 'empty', slots: []);
+      const at = CellRect(
+        rowStart: 2,
+        colStart: 3,
+        rowSpan: 1,
+        colSpan: 5,
+      );
+      final after = applied(
+        placeModule(empty, at, LayoutModule.audioPlayer),
+      );
+
+      expect(after.slots.length, 5);
+      expect(after.slots[0].control, ControlId.audioVolumeDown);
+      expect(
+        after.slots[0].rect,
+        const CellRect(rowStart: 2, colStart: 3, rowSpan: 1, colSpan: 1),
+      );
+      expect(after.slots[4].control, ControlId.audioVolumeUp);
+      expect(
+        after.slots[4].rect,
+        const CellRect(rowStart: 2, colStart: 7, rowSpan: 1, colSpan: 1),
+      );
+    });
+
+    test('module placement refuses overlap and out-of-bounds spans', () {
+      const overlapping = CellRect(
+        rowStart: 1,
+        colStart: 1,
+        rowSpan: 1,
+        colSpan: 5,
+      );
+      expect(
+        refused(
+          placeModule(testLayout(), overlapping, LayoutModule.audioPlayer),
+        ),
+        EditRefusal.targetOccupied,
+      );
+      const offGrid = CellRect(
+        rowStart: 4,
+        colStart: 12,
+        rowSpan: 1,
+        colSpan: 5,
+      );
+      expect(
+        refused(placeModule(testLayout(), offGrid, LayoutModule.audioPlayer)),
+        EditRefusal.outOfBounds,
+      );
+    });
+
+    test('h-shifter ships as sixteen holes', () {
+      final module = LayoutModule.hShifter;
+      expect(module.rowSpan, 4);
+      expect(module.colSpan, 4);
+      expect(module.slots.length, 16);
+      expect(
+        module.slots.every((slot) => slot.kind == SlotKind.hole),
+        isTrue,
+      );
+    });
+  });
 }

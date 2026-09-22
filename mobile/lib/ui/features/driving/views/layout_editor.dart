@@ -88,6 +88,9 @@ class _LayoutEditorState extends State<LayoutEditor> {
   /// Control chosen from the picker awaiting a target cell, or null.
   ControlId? _placing;
 
+  /// Module chosen from the picker awaiting a target cell, or null.
+  LayoutModule? _placingModule;
+
   double _cellW = 0;
   double _cellH = 0;
 
@@ -149,37 +152,64 @@ class _LayoutEditorState extends State<LayoutEditor> {
       rect.rowStart + rect.rowSpan - 1 <= DrivingLayout.gridRows &&
       rect.colStart + rect.colSpan - 1 <= DrivingLayout.gridCols;
 
-  /// Places the picked control into the tapped 1x1 cell. Occupied targets
+  /// Places the picked control or module at the tapped cell. Modules land
+  /// as one unit with their origin at the tapped cell. Occupied targets
   /// are refused with the same red flash as a refused move.
   void _placeAt(Offset globalOffset) {
     final placing = _placing;
-    if (placing == null) return;
+    final placingModule = _placingModule;
+    if (placing == null && placingModule == null) return;
     final box = _gridKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || _cellW <= 0 || _cellH <= 0) return;
     final local = box.globalToLocal(globalOffset);
-    final at = CellRect(
-      rowStart: (local.dy / _cellH).floor() + 1,
-      colStart: (local.dx / _cellW).floor() + 1,
-      rowSpan: 1,
-      colSpan: 1,
-    );
-    _edit.addControl(at, placing);
+    final row = (local.dy / _cellH).floor() + 1;
+    final col = (local.dx / _cellW).floor() + 1;
+    final at =
+        placingModule != null
+            ? CellRect(
+              rowStart: row,
+              colStart: col,
+              rowSpan: placingModule.rowSpan,
+              colSpan: placingModule.colSpan,
+            )
+            : CellRect(
+              rowStart: row,
+              colStart: col,
+              rowSpan: 1,
+              colSpan: 1,
+            );
+    if (placingModule != null) {
+      _edit.placeModule(at, placingModule);
+    } else {
+      _edit.addControl(at, placing!);
+    }
     if (_edit.lastRefusal != null) {
       if (_inGrid(at)) _flashRed(at);
     } else {
-      setState(() => _placing = null);
+      setState(() {
+        _placing = null;
+        _placingModule = null;
+      });
     }
   }
 
-  /// Add picker: every bound control; choosing one arms placing mode.
+  /// Add picker: modules first, then every bound control. Choosing either
+  /// arms placing mode.
   Future<void> _openAddPicker() async {
-    final picked = await showDialog<ControlId>(
+    final picked = await showDialog<Object>(
       context: context,
       builder:
           (context) => SimpleDialog(
             key: const ValueKey('add-picker'),
-            title: const Text('Add control'),
+            title: const Text('Add control or module'),
             children: [
+              for (final module in layoutModules)
+                SimpleDialogOption(
+                  key: ValueKey('add-module-${module.name}'),
+                  onPressed: () => Navigator.of(context).pop(module),
+                  child: Text('${module.name} '
+                      '(${module.rowSpan}x${module.colSpan})'),
+                ),
               for (final control in widget.addableControls)
                 SimpleDialogOption(
                   key: ValueKey('add-control-${control.name}'),
@@ -189,9 +219,10 @@ class _LayoutEditorState extends State<LayoutEditor> {
             ],
           ),
     );
-    if (!mounted || picked == null) return;
+    if (!mounted) return;
     setState(() {
-      _placing = picked;
+      _placing = picked is ControlId ? picked : null;
+      _placingModule = picked is LayoutModule ? picked : null;
       _flash = null;
     });
   }
@@ -285,6 +316,24 @@ class _LayoutEditorState extends State<LayoutEditor> {
                             ),
                       ),
                     ),
+                  for (final target in _placeTargets())
+                    Positioned(
+                      left: (target.colStart - 1) * _cellW,
+                      top: (target.rowStart - 1) * _cellH,
+                      width: target.colSpan * _cellW,
+                      height: target.rowSpan * _cellH,
+                      child: IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.18),
+                            border: Border.all(
+                              color: Colors.green,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   if (_flash != null)
                     Positioned(
                       left: (_flash!.colStart - 1) * _cellW,
@@ -299,7 +348,7 @@ class _LayoutEditorState extends State<LayoutEditor> {
                         ),
                       ),
                     ),
-                  if (_placing != null)
+                  if (_placing != null || _placingModule != null)
                     Positioned.fill(
                       child: GestureDetector(
                         behavior: HitTestBehavior.translucent,
@@ -322,28 +371,48 @@ class _LayoutEditorState extends State<LayoutEditor> {
     );
   }
 
+  /// Valid drop targets for the placing shape, so the picker flow shows
+  /// where the control or module fits.
+  Set<CellRect> _placeTargets() {
+    final module = _placingModule;
+    if (module != null) {
+      return _edit.freeSpansFor(module.rowSpan, module.colSpan);
+    }
+    if (_placing != null) return _edit.freeSpansFor(1, 1);
+    return const {};
+  }
+
   /// Add/remove/save toolbar. While placing, it shows the picked control
-  /// with a cancel action instead.
+  /// or module with a cancel action instead.
   Widget _toolbar() {
+    final placingModule = _placingModule;
     final placing = _placing;
+    final placingLabel =
+        placingModule != null
+            ? placingModule.name
+            : placing != null
+            ? DashboardPanel.gridLabel(placing)
+            : null;
     return Material(
       elevation: 4,
       borderRadius: BorderRadius.circular(24),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child:
-            placing != null
+            placingLabel != null
                 ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Placing ${DashboardPanel.gridLabel(placing)} — tap a cell',
-                    ),
+                    Text('Placing $placingLabel — tap a cell'),
                     IconButton(
                       key: const ValueKey('placing-cancel'),
                       tooltip: 'Cancel placing',
                       icon: const Icon(Icons.close),
-                      onPressed: () => setState(() => _placing = null),
+                      onPressed:
+                          () => setState(() {
+                            _placing = null;
+                            _placingModule = null;
+                          }),
                     ),
                   ],
                 )
