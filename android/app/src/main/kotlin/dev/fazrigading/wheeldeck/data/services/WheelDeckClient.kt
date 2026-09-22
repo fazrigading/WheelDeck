@@ -193,10 +193,13 @@ class WheelDeckClient(
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        if (userRequestedClose) {
-            Log.d(TAG, "WebSocket closed by user: ${t.message}")
-        } else {
-            Log.e(TAG, "WebSocket failure", t)
+        when {
+            userRequestedClose -> Log.d(TAG, "WebSocket closed by user: ${t.message}")
+            // Already in the reconnect loop: a failed retry (e.g. ENETUNREACH
+            // while Wi-Fi is still down) is expected, not an error.
+            _status.value == ConnectionStatus.Reconnecting ->
+                Log.d(TAG, "Reconnect attempt failed: ${t.message}")
+            else -> Log.e(TAG, "WebSocket failure", t)
         }
         webSocketCleanup()
 
