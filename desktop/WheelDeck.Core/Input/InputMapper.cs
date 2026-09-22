@@ -254,6 +254,8 @@ public sealed class InputMapper
         _backend.SetAxis(AxisType.Accelerator, (float)Clamp(state.Accelerator, 0.0, 1.0));
         _backend.SetAxis(AxisType.Brake, (float)Clamp(state.Brake, 0.0, 1.0));
         _backend.SetAxis(AxisType.Clutch, (float)Clamp(state.Clutch, 0.0, 1.0));
+        _backend.SetAxis(AxisType.CameraX, (float)Clamp(state.CameraX, -1.0, 1.0));
+        _backend.SetAxis(AxisType.CameraY, (float)Clamp(state.CameraY, -1.0, 1.0));
     }
 
     /// <summary>Routes a discrete button event according to the current mapping mode.</summary>

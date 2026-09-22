@@ -42,12 +42,16 @@ class ConnectionRepository {
     required double accelerator,
     required double brake,
     required double clutch,
+    double cameraX = 0.0,
+    double cameraY = 0.0,
   }) =>
       _client.sendState(
         steering: steering,
         accelerator: accelerator,
         brake: brake,
         clutch: clutch,
+        cameraX: cameraX,
+        cameraY: cameraY,
       );
 
   /// Sends a `button` frame for a dashboard control event.

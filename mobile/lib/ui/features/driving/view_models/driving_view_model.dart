@@ -76,6 +76,8 @@ class DrivingViewModel extends ChangeNotifier {
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
   String _activeProfile = LayoutProfileStore.defaultProfileName;
   DrivingLayout _storedLayout = DrivingLayout.sequential();
+  double _cameraX = 0.0;
+  double _cameraY = 0.0;
 
   /// Unsaved editor result for this session; cleared on profile switches
   /// and settings refreshes.
@@ -364,6 +366,14 @@ class DrivingViewModel extends ChangeNotifier {
     _sendState();
   }
 
+  /// Reports analog camera look. Forwards through the state stream without
+  /// notifying — nothing renders the values — mirroring setRotatableSteering.
+  void setAnalogCamera(double x, double y) {
+    _cameraX = x.clamp(-1.0, 1.0).toDouble();
+    _cameraY = y.clamp(-1.0, 1.0).toDouble();
+    _sendState();
+  }
+
   /// Re-centers the sensor and re-opens input. The caller reconnects via
   /// [lastTarget] when non-null.
   void confirmCalibration() {
@@ -413,6 +423,8 @@ class DrivingViewModel extends ChangeNotifier {
       accelerator: pedals.accelerator,
       brake: pedals.brake,
       clutch: pedals.clutch,
+      cameraX: _cameraX,
+      cameraY: _cameraY,
     );
   }
 }

@@ -198,6 +198,10 @@ class _DrivingViewState extends State<DrivingView> {
 
   void _cancelEdit() => _closeEdit();
 
+  /// Forwards analog camera stick positions to the state stream.
+  void _reportAnalogCamera(Offset offset) =>
+      _viewModel.setAnalogCamera(offset.dx, offset.dy);
+
   void _closeEdit() {
     setState(() {
       _editViewModel?.dispose();
@@ -359,6 +363,7 @@ class _DrivingViewState extends State<DrivingView> {
               onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
               onBindRequested: _openBinder,
               cameraControlType: _viewModel.cameraControlType,
+              onAnalog: _reportAnalogCamera,
               addableControls: _addableControls(),
               developerPresetNames:
                   LayoutProfileStore.developerPresetNames,
@@ -382,6 +387,7 @@ class _DrivingViewState extends State<DrivingView> {
       onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
       onBindRequested: _openBinder,
       cameraControlType: _viewModel.cameraControlType,
+      onAnalog: _reportAnalogCamera,
     );
   }
 

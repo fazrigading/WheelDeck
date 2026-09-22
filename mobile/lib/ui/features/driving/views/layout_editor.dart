@@ -36,6 +36,7 @@ class LayoutEditor extends StatefulWidget {
     required this.onCameraPadModeSwitch,
     this.onBindRequested,
     this.cameraControlType = CameraControlType.dpad,
+    this.onAnalog,
     this.addableControls = const [],
     this.developerPresetNames = const {'Sequential'},
     this.onSaveProfile,
@@ -56,6 +57,9 @@ class LayoutEditor extends StatefulWidget {
 
   /// Which camera control shape the pad slot renders.
   final CameraControlType cameraControlType;
+
+  /// Reports analog stick positions to the state stream.
+  final ValueChanged<Offset>? onAnalog;
 
   /// Controls offered by the add picker: every id with a binding resolved
   /// in either input mapping mode (TASK-016).
@@ -291,6 +295,7 @@ class _LayoutEditorState extends State<LayoutEditor> {
                       onCameraPadModeSwitch: widget.onCameraPadModeSwitch,
                       onBindRequested: widget.onBindRequested,
                       cameraControlType: widget.cameraControlType,
+                      onAnalog: widget.onAnalog,
                       editing: true,
                       onEditIntent: _edit.select,
                       editSlotWrapper:
