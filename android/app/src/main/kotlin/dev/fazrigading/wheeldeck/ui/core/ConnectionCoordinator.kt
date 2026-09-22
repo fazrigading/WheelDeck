@@ -39,6 +39,11 @@ class ConnectionCoordinator(container: ConnectionContainer) {
                 viewModel.onPairingRequired(PairingChallenge(PairingMethod.Pin))
             }
         }
+        // Desktop revoked this device: drop the token and the paired entry so
+        // the next connect re-pairs, and stay on the connection screen.
+        container.client.onUnpair {
+            scope.launch { viewModel.onRevokedByDesktop() }
+        }
         // Bootstrap sweep, matching the Dart app's `..refreshDiscovery()`.
         scope.launch { viewModel.refreshDiscovery() }
     }
