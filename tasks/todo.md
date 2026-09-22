@@ -16,7 +16,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 - [x] Task 3: mDNS discovery (NsdManager, `_wheeldeck._tcp.`, manual-IP fallback)
 - [x] Task 4: WebSocket client (OkHttp, framing, heartbeat, auto-reconnect)
 - [x] Task 5: Pairing + session (PIN, token reuse, DataStore persistence)
-- [ ] Task 6: Connection UI (screen, manual-add sheet, coordinator, lifecycle)
+- [x] Task 6: Connection UI (screen, manual-add sheet, coordinator, lifecycle)
 
 ## Checkpoint A: Connection works end-to-end
 
