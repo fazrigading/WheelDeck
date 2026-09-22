@@ -32,6 +32,10 @@ class PairingTest {
             saveCount++
             this.token = token
         }
+
+        override suspend fun clear() {
+            token = null
+        }
     }
 
     private lateinit var server: MockWebServer

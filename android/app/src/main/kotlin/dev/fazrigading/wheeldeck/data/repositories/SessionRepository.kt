@@ -12,4 +12,7 @@ class SessionRepository(private val pairing: PairingController) {
 
     /// Sends the pairing code to the desktop for validation.
     fun submitPairingCode(code: String) = pairing.submitPairingCode(code)
+
+    /// Drops the persisted session token so the next connect re-pairs.
+    suspend fun forgetSession() = pairing.forgetSession()
 }

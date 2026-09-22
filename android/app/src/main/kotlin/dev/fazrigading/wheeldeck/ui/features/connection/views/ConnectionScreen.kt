@@ -1,6 +1,8 @@
 package dev.fazrigading.wheeldeck.ui.features.connection.views
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,6 +43,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -195,14 +199,32 @@ private fun DiscoveryList(viewModel: ConnectionViewModel, state: ConnectionUiSta
         if (state.pairedServers.isNotEmpty()) {
             item { SectionHeader("Paired devices") }
             items(state.pairedServers, key = { "${it.host}:${it.port}" }) { server ->
+                var confirmRemove by remember { mutableStateOf(false) }
                 ServerCard(
                     server = server,
                     container = MaterialTheme.colorScheme.primaryContainer,
                     onContainer = MaterialTheme.colorScheme.onPrimaryContainer,
-                    subtitle = "Tap to reconnect",
+                    subtitle = "Tap to reconnect · hold to remove",
                     trailing = { Icon(Icons.Filled.Verified, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp)) },
                     onClick = { viewModel.connect(server.toConnectionTarget()) },
+                    onLongClick = { confirmRemove = true },
                 )
+                if (confirmRemove) {
+                    AlertDialog(
+                        onDismissRequest = { confirmRemove = false },
+                        title = { Text("Remove ${server.name}?") },
+                        text = { Text("You will need to pair again with a new PIN.") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                confirmRemove = false
+                                viewModel.forgetPaired(server)
+                            }) { Text("Remove") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { confirmRemove = false }) { Text("Cancel") }
+                        },
+                    )
+                }
             }
         }
         item {
@@ -251,28 +273,48 @@ private fun ServerCard(
     subtitle: String,
     trailing: @Composable () -> Unit,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
 ) {
-    Card(onClick = onClick) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                Icons.Filled.Computer,
-                contentDescription = null,
-                tint = onContainer,
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(container, RoundedCornerShape(12.dp))
-                    .padding(8.dp),
-            )
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(server.name, fontWeight = FontWeight.SemiBold)
-                Text("${server.host}:${server.port}\n$subtitle", style = MaterialTheme.typography.bodySmall)
-            }
-            trailing()
+    // Card(onClick) builds its own clickable; a long-press card needs the
+    // surface overload plus combinedClickable instead.
+    if (onLongClick != null) {
+        Card(modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)) {
+            ServerCardContent(server, container, onContainer, subtitle, trailing)
         }
+    } else {
+        Card(onClick = onClick) {
+            ServerCardContent(server, container, onContainer, subtitle, trailing)
+        }
+    }
+}
+
+@Composable
+private fun ServerCardContent(
+    server: DiscoveredServer,
+    container: Color,
+    onContainer: Color,
+    subtitle: String,
+    trailing: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            Icons.Filled.Computer,
+            contentDescription = null,
+            tint = onContainer,
+            modifier = Modifier
+                .size(40.dp)
+                .background(container, RoundedCornerShape(12.dp))
+                .padding(8.dp),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(server.name, fontWeight = FontWeight.SemiBold)
+            Text("${server.host}:${server.port}\n$subtitle", style = MaterialTheme.typography.bodySmall)
+        }
+        trailing()
     }
 }
 

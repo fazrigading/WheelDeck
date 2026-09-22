@@ -133,5 +133,18 @@ class ConnectionViewModel(
         }
     }
 
+    /// Removes a paired device and forgets its session token so the next
+    /// connect re-pairs from scratch.
+    fun forgetPaired(server: DiscoveredServer) {
+        viewModelScope.launch {
+            try {
+                sessionRepository.forgetSession()
+                pairedDeviceRepository.removePaired(server.host, server.port)
+                _uiState.update { it.copy(pairedIds = pairedDeviceRepository.load()) }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     companion object
 }
