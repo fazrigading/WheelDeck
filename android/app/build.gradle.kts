@@ -33,6 +33,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        // WebSocket callbacks log via android.util.Log; stub it in JVM tests.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 kotlin {
@@ -48,7 +53,10 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp)
+    testImplementation(libs.okhttp.mockwebserver)
 }
