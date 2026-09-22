@@ -58,7 +58,9 @@ data class PairRequest(
 @Serializable
 @SerialName("pair_response")
 data class PairResponse(
-    @SerialName("device_id") val deviceId: String,
+    // Desktop's stale-session rejection omits device_id; nullable keeps
+    // the phone forward-compatible with older/newer desktop frames.
+    @SerialName("device_id") val deviceId: String? = null,
     val accepted: Boolean,
     @SerialName("session_token") val sessionToken: String? = null,
 ) : WireMessage
