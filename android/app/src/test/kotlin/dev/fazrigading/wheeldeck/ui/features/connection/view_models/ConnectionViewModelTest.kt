@@ -55,6 +55,9 @@ class ConnectionViewModelTest {
         override suspend fun save(token: String) {
             saved = token
         }
+        override suspend fun clear() {
+            saved = null
+        }
     }
 
     private class FakePairedStore : dev.fazrigading.wheeldeck.data.repositories.PairedDeviceStore {
@@ -62,6 +65,9 @@ class ConnectionViewModelTest {
         override suspend fun load(): Set<String> = paired
         override suspend fun addPaired(host: String, port: Int) {
             paired.add("$host:$port")
+        }
+        override suspend fun removePaired(host: String, port: Int) {
+            paired.remove("$host:$port")
         }
     }
 

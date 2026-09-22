@@ -15,6 +15,7 @@ private val Context.pairedDevicesDataStore by preferencesDataStore(name = "wheel
 interface PairedDeviceStore {
     suspend fun load(): Set<String>
     suspend fun addPaired(host: String, port: Int)
+    suspend fun removePaired(host: String, port: Int)
 }
 
 /// DataStore-backed store for paired device ids (`host:port`).
@@ -38,6 +39,14 @@ class DataStorePairedDeviceStore(
         }
     }
 
+    override suspend fun removePaired(host: String, port: Int) {
+        val id = PairedDeviceRepository.idOfPair(host, port)
+        dataStore.edit { prefs ->
+            val current = prefs[stringSetPreferencesKey(prefsKey)].orEmpty()
+            if (id in current) prefs[stringSetPreferencesKey(prefsKey)] = current - id
+        }
+    }
+
     companion object {
         const val DEFAULT_KEY = "wheeldeck.paired_devices"
     }
@@ -56,6 +65,9 @@ class PairedDeviceRepository(private val store: PairedDeviceStore) {
 
     /// Adds `host:port` to the paired set if absent.
     suspend fun addPaired(host: String, port: Int) = store.addPaired(host, port)
+
+    /// Removes `host:port` from the paired set.
+    suspend fun removePaired(host: String, port: Int) = store.removePaired(host, port)
 
     companion object {
         fun idOfPair(host: String, port: Int) = "$host:$port"

@@ -16,6 +16,7 @@ private val Context.sessionTokenDataStore by preferencesDataStore(name = "wheeld
 interface SessionTokenStore {
     suspend fun load(): String?
     suspend fun save(token: String)
+    suspend fun clear()
 }
 
 /// Stores the token in DataStore Preferences.
@@ -27,6 +28,10 @@ class DataStoreSessionTokenStore(context: Context) : SessionTokenStore {
 
     override suspend fun save(token: String) {
         dataStore.edit { it[stringPreferencesKey(KEY)] = token }
+    }
+
+    override suspend fun clear() {
+        dataStore.edit { it.remove(stringPreferencesKey(KEY)) }
     }
 
     companion object {
@@ -58,4 +63,10 @@ class PairingController(
 
     /// Sends the pairing code to the desktop for validation.
     fun submitPairingCode(code: String) = client.submitPairingCode(code)
+
+    /// Drops the persisted and in-memory token so the next connect re-pairs.
+    suspend fun forgetSession() {
+        client.setSessionToken(null)
+        store.clear()
+    }
 }
