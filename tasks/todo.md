@@ -20,7 +20,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 
 ## Checkpoint A: Connection works end-to-end
 
-- [ ] Pairs with real desktop, reconnects after Wi-Fi fade, heartbeats hold; `flutter test` still green
+- [x] Pairs with real desktop, reconnects after Wi-Fi fade, heartbeats hold; `flutter test` still green
 
 ## Phase 3: Input capture + driving core
 
