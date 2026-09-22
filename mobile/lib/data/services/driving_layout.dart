@@ -40,6 +40,19 @@ class CellRect {
   @override
   String toString() =>
       'CellRect($rowStart, $colStart, +$rowSpan rows, +$colSpan cols)';
+
+  CellRect copyWith({
+    int? rowStart,
+    int? colStart,
+    int? rowSpan,
+    int? colSpan,
+  }) =>
+      CellRect(
+        rowStart: rowStart ?? this.rowStart,
+        colStart: colStart ?? this.colStart,
+        rowSpan: rowSpan ?? this.rowSpan,
+        colSpan: colSpan ?? this.colSpan,
+      );
 }
 
 /// What a layout slot renders.
@@ -101,6 +114,31 @@ class LayoutSlot {
   /// ControlId enum has no members for the pedals themselves, so the pedal
   /// kind needs its own discriminator for colouring and ordering.
   final PedalType? pedal;
+
+  LayoutSlot copyWith({
+    CellRect? rect,
+    SlotKind? kind,
+    ControlId? control,
+    PedalType? pedal,
+  }) =>
+      LayoutSlot(
+        rect: rect ?? this.rect,
+        kind: kind ?? this.kind,
+        control: control ?? this.control,
+        pedal: pedal ?? this.pedal,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LayoutSlot &&
+          rect == other.rect &&
+          kind == other.kind &&
+          control == other.control &&
+          pedal == other.pedal;
+
+  @override
+  int get hashCode => Object.hash(rect, kind, control, pedal);
 }
 
 /// A named dashboard layout: the placement authority for the rotatable grid.
@@ -130,6 +168,10 @@ class DrivingLayout {
   /// The six block regions, A through F, as `(rowStart, colStart)` rects on
   /// the global 8x15 grid: rows 1-4 form the top band, rows 5-8 the bottom;
   /// columns 1-5, 6-10, and 11-15 form the left, middle, and right bands.
+  /// Global grid extents: every slot rect must fit inside these bounds.
+  static const int gridRows = 8;
+  static const int gridCols = 15;
+
   static const List<CellRect> blocks = [
     blockA,
     blockB,
@@ -543,4 +585,134 @@ class DrivingLayout {
       ),
     ],
   );
+}
+
+/// Why a layout edit was refused. Surfaced so the editor can explain a
+/// failed drop instead of silently ignoring it.
+enum EditRefusal {
+  /// No slot exists at the edit's source span.
+  slotNotFound,
+
+  /// The target span overlaps an already placed slot.
+  targetOccupied,
+
+  /// The target span falls outside the 8x15 grid.
+  outOfBounds,
+
+  /// The slot is structural (pedal, wheel) and cannot be removed.
+  structuralSlot,
+}
+
+/// The outcome of a layout edit: either the new layout or a refusal reason.
+sealed class LayoutEditResult {
+  const LayoutEditResult();
+}
+
+/// An edit that produced [layout]. The input layout is never mutated.
+final class EditApplied extends LayoutEditResult {
+  const EditApplied(this.layout);
+  final DrivingLayout layout;
+}
+
+/// An edit that left the layout unchanged, with the [reason] why.
+final class EditRefused extends LayoutEditResult {
+  const EditRefused(this.reason);
+  final EditRefusal reason;
+}
+
+bool _overlaps(CellRect a, CellRect b) =>
+    a.rowStart < b.rowStart + b.rowSpan &&
+    b.rowStart < a.rowStart + a.rowSpan &&
+    a.colStart < b.colStart + b.colSpan &&
+    b.colStart < a.colStart + a.colSpan;
+
+bool _inBounds(CellRect rect) =>
+    rect.rowStart >= 1 &&
+    rect.colStart >= 1 &&
+    rect.rowStart + rect.rowSpan - 1 <= DrivingLayout.gridRows &&
+    rect.colStart + rect.colSpan - 1 <= DrivingLayout.gridCols;
+
+/// Moves the slot at [from] to [to], returning the new layout. Refuses when
+/// no slot sits at [from], [to] leaves the grid, or [to] overlaps another
+/// slot — neighbours are never pushed.
+LayoutEditResult applyMove(
+  DrivingLayout layout,
+  CellRect from,
+  CellRect to,
+) {
+  final index = layout.slots.indexWhere((slot) => slot.rect == from);
+  if (index == -1) return const EditRefused(EditRefusal.slotNotFound);
+  if (to == from) return EditApplied(layout);
+  if (!_inBounds(to)) return const EditRefused(EditRefusal.outOfBounds);
+  for (var i = 0; i < layout.slots.length; i++) {
+    if (i != index && _overlaps(layout.slots[i].rect, to)) {
+      return const EditRefused(EditRefusal.targetOccupied);
+    }
+  }
+  final slots = layout.slots.toList()
+    ..[index] = layout.slots[index].copyWith(rect: to);
+  return EditApplied(DrivingLayout(name: layout.name, slots: slots));
+}
+
+/// Adds [control] as a button slot at [at]. Refuses when [at] leaves the
+/// grid or overlaps an already placed slot.
+LayoutEditResult addControl(
+  DrivingLayout layout,
+  CellRect at,
+  ControlId control,
+) {
+  if (!_inBounds(at)) return const EditRefused(EditRefusal.outOfBounds);
+  for (final slot in layout.slots) {
+    if (_overlaps(slot.rect, at)) {
+      return const EditRefused(EditRefusal.targetOccupied);
+    }
+  }
+  return EditApplied(
+    DrivingLayout(
+      name: layout.name,
+      slots: [
+        ...layout.slots,
+        LayoutSlot(rect: at, kind: SlotKind.button, control: control),
+      ],
+    ),
+  );
+}
+
+/// Removes the slot at [at], returning its cells to empty. Refuses when no
+/// slot sits at [at], or when the slot is structural (pedal, wheel).
+LayoutEditResult removeSlot(DrivingLayout layout, CellRect at) {
+  final index = layout.slots.indexWhere((slot) => slot.rect == at);
+  if (index == -1) return const EditRefused(EditRefusal.slotNotFound);
+  final kind = layout.slots[index].kind;
+  if (kind == SlotKind.pedal || kind == SlotKind.wheel) {
+    return const EditRefused(EditRefusal.structuralSlot);
+  }
+  final slots = layout.slots.toList()..removeAt(index);
+  return EditApplied(DrivingLayout(name: layout.name, slots: slots));
+}
+
+/// Every position where a [rowSpan] x [colSpan] slot fits without overlap.
+/// The editor highlights these as valid drop targets.
+Set<CellRect> freeSpans(DrivingLayout layout, int rowSpan, int colSpan) {
+  assert(rowSpan >= 1 && colSpan >= 1, 'span must cover whole cells');
+  final free = <CellRect>{};
+  for (var row = 1; row + rowSpan - 1 <= DrivingLayout.gridRows; row++) {
+    for (var col = 1; col + colSpan - 1 <= DrivingLayout.gridCols; col++) {
+      final candidate = CellRect(
+        rowStart: row,
+        colStart: col,
+        rowSpan: rowSpan,
+        colSpan: colSpan,
+      );
+      var blocked = false;
+      for (final slot in layout.slots) {
+        if (_overlaps(slot.rect, candidate)) {
+          blocked = true;
+          break;
+        }
+      }
+      if (!blocked) free.add(candidate);
+    }
+  }
+  return free;
 }
