@@ -45,6 +45,10 @@ class WheelDeckClient(
     private var webSocket: WebSocket? = null
     private var sessionToken: String? = null
 
+    /// True between [disconnect] and the next [connect]; suppresses the error
+    /// log for the socket teardown the user asked for.
+    private var userRequestedClose = false
+
     /// Last connection target, used to reconnect after a lifecycle pause.
     var lastTarget: ConnectionTarget? = null
         private set
@@ -77,6 +81,7 @@ class WheelDeckClient(
 
     fun connect(target: ConnectionTarget) {
         lastTarget = target
+        userRequestedClose = false
         cancelReconnectTimer()
         setStatus(ConnectionStatus.Connecting)
 
@@ -90,6 +95,7 @@ class WheelDeckClient(
 
     fun disconnect() {
         lastTarget = null
+        userRequestedClose = true
         cancelReconnectTimer()
         cancelHeartbeatTimer()
 
@@ -172,7 +178,11 @@ class WheelDeckClient(
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        Log.e(TAG, "WebSocket failure", t)
+        if (userRequestedClose) {
+            Log.d(TAG, "WebSocket closed by user: ${t.message}")
+        } else {
+            Log.e(TAG, "WebSocket failure", t)
+        }
         webSocketCleanup()
 
         // Connection errors like connection refused are reconnectable
