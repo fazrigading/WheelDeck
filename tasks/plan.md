@@ -90,11 +90,11 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Files likely touched:** `.../data/services/pairing.kt`, `.../data/repositories/paired_device_repository.kt`, `.../data/repositories/session_repository.kt`, `.../domain/models/pairing_challenge.kt`.
   - **Reference:** `mobile/lib/data/services/pairing.dart`, `mobile/lib/domain/models/pairing_challenge.dart`.
 
-- [ ] **Task 6: Connection UI** (M)
+- [x] **Task 6: Connection UI** (M)
   - Compose connection screen (status states, discovery list, manual-add sheet), `ConnectionViewModel`, `ConnectionCoordinator` (status machine + lifecycle observer), connection-mode logic.
   - **Acceptance criteria:**
-    - [ ] Full connect flow usable on device: discover → pair → connected; status transitions match Flutter behavior
-    - [ ] Lifecycle (background/foreground) triggers reconnect per ADR-0002 semantics
+    - [x] Full connect flow usable on device: discover → pair → connected; status transitions match Flutter behavior
+    - [x] Lifecycle (background/foreground) triggers reconnect per ADR-0002 semantics
   - **Verification:** `./gradlew test`; manual device walkthrough.
   - **Dependencies:** Tasks 3, 5.
   - **Files likely touched:** `.../ui/features/connection/**`, `.../ui/core/connection_coordinator.kt`, `.../ui/core/lifecycle_observer.kt`, `.../data/repositories/connection_repository.kt`.
