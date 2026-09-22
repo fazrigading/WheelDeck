@@ -20,6 +20,7 @@ import '../../settings/views/settings_screen.dart';
 import '../view_models/driving_view_model.dart';
 import '../view_models/layout_edit_view_model.dart';
 import 'block_grid.dart';
+import 'layout_editor.dart';
 import 'calibration_overlay.dart';
 import 'dashboard_panel.dart';
 import 'pedal_panel.dart';
@@ -327,16 +328,16 @@ class _DrivingViewState extends State<DrivingView> {
   /// Rotatable: the session layout (or Sequential preset) rendered through
   /// the block grid — wheel, pedals, signals, and dashboard cells all come
   /// from the layout slots. Brake and accelerator are fixed; the clutch
-  /// follows its settings toggle. While editing, the grid reports slot taps
-  /// to the edit session instead of sending control events.
+  /// follows its settings toggle. While editing, the editor surface owns
+  /// the grid: slots drag between cells instead of sending control events.
   Widget _rotatableLayout(Set<PedalType> shownPedals) {
     final edit = _editViewModel;
     if (edit != null) {
       return ListenableBuilder(
         listenable: edit,
         builder:
-            (context, _) => BlockGrid(
-              layout: edit.workingLayout,
+            (context, _) => LayoutEditor(
+              edit: edit,
               input: _viewModel.dashboardInput,
               bindingFor: _viewModel.bindingFor,
               gate: _viewModel.sendGate,
@@ -348,8 +349,6 @@ class _DrivingViewState extends State<DrivingView> {
               cameraPadMode: _viewModel.cameraPadMode,
               onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
               onBindRequested: _openBinder,
-              editing: true,
-              onEditIntent: edit.select,
             ),
       );
     }

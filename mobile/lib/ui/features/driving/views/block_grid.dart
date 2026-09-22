@@ -36,6 +36,7 @@ class BlockGrid extends StatelessWidget {
     this.onBindRequested,
     this.editing = false,
     this.onEditIntent,
+    this.editSlotWrapper,
   });
 
   final DrivingLayout layout;
@@ -72,6 +73,15 @@ class BlockGrid extends StatelessWidget {
   /// Fires with the tapped slot's rect while [editing]; null otherwise.
   final ValueChanged<CellRect>? onEditIntent;
 
+  /// Wraps the tap-to-select tile of each slot while [editing], so the
+  /// editor can add drag handling around it. Null keeps the plain tile.
+  final Widget Function(
+    BuildContext context,
+    LayoutSlot slot,
+    Widget child,
+  )?
+  editSlotWrapper;
+
   /// The global grid the layout slots address.
   static const int gridRows = 8;
   static const int gridCols = 15;
@@ -92,19 +102,27 @@ class BlockGrid extends StatelessWidget {
                 height: slot.rect.rowSpan * cellH,
                 child:
                     editing
-                        ? GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => onEditIntent?.call(slot.rect),
-                          child: AbsorbPointer(
-                            child: _buildSlot(slot, cellW, cellH),
-                          ),
-                        )
+                        ? _editingTile(context, slot, cellW, cellH)
                         : _buildSlot(slot, cellW, cellH),
               ),
           ],
         );
       },
     );
+  }
+
+  Widget _editingTile(
+    BuildContext context,
+    LayoutSlot slot,
+    double cellW,
+    double cellH,
+  ) {
+    final tile = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onEditIntent?.call(slot.rect),
+      child: AbsorbPointer(child: _buildSlot(slot, cellW, cellH)),
+    );
+    return editSlotWrapper?.call(context, slot, tile) ?? tile;
   }
 
   Widget _buildSlot(LayoutSlot slot, double cellW, double cellH) {
