@@ -14,7 +14,7 @@ class WireMessagesTest {
     @Test
     fun `state message round-trips with schema keys`() {
         val json = WireJson.encodeToString<WireMessage>(
-            StateMessage(seq = 1, steering = -0.5, accelerator = 1.0, brake = 0.0, clutch = 0.0),
+            State(seq = 1, steering = -0.5, accelerator = 1.0, brake = 0.0, clutch = 0.0),
         )
         assertEquals(
             buildJsonObject {
@@ -28,7 +28,7 @@ class WireMessagesTest {
             WireJson.parseToJsonElement(json),
         )
         assertEquals(
-            StateMessage(seq = 1, steering = -0.5, accelerator = 1.0, brake = 0.0, clutch = 0.0),
+            State(seq = 1, steering = -0.5, accelerator = 1.0, brake = 0.0, clutch = 0.0),
             WireJson.decodeFromString<WireMessage>(json),
         )
     }
@@ -36,7 +36,7 @@ class WireMessagesTest {
     @Test
     fun `button message round-trips with wire enum values`() {
         val json = WireJson.encodeToString<WireMessage>(
-            ButtonMessage(control = ControlId.TurnSignalLeft, action = ActionType.HoldConfirm),
+            Button(control = ControlId.TurnSignalLeft.wireValue, action = ActionType.HoldConfirm.wireValue),
         )
         assertEquals(
             buildJsonObject {
@@ -47,7 +47,7 @@ class WireMessagesTest {
             WireJson.parseToJsonElement(json),
         )
         assertEquals(
-            ButtonMessage(control = ControlId.TurnSignalLeft, action = ActionType.HoldConfirm),
+            Button(control = ControlId.TurnSignalLeft.wireValue, action = ActionType.HoldConfirm.wireValue),
             WireJson.decodeFromString<WireMessage>(json),
         )
     }
@@ -55,7 +55,7 @@ class WireMessagesTest {
     @Test
     fun `mapping message round-trips both modes`() {
         for (mode in MappingMode.entries) {
-            val json = WireJson.encodeToString<WireMessage>(MappingMessage(mode))
+            val json = WireJson.encodeToString<WireMessage>(Mapping(mode.name.lowercase()))
             assertEquals(
                 buildJsonObject {
                     put("type", "mapping")
@@ -63,7 +63,7 @@ class WireMessagesTest {
                 },
                 WireJson.parseToJsonElement(json),
             )
-            assertEquals(MappingMessage(mode), WireJson.decodeFromString<WireMessage>(json))
+            assertEquals(Mapping(mode.name.lowercase()), WireJson.decodeFromString<WireMessage>(json))
         }
     }
 

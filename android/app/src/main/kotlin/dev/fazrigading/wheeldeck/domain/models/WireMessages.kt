@@ -18,7 +18,7 @@ sealed interface WireMessage
 /// Continuous steering and pedal state; latest value wins (state_message.json).
 @Serializable
 @SerialName("state")
-data class StateMessage(
+data class State(
     val seq: Long,
     val steering: Double,
     val accelerator: Double,
@@ -29,16 +29,16 @@ data class StateMessage(
 /// Discrete dashboard control event (button_message.json).
 @Serializable
 @SerialName("button")
-data class ButtonMessage(
-    val control: ControlId,
-    val action: ActionType,
+data class Button(
+    val control: String,
+    val action: String,
 ) : WireMessage
 
 /// Mapping-mode switch sent by the phone (mapping_message.json).
 @Serializable
 @SerialName("mapping")
-data class MappingMessage(
-    val mode: MappingMode,
+data class Mapping(
+    val mode: String,
 ) : WireMessage
 
 @Serializable
