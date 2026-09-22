@@ -76,12 +76,14 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   /// Selects a profile and persists it as active. The driving view applies
-  /// the layout on return through its settings refresh.
+  /// the layout on return through its settings refresh; the preset name
+  /// rides the mapping frame so the desktop scopes its tables (REQ-018).
   Future<void> selectLayoutProfile(String name) async {
     try {
       _activeLayoutProfile = name;
       notifyListeners();
       await LayoutProfileStore.saveActiveName(name);
+      _connectionRepository.sendMappingMode(_mapping, preset: name);
     } catch (_) {}
   }
 

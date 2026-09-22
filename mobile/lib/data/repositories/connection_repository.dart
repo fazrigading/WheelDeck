@@ -55,6 +55,6 @@ class ConnectionRepository {
       _client.sendButtonEvent(control, action);
 
   /// Sends the desired dashboard input mapping (`keyboard` or `gamepad`).
-  void sendMappingMode(InputMapping mapping) =>
-      _client.sendMappingMode(mapping);
+  void sendMappingMode(InputMapping mapping, {String? preset}) =>
+      _client.sendMappingMode(mapping, preset: preset);
 }
