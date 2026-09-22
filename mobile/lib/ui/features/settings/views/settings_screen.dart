@@ -201,6 +201,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Layout profiles: rotatable grid only. Developer presets are
+              // read-only; selecting any profile switches the driving layout
+              // when returning to the driving screen.
+              if (_viewModel.wheelMode == WheelMode.rotatable) ...[
+                Text('Layout profile', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: [
+                      for (final profile in _viewModel.layoutProfiles)
+                        ListTile(
+                          key: ValueKey('layout-profile-${profile.name}'),
+                          dense: true,
+                          title: Text(profile.name, style: const TextStyle(fontSize: 14)),
+                          subtitle:
+                              profile.isDeveloperPreset
+                                  ? const Text('Developer preset · read-only',
+                                      style: TextStyle(fontSize: 12))
+                                  : null,
+                          trailing:
+                              profile.name == _viewModel.activeLayoutProfile
+                                  ? const Icon(Icons.check, size: 20)
+                                  : null,
+                          onTap:
+                              profile.name == _viewModel.activeLayoutProfile
+                                  ? null
+                                  : () => _viewModel.selectLayoutProfile(
+                                    profile.name,
+                                  ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
               // Pedal sides: meaningless in rotatable mode, where the
               // layout fixes clutch top-left and brake/accelerator
               // bottom-right (REQ-010).

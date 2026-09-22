@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wheeldeck/data/services/dashboard_input.dart';
 import 'package:wheeldeck/data/services/driving_layout.dart';
 import 'package:wheeldeck/data/services/pedal_input.dart';
@@ -53,7 +54,10 @@ void main() {
     addTearDown(edit.dispose);
   });
 
-  Future<void> pumpEditor(WidgetTester tester) async {
+  Future<void> pumpEditor(
+    WidgetTester tester, {
+    Future<bool> Function(String name, DrivingLayout layout)? onSaveProfile,
+  }) async {
     tester.view.physicalSize = reference;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -71,6 +75,7 @@ void main() {
             onSteering: (_) {},
             onCameraPadModeSwitch: () {},
             addableControls: const [ControlId.horn, ControlId.wipers],
+            onSaveProfile: onSaveProfile,
           ),
         ),
       ),
@@ -231,5 +236,31 @@ void main() {
 
     expect(find.byKey(const ValueKey('save-dialog')), findsNothing);
     expect(edit.savedProfiles.keys, ['Mine']);
+  });
+
+  testWidgets('save persists through the store hook when provided', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final saved = <String, DrivingLayout>{};
+    await pumpEditor(
+      tester,
+      onSaveProfile: (name, layout) async {
+        saved[name] = layout;
+        return true;
+      },
+    );
+
+    await tester.tap(find.byKey(const ValueKey('editor-save')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('save-name-field')),
+      'Hooked',
+    );
+    await tester.tap(find.byKey(const ValueKey('save-confirm')));
+    await tester.pumpAndSettle();
+
+    expect(saved.keys, ['Hooked']);
+    expect(edit.savedProfiles, isEmpty);
   });
 }
