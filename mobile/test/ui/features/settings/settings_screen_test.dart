@@ -78,13 +78,21 @@ void main() {
     await pumpScreen(tester, 'rotatable');
 
     expect(find.text('Layout profile'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('layout-profile-Sequential')),
-      findsOneWidget,
-    );
+    for (final name in const [
+      'Sequential',
+      'Simple Automatic',
+      'Real Automatic',
+      'H-Shifter',
+    ]) {
+      expect(
+        find.byKey(ValueKey('layout-profile-$name')),
+        findsOneWidget,
+        reason: name,
+      );
+    }
     expect(
       find.text('Developer preset · read-only'),
-      findsOneWidget,
+      findsNWidgets(4),
     );
   });
 

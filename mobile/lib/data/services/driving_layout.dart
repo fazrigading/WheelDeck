@@ -585,6 +585,82 @@ class DrivingLayout {
       ),
     ],
   );
+
+  /// Simple Automatic: the game shifts; the 2x2 gear cells become holes.
+  /// Same rects as [sequential], so tiling is unchanged.
+  static DrivingLayout simpleAutomatic() => DrivingLayout(
+    name: 'Simple Automatic',
+    slots: [
+      for (final slot in sequential().slots)
+        if (slot.control == ControlId.gearUp ||
+            slot.control == ControlId.gearDown)
+          LayoutSlot(rect: slot.rect, kind: SlotKind.hole)
+        else
+          slot,
+    ],
+  );
+
+  /// Real Automatic: the gear cells become Drive and Reverse buttons;
+  /// Neutral already sits in block F, completing the PRND set. Drive and
+  /// Reverse ship unbound (user-set-able, mirroring the desktop tables).
+  static DrivingLayout realAutomatic() => DrivingLayout(
+    name: 'Real Automatic',
+    slots: [
+      for (final slot in sequential().slots)
+        if (slot.control == ControlId.gearUp)
+          LayoutSlot(
+            rect: slot.rect,
+            kind: SlotKind.button,
+            control: ControlId.shiftToDrive,
+          )
+        else if (slot.control == ControlId.gearDown)
+          LayoutSlot(
+            rect: slot.rect,
+            kind: SlotKind.button,
+            control: ControlId.shiftToReverse,
+          )
+        else
+          slot,
+    ],
+  );
+
+  /// H-Shifter: the physical shifter and clutch replace the screen gears,
+  /// the clutch bar, and the Block A assist cluster, where the 4x4
+  /// H-Shifter module lands. The freed column becomes a hole.
+  static DrivingLayout hShifter() {
+    const moduleAt = CellRect(
+      rowStart: 1,
+      colStart: 1,
+      rowSpan: 4,
+      colSpan: 4,
+    );
+    final slots = <LayoutSlot>[];
+    for (final slot in sequential().slots) {
+      if (slot.control == ControlId.gearUp ||
+          slot.control == ControlId.gearDown) {
+        slots.add(LayoutSlot(rect: slot.rect, kind: SlotKind.hole));
+      } else if (slot.kind == SlotKind.pedal &&
+          slot.pedal == PedalType.clutch) {
+        slots.add(
+          const LayoutSlot(
+            rect: CellRect(rowStart: 1, colStart: 5, rowSpan: 4, colSpan: 1),
+            kind: SlotKind.hole,
+          ),
+        );
+      } else if (_overlaps(slot.rect, moduleAt)) {
+        continue;
+      } else {
+        slots.add(slot);
+      }
+    }
+    final placed = placeModule(
+      DrivingLayout(name: 'H-Shifter', slots: slots),
+      moduleAt,
+      LayoutModule.hShifter,
+    );
+    assert(placed is EditApplied, 'h-shifter footprint must be clear');
+    return (placed as EditApplied).layout;
+  }
 }
 
 /// Why a layout edit was refused. Surfaced so the editor can explain a
