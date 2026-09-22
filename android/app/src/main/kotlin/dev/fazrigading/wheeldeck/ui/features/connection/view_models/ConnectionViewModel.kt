@@ -50,12 +50,17 @@ class ConnectionViewModel(
     private val _uiState = MutableStateFlow(ConnectionUiState(status = connectionRepository.status.value))
     val uiState: StateFlow<ConnectionUiState> = _uiState.asStateFlow()
 
+    /// Set once the user has sent a code this pairing round; when the desktop
+    /// re-challenges afterwards, the prompt shows the rejected-code error.
+    private var pairingSubmitted = false
+
     init {
         viewModelScope.launch {
             connectionRepository.status.collect { status ->
                 if (status == _uiState.value.status) return@collect
                 _uiState.update { it.copy(status = status) }
                 if (status == ConnectionStatus.Connected) {
+                    pairingSubmitted = false
                     _uiState.update {
                         it.copy(pairingChallenge = null, pairingError = false)
                     }
@@ -106,12 +111,15 @@ class ConnectionViewModel(
 
     /// Sends the pairing code entered by the user.
     fun submitPairingCode(code: String) {
+        pairingSubmitted = true
         sessionRepository.submitPairingCode(code)
         _uiState.update { it.copy(pairingError = false) }
     }
 
     fun onPairingRequired(challenge: PairingChallenge) {
-        _uiState.update { it.copy(pairingChallenge = challenge) }
+        _uiState.update {
+            it.copy(pairingChallenge = challenge, pairingError = pairingSubmitted)
+        }
     }
 
     private suspend fun rememberPaired(target: ConnectionTarget?) {
