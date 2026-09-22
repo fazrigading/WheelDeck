@@ -18,6 +18,7 @@ import '../../../../ui/core/lifecycle_observer.dart';
 import '../../settings/views/binding_edit_dialog.dart';
 import '../../settings/views/settings_screen.dart';
 import '../view_models/driving_view_model.dart';
+import '../view_models/layout_edit_view_model.dart';
 import 'block_grid.dart';
 import 'calibration_overlay.dart';
 import 'dashboard_panel.dart';
@@ -56,6 +57,13 @@ class _DrivingViewState extends State<DrivingView> {
   late final LifecycleObserver _lifecycleObserver;
   List<DeviceOrientation>? _previousOrientations;
 
+  /// Open edit session, or null while driving. The connection is untouched:
+  /// entering and exiting edit mode never disconnects.
+  LayoutEditViewModel? _editViewModel;
+
+  /// Session layout applied from the editor; null renders the preset.
+  DrivingLayout? _sessionLayout;
+
   @override
   void initState() {
     super.initState();
@@ -93,6 +101,7 @@ class _DrivingViewState extends State<DrivingView> {
     if (_ownsViewModel) {
       _viewModel.dispose();
     }
+    _editViewModel?.dispose();
     super.dispose();
   }
 
@@ -169,6 +178,76 @@ class _DrivingViewState extends State<DrivingView> {
     );
   }
 
+  /// Edit-mode entry and exit. Entering opens a session on the session
+  /// layout without touching the connection; Done applies the working layout
+  /// for the session, Cancel discards it. Either way the grid leaves edit
+  /// mode, which restores driving input.
+  void _beginEdit() {
+    final edit =
+        LayoutEditViewModel(
+          initialLayout: _sessionLayout ?? DrivingLayout.sequential(),
+        )..beginEdit();
+    setState(() {
+      _editViewModel?.dispose();
+      _editViewModel = edit;
+    });
+  }
+
+  void _finishEdit() {
+    final edit = _editViewModel;
+    if (edit != null) _sessionLayout = edit.workingLayout;
+    _closeEdit();
+  }
+
+  void _cancelEdit() => _closeEdit();
+
+  void _closeEdit() {
+    setState(() {
+      _editViewModel?.dispose();
+      _editViewModel = null;
+    });
+  }
+
+  /// Driving-screen action button: Done/Cancel while editing, the layout
+  /// editor entry in rotatable mode, the recalibration button otherwise.
+  Widget? _actionButton(bool calibrating, bool rotatable) {
+    if (_editViewModel != null) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            key: const Key('edit-done-fab'),
+            tooltip: 'Done',
+            onPressed: _finishEdit,
+            child: const Icon(Icons.check),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton.small(
+            key: const Key('edit-cancel-fab'),
+            tooltip: 'Cancel',
+            onPressed: _cancelEdit,
+            child: const Icon(Icons.close),
+          ),
+        ],
+      );
+    }
+    if (calibrating) return null;
+    if (rotatable) {
+      return FloatingActionButton.small(
+        key: const Key('edit-layout-fab'),
+        tooltip: 'Edit layout',
+        onPressed: _beginEdit,
+        child: const Icon(Icons.dashboard_customize),
+      );
+    }
+    return FloatingActionButton.small(
+      key: const Key('recalibrate-fab'),
+      onPressed: _onRecalibrate,
+      tooltip: 'Recalibrate',
+      child: const Icon(Icons.center_focus_strong),
+    );
+  }
+
   void _lockOrientation() {
     _previousOrientations = null;
     SystemChrome.setPreferredOrientations([
@@ -212,14 +291,7 @@ class _DrivingViewState extends State<DrivingView> {
             if (!didPop) _confirmExit();
           },
           child: Scaffold(
-            floatingActionButton: calibrating || rotatable
-                ? null
-                : FloatingActionButton.small(
-                    key: const Key('recalibrate-fab'),
-                    onPressed: _onRecalibrate,
-                    tooltip: 'Recalibrate',
-                    child: const Icon(Icons.center_focus_strong),
-                  ),
+            floatingActionButton: _actionButton(calibrating, rotatable),
             body: SafeArea(
               child: calibrating
                   ? CalibrationOverlay(
@@ -252,13 +324,37 @@ class _DrivingViewState extends State<DrivingView> {
     return _gyroLayout(left, right, vis.showDashboard);
   }
 
-  /// Rotatable: the Sequential preset rendered through the block grid —
-  /// wheel, pedals, signals, and dashboard cells all come from the layout
-  /// slots. Brake and accelerator are fixed; the clutch follows its settings
-  /// toggle.
+  /// Rotatable: the session layout (or Sequential preset) rendered through
+  /// the block grid — wheel, pedals, signals, and dashboard cells all come
+  /// from the layout slots. Brake and accelerator are fixed; the clutch
+  /// follows its settings toggle. While editing, the grid reports slot taps
+  /// to the edit session instead of sending control events.
   Widget _rotatableLayout(Set<PedalType> shownPedals) {
+    final edit = _editViewModel;
+    if (edit != null) {
+      return ListenableBuilder(
+        listenable: edit,
+        builder:
+            (context, _) => BlockGrid(
+              layout: edit.workingLayout,
+              input: _viewModel.dashboardInput,
+              bindingFor: _viewModel.bindingFor,
+              gate: _viewModel.sendGate,
+              pedalInput: _viewModel.pedalInput,
+              shownPedals: shownPedals,
+              degrees: _viewModel.rotationDegree,
+              onSteering: _viewModel.setRotatableSteering,
+              springBack: _viewModel.springBack,
+              cameraPadMode: _viewModel.cameraPadMode,
+              onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
+              onBindRequested: _openBinder,
+              editing: true,
+              onEditIntent: edit.select,
+            ),
+      );
+    }
     return BlockGrid(
-      layout: DrivingLayout.sequential(),
+      layout: _sessionLayout ?? DrivingLayout.sequential(),
       input: _viewModel.dashboardInput,
       bindingFor: _viewModel.bindingFor,
       gate: _viewModel.sendGate,
