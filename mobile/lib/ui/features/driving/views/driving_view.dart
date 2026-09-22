@@ -325,6 +325,19 @@ class _DrivingViewState extends State<DrivingView> {
     return _gyroLayout(left, right, vis.showDashboard);
   }
 
+  /// Controls with a binding resolved in either input mapping mode: the
+  /// add picker's source (TASK-016).
+  List<ControlId> _addableControls() => [
+    for (final control in ControlId.values)
+      if (!DashboardSendGate.isUnbound(
+            _viewModel.bindingForMode(control, false),
+          ) ||
+          !DashboardSendGate.isUnbound(
+            _viewModel.bindingForMode(control, true),
+          ))
+        control,
+  ];
+
   /// Rotatable: the session layout (or Sequential preset) rendered through
   /// the block grid — wheel, pedals, signals, and dashboard cells all come
   /// from the layout slots. Brake and accelerator are fixed; the clutch
@@ -349,6 +362,7 @@ class _DrivingViewState extends State<DrivingView> {
               cameraPadMode: _viewModel.cameraPadMode,
               onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
               onBindRequested: _openBinder,
+              addableControls: _addableControls(),
             ),
       );
     }

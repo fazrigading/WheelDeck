@@ -112,7 +112,16 @@ class DrivingViewModel extends ChangeNotifier {
   /// Resolves the per-mode binding for [control]: user override first, then
   /// the preset default. Empty means unbound; the gate sends nothing.
   String _bindingFor(ControlId control) {
-    final isGamepad = _mapping == InputMapping.gamepad;
+    return bindingForMode(
+      control,
+      _mapping == InputMapping.gamepad,
+    );
+  }
+
+  /// Resolves [control]'s binding for an explicit input mode, with the same
+  /// override-then-preset rule as [bindingFor]. The editor uses it to offer
+  /// every control bound in either mode.
+  String bindingForMode(ControlId control, bool isGamepad) {
     final override =
         _bindingOverrides[SettingsRepository.bindingKey(control, isGamepad)];
     // A stored override wins verbatim: empty means unbound (send nothing).
