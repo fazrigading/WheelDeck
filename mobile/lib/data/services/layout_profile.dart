@@ -150,12 +150,26 @@ class LayoutProfileStore {
   static const String activePrefsKey = 'wheeldeck.layout_active_profile';
   static const String defaultProfileName = 'Sequential';
 
-  /// Developer presets compiled into the app. Phase 6 adds the Automatic
-  /// and H-Shifter presets here.
+  /// Developer presets compiled into the app, in profile-list order.
   static List<LayoutProfile> get developerPresets => [
     LayoutProfile(
       name: defaultProfileName,
       layout: DrivingLayout.sequential(),
+      isDeveloperPreset: true,
+    ),
+    LayoutProfile(
+      name: 'Simple Automatic',
+      layout: DrivingLayout.simpleAutomatic(),
+      isDeveloperPreset: true,
+    ),
+    LayoutProfile(
+      name: 'Real Automatic',
+      layout: DrivingLayout.realAutomatic(),
+      isDeveloperPreset: true,
+    ),
+    LayoutProfile(
+      name: 'H-Shifter',
+      layout: DrivingLayout.hShifter(),
       isDeveloperPreset: true,
     ),
   ];

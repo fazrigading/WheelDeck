@@ -197,18 +197,18 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|----------|
-| TASK-032 | Confirm that every control the three presets call for exists in `ControlId` on both sides. The Sequential preset's Phase 5, 6, and 7 additions in `plan/feature-driving-dashboard-v2-1.md` are expected to cover this; record any control still missing and add it following that plan's CON-003 contract, which requires a schema entry in the same change as the enum entry. Satisfies REQ-011. | | |
-| TASK-033 | Add `static DrivingLayout simpleAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. | | |
-| TASK-034 | Add `static DrivingLayout realAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. | | |
-| TASK-035 | Add `static DrivingLayout hShifter()` to `driving_layout.dart`, placing the H-Shifter module from TASK-029. Satisfies REQ-010 and REQ-011. | | |
-| TASK-036 | Register the three presets in `LayoutProfileStore.loadAll()` as developer presets, per TASK-023. Satisfies REQ-007 and REQ-011. | | |
+| TASK-032 | Confirm that every control the three presets call for exists in `ControlId` on both sides. The Sequential preset's Phase 5, 6, and 7 additions in `plan/feature-driving-dashboard-v2-1.md` are expected to cover this; record any control still missing and add it following that plan's CON-003 contract, which requires a schema entry in the same change as the enum entry. Satisfies REQ-011. (2026-09-22: all covered — PRND exists mobile/desktop/schema; no additions.) | ✅ | 2026-09-22 |
+| TASK-033 | Add `static DrivingLayout simpleAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. (Sequential transform; gear cells holed.) | ✅ | 2026-09-22 |
+| TASK-034 | Add `static DrivingLayout realAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. (Gear cells become Drive/Reverse; Neutral already in block F.) | ✅ | 2026-09-22 |
+| TASK-035 | Add `static DrivingLayout hShifter()` to `driving_layout.dart`, placing the H-Shifter module from TASK-029. Satisfies REQ-010 and REQ-011. (Module lands on Block A at (1,1); clutch/gears yield to physical hardware.) | ✅ | 2026-09-22 |
+| TASK-036 | Register the three presets in `LayoutProfileStore.loadAll()` as developer presets, per TASK-023. Satisfies REQ-007 and REQ-011. | ✅ | 2026-09-22 |
 | TASK-037 | Add matching keyboard entries to
   `mobile/lib/data/services/controller_preset.dart` for any control the three
-  presets introduce that is not already present. Satisfies REQ-011. | | |
+  presets introduce that is not already present. Satisfies REQ-011. (2026-09-22: no-op — presets introduce no new ControlIds; Drive/Reverse/Neutral ship unbound user-set-able, mirroring the desktop tables.) | ✅ | 2026-09-22 |
 | TASK-038 | Extend `mobile/test/data/services/driving_layout_test.dart` from
   `plan/feature-driving-dashboard-v2-1.md` with the same structural assertions
   for each new preset: slots tile their blocks without overlap, and every
-  non-null slot control exists in `ControlId.values`. Satisfies REQ-011. | | |
+  non-null slot control exists in `ControlId.values`. Satisfies REQ-011. | ✅ | 2026-09-22 |
 | TASK-047 | Scope the desktop binding tables per active preset once REQ-011's presets exist: extend `InputMapper` with per-preset key and button tables (or a preset overlay applied at preset-selection time), so each preset carries its own defaults per REQ-018. Satisfies REQ-018. | | |
 
 ### Implementation Phase 7
