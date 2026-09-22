@@ -1,6 +1,6 @@
 # Implementation Plan: Flutter → Kotlin (Android-native) Migration
 
-Status: **ongoing** — Task 1 complete (2026-09-22).
+Status: **ongoing** — Tasks 1–3 complete (2026-09-22).
 
 Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose app in `android/`, slice by slice, against the same `protocol/schema/` contract. Flutter stays runnable as the working reference until Kotlin reaches functional parity **plus the seven known fixes from `TODO.md`**, then `mobile/` is deleted. Desktop (.NET) is untouched. Local data starts fresh — no SharedPreferences migration.
 
@@ -59,7 +59,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 
 ### Phase 2: Connection core (highest risk — fail fast on real hardware)
 
-- [ ] **Task 3: mDNS discovery** (M)
+- [x] **Task 3: mDNS discovery** (M)
   - `NsdManager` discovery of `_wheeldeck._tcp.` services; port `discovery.dart` semantics (dedupe, target model, manual IP/port fallback). Hide `NsdManager` behind an interface so discovery logic is testable with a fake.
   - **Acceptance criteria:**
     - [ ] Kotlin app discovers a running desktop on the LAN on a real device
