@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
@@ -10,6 +11,9 @@ import 'dashboard_panel.dart';
 /// numpad mode the pad sends the numpad block; in arrow mode the arrow
 /// keys, with the diagonals disabled — they carry no wire identifiers
 /// (REQ-017).
+///
+/// The pad dispatches on [controlType]: `dpad` renders below, while the
+/// Simple and Analog shapes land with their own issues.
 class CameraPad extends StatelessWidget {
   const CameraPad({
     super.key,
@@ -18,6 +22,7 @@ class CameraPad extends StatelessWidget {
     required this.bindingFor,
     required this.onModeSwitch,
     this.onBindRequested,
+    this.controlType = CameraControlType.dpad,
   });
 
   final CameraPadMode mode;
@@ -28,6 +33,10 @@ class CameraPad extends StatelessWidget {
   /// the mode and persists the switch.
   final VoidCallback onModeSwitch;
   final ValueChanged<ControlId>? onBindRequested;
+
+  /// Which camera control shape renders; Simple and Analog branches land
+  /// with their own issues.
+  final CameraControlType controlType;
 
   static const Duration _holdDuration = Duration(seconds: 3);
 
@@ -119,19 +128,24 @@ class CameraPad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cellSize = Size(
-          constraints.maxWidth / 3,
-          constraints.maxHeight / 3,
-        );
-        return Stack(
-          children: [
-            for (var row = 0; row < 3; row++)
-              for (var col = 0; col < 3; col++) _cell(row, col, cellSize),
-          ],
-        );
-      },
-    );
+    return switch (controlType) {
+      CameraControlType.dpad => LayoutBuilder(
+        builder: (context, constraints) {
+          final cellSize = Size(
+            constraints.maxWidth / 3,
+            constraints.maxHeight / 3,
+          );
+          return Stack(
+            children: [
+              for (var row = 0; row < 3; row++)
+                for (var col = 0; col < 3; col++) _cell(row, col, cellSize),
+            ],
+          );
+        },
+      ),
+      // Simple and Analog shapes land with their own issues.
+      CameraControlType.simple || CameraControlType.analog =>
+        const SizedBox.shrink(),
+    };
   }
 }

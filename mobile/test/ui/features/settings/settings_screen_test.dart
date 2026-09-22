@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wheeldeck/data/repositories/connection_repository.dart';
 import 'package:wheeldeck/data/repositories/settings_repository.dart';
+import 'package:wheeldeck/data/services/camera_control_type.dart';
 import 'package:wheeldeck/data/services/dashboard_input.dart';
 import 'package:wheeldeck/data/services/driving_layout.dart';
-import 'package:wheeldeck/data/services/layout_profile.dart';
-import 'package:wheeldeck/data/services/wheeldeck_client.dart';
+import 'package:wheeldeck/data/services/layout_profile.dart';import 'package:wheeldeck/data/services/wheeldeck_client.dart';
 import 'package:wheeldeck/ui/core/connection_coordinator.dart';
 import 'package:wheeldeck/ui/features/settings/view_models/settings_view_model.dart';
 import 'package:wheeldeck/ui/features/settings/views/settings_screen.dart';
@@ -102,8 +102,7 @@ void main() {
     expect(find.text('Layout profile'), findsNothing);
   });
 
-  testWidgets('tapping a user profile selects it', (tester) async {
-    await pumpScreen(
+  testWidgets('tapping a user profile selects it', (tester) async {    await pumpScreen(
       tester,
       'rotatable',
       seed: () async {
@@ -145,5 +144,55 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('camera section offers the three types with a pad present', (
+    tester,
+  ) async {
+    await pumpScreen(tester, 'rotatable');
+
+    expect(find.text('Camera control'), findsOneWidget);
+    for (final label in const ['D-pad', 'Simple', 'Analog']) {
+      expect(find.text(label), findsOneWidget);
+    }
+
+    await tester.tap(find.text('Simple'));
+    await tester.pump();
+    expect(await CameraControlType.load(), CameraControlType.simple);
+  });
+
+  testWidgets('camera section hides without a camera pad slot', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      'rotatable',
+      seed: () async {
+        await LayoutProfileStore.saveProfile(
+          const LayoutProfile(
+            name: 'NoPad',
+            layout: DrivingLayout(
+              name: 'NoPad',
+              slots: [
+                LayoutSlot(
+                  rect: CellRect(
+                    rowStart: 1,
+                    colStart: 1,
+                    rowSpan: 1,
+                    colSpan: 1,
+                  ),
+                  kind: SlotKind.button,
+                  control: ControlId.horn,
+                ),
+              ],
+            ),
+          ),
+        );
+        await LayoutProfileStore.saveActiveName('NoPad');
+      },
+    );
+
+    expect(find.text('Layout profile'), findsOneWidget);
+    expect(find.text('Camera control'), findsNothing);
   });
 }

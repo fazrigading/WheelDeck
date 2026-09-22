@@ -358,6 +358,7 @@ class _DrivingViewState extends State<DrivingView> {
               cameraPadMode: _viewModel.cameraPadMode,
               onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
               onBindRequested: _openBinder,
+              cameraControlType: _viewModel.cameraControlType,
               addableControls: _addableControls(),
               developerPresetNames:
                   LayoutProfileStore.developerPresetNames,
@@ -380,6 +381,7 @@ class _DrivingViewState extends State<DrivingView> {
       cameraPadMode: _viewModel.cameraPadMode,
       onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
       onBindRequested: _openBinder,
+      cameraControlType: _viewModel.cameraControlType,
     );
   }
 
