@@ -134,4 +134,59 @@ void main() {
       ControlId.cameraSimpleRight,
     });
   });
+
+  testWidgets('TEST-011 analog stick reports continuous x and y', (
+    tester,
+  ) async {
+    final reported = <Offset>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 300,
+            height: 300,
+            child: CameraPad(
+              mode: CameraPadMode.numpad,
+              input: DashboardInput(),
+              bindingFor: (_) => 'K',
+              onModeSwitch: () {},
+              controlType: CameraControlType.analog,
+              onAnalog: reported.add,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('camera-analog-sphere')), findsOneWidget);
+    expect(find.byKey(const ValueKey('camera-pad-center')), findsNothing);
+
+    final pad = find.byKey(const ValueKey('camera-analog-pad'));
+    final center = tester.getCenter(pad);
+
+    // Drag up-left: negative x and y within the unit circle.
+    var gesture = await tester.startGesture(center);
+    await gesture.moveBy(const Offset(-60, -60));
+    await tester.pump();
+    expect(reported, isNotEmpty);
+    expect(reported.last.dx, lessThan(0));
+    expect(reported.last.dy, lessThan(0));
+    expect(reported.last.distance, lessThanOrEqualTo(1.0));
+    await gesture.up();
+    await tester.pump();
+
+    // Drag down-right past the ring: clamped to the circle, all nine
+    // directions reachable.
+    gesture = await tester.startGesture(center);
+    await gesture.moveBy(const Offset(200, 200));
+    await tester.pump();
+    expect(reported.last.dx, greaterThan(0));
+    expect(reported.last.dy, greaterThan(0));
+    expect(reported.last.distance, closeTo(1.0, 0.01));
+
+    // Release springs back to center with no recenter key.
+    await gesture.up();
+    await tester.pump();
+    expect(reported.last, Offset.zero);
+  });
 }

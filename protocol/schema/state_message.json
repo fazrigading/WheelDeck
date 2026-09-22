@@ -43,6 +43,18 @@
       "minimum": 0.0,
       "maximum": 1.0,
       "description": "Clutch pedal pressure, 0.0 at rest to 1.0 fully pressed."
+    },
+    "cameraX": {
+      "type": "number",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "description": "Interior-camera horizontal look, -1.0..1.0. Optional; absent means centered."
+    },
+    "cameraY": {
+      "type": "number",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "description": "Interior-camera vertical look, -1.0..1.0. Optional; absent means centered."
     }
   },
   "additionalProperties": false

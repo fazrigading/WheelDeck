@@ -49,6 +49,8 @@ public sealed class HidMaestroBackend : VirtualOutputBackend
     private float _accelerator;
     private float _brake;
     private float _clutch;
+    private float _cameraX;
+    private float _cameraY;
     private HMButton _buttons;
     private readonly HashSet<ButtonId> _pressedHatButtons = new();
 
@@ -107,6 +109,8 @@ public sealed class HidMaestroBackend : VirtualOutputBackend
                 _accelerator = 0f;
                 _brake = 0f;
                 _clutch = 0f;
+                _cameraX = 0f;
+                _cameraY = 0f;
                 _buttons = HMButton.None;
                 _pressedHatButtons.Clear();
 
@@ -143,6 +147,12 @@ public sealed class HidMaestroBackend : VirtualOutputBackend
                     break;
                 case AxisType.Clutch:
                     _clutch = Math.Clamp(value, 0f, 1f);
+                    break;
+                case AxisType.CameraX:
+                    _cameraX = Math.Clamp(value, -1f, 1f);
+                    break;
+                case AxisType.CameraY:
+                    _cameraY = Math.Clamp(value, -1f, 1f);
                     break;
             }
 
@@ -212,6 +222,8 @@ public sealed class HidMaestroBackend : VirtualOutputBackend
             _accelerator = 0f;
             _brake = 0f;
             _clutch = 0f;
+            _cameraX = 0f;
+            _cameraY = 0f;
             _buttons = HMButton.None;
             _pressedHatButtons.Clear();
             _keys.ReleaseAll();
@@ -274,6 +286,8 @@ public sealed class HidMaestroBackend : VirtualOutputBackend
                 _controller.Profile,
                 leftStickX: (_steering + 1f) / 2f,
                 leftStickY: (_clutch + 1f) / 2f,
+                rightStickX: (_cameraX + 1f) / 2f,
+                rightStickY: (_cameraY + 1f) / 2f,
                 leftTrigger: _accelerator,
                 rightTrigger: _brake),
             Buttons = _buttons,

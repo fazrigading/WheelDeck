@@ -495,12 +495,32 @@ public sealed class InputMapperTests
         Assert.True(_backend.LastKeyPressed);
     }
 
+    [Fact]
+    public void ApplyState_RoutesCameraAxes()
+    {
+        _mapper.ApplyState(new StateMessage { CameraX = 0.5, CameraY = -0.5 });
+
+        Assert.Equal(0.5f, _backend.LastCameraX);
+        Assert.Equal(-0.5f, _backend.LastCameraY);
+    }
+
+    [Fact]
+    public void ApplyState_ClampsCameraAxesToMinusOneToOne()
+    {
+        _mapper.ApplyState(new StateMessage { CameraX = 5.0, CameraY = -5.0 });
+
+        Assert.Equal(1.0f, _backend.LastCameraX);
+        Assert.Equal(-1.0f, _backend.LastCameraY);
+    }
+
     private sealed class FakeBackend : VirtualOutputBackend
     {
         public float LastSteering { get; private set; }
         public float LastAccelerator { get; private set; }
         public float LastBrake { get; private set; }
         public float LastClutch { get; private set; }
+        public float LastCameraX { get; private set; }
+        public float LastCameraY { get; private set; }
 
         public KeyCode? LastKeyCode { get; private set; }
         public bool LastKeyPressed { get; private set; }
@@ -522,6 +542,8 @@ public sealed class InputMapperTests
                 case AxisType.Accelerator: LastAccelerator = value; break;
                 case AxisType.Brake: LastBrake = value; break;
                 case AxisType.Clutch: LastClutch = value; break;
+                case AxisType.CameraX: LastCameraX = value; break;
+                case AxisType.CameraY: LastCameraY = value; break;
             }
         }
 

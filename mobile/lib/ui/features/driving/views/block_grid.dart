@@ -36,6 +36,7 @@ class BlockGrid extends StatelessWidget {
     required this.onCameraPadModeSwitch,
     this.onBindRequested,
     this.cameraControlType = CameraControlType.dpad,
+    this.onAnalog,
     this.editing = false,
     this.onEditIntent,
     this.editSlotWrapper,
@@ -70,6 +71,9 @@ class BlockGrid extends StatelessWidget {
 
   /// Which camera control shape the pad slot renders.
   final CameraControlType cameraControlType;
+
+  /// Reports analog stick positions to the state stream.
+  final ValueChanged<Offset>? onAnalog;
 
   /// When true, slot gestures select instead of activating: every slot is
   /// absorbed and a tap reports its rect through [onEditIntent].
@@ -176,6 +180,7 @@ class BlockGrid extends StatelessWidget {
           onModeSwitch: onCameraPadModeSwitch,
           onBindRequested: onBindRequested,
           controlType: cameraControlType,
+          onAnalog: onAnalog,
         );
       case SlotKind.hole:
         return DashboardControl(

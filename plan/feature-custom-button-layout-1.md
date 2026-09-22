@@ -1,16 +1,20 @@
 ---
 goal: Let the user move, resize, and add or remove dashboard controls, with profiles, modules, additional layout presets, and selectable camera control types
-version: 1.2
+version: 1.3
 date_created: 2026-09-17
 last_updated: 2026-09-22
 owner: Fazri Gading
-status: 'Planned'
+status: 'Completed'
 tags: [feature, mobile, layout, editor, backlog]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Complete](https://img.shields.io/badge/status-Complete-green)
+
+> **2026-09-22:** All phases complete — issues #64–#75 closed on
+> `feature/custom-button-layout`. Remaining: none; Semi-Analog stays deleted
+> until a real design exists.
 
 > **2026-09-22:** Phase 1 complete — TASK-001 through TASK-005 settled (see
 > Phase 1 table and section 7). DEP-002 cleared: the fixed Sequential placement
@@ -222,10 +226,10 @@ instead of replacing one.
 | TASK-040 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `Camera control` section with a `SegmentedButton` over `CameraControlType`, visible only when the layout contains a camera pad slot. Satisfies REQ-012. (Rotatable-gated + `hasCameraPad` from the active layout.) | ✅ | 2026-09-22 |
 | TASK-041 | In `mobile/lib/ui/features/driving/views/camera_pad.dart`, dispatch on the selected type, keeping the existing D-pad implementation as the `dpad` branch. Satisfies REQ-012 and REQ-014. (Simple/Analog branches placeholder until #74/#75.) | ✅ | 2026-09-22 |
 | TASK-042 | In the same file, implement the `simple` branch: three buttons each 3 rows x 1 column inside the 3x3 region — Look Left Window on `Numpad/`, Recenter on `Numpad5`, Look Right Window on `Numpad*`. Add `KeyCode.NumpadDivide` and `KeyCode.NumpadMultiply` to `desktop/WheelDeck.Core/Output/KeyCode.cs` and to **both** backend key tables, per CON-002 of `plan/feature-driving-dashboard-v2-1.md`. Satisfies REQ-013. (Plus `cameraSimpleLeft/Right` identifiers mobile/desktop/schema per ADR-0006; recenter reuses `cameraPadRecenter`.) | ✅ | 2026-09-22 |
-| TASK-043 | Implement the `analog` branch's protocol addition before its UI: add an interior-camera axis to the state message and to `InputMapper.ApplyState` in `desktop/WheelDeck.Core/Input/InputMapper.cs`, following the existing steering axis path. This is CON-004's gated protocol work. Satisfies REQ-016 and CON-004. | | |
-| TASK-044 | Implement the `analog` branch's UI in `camera_pad.dart`: a movable sphere inside a circular container reporting continuous x and y, visually modelled on a controller analog stick, with no recenter key. Satisfies REQ-016. | | |
+| TASK-043 | Implement the `analog` branch's protocol addition before its UI: add an interior-camera axis to the state message and to `InputMapper.ApplyState` in `desktop/WheelDeck.Core/Input/InputMapper.cs`, following the existing steering axis path. This is CON-004's gated protocol work. Satisfies REQ-016 and CON-004. (cameraX/cameraY state fields both sides + schema; `AxisType.CameraX/Y`; right-stick output Windows, ABS_RX/RY Linux.) | ✅ | 2026-09-22 |
+| TASK-044 | Implement the `analog` branch's UI in `camera_pad.dart`: a movable sphere inside a circular container reporting continuous x and y, visually modelled on a controller analog stick, with no recenter key. Satisfies REQ-016. (Unit-circle clamp, release springs to center, reports via state stream.) | ✅ | 2026-09-22 |
 | TASK-045 | DELETED per TASK-005 (2026-09-22) — REQ-015 removed, no `semiAnalog` branch. | — | 2026-09-22 |
-| TASK-046 | Create `mobile/test/ui/features/driving/camera_control_type_test.dart` asserting: each type renders its documented shape; the type persists across a reload; `resetToDefaults` restores `dpad`; and the Simple type emits `NumpadDivide`, `Numpad5`, and `NumpadMultiply`. Satisfies REQ-012, REQ-013, and REQ-014. | | |
+| TASK-046 | Create `mobile/test/ui/features/driving/camera_control_type_test.dart` asserting: each type renders its documented shape; the type persists across a reload; `resetToDefaults` restores `dpad`; and the Simple type emits `NumpadDivide`, `Numpad5`, and `NumpadMultiply`. Satisfies REQ-012, REQ-013, and REQ-014. (Covered across `camera_control_type_test.dart` in #73/#74/#75.) | ✅ | 2026-09-22 |
 
 ## 3. Alternatives
 

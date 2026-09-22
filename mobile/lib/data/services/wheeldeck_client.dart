@@ -127,6 +127,8 @@ class WheelDeckClient {
     required double accelerator,
     required double brake,
     required double clutch,
+    double cameraX = 0.0,
+    double cameraY = 0.0,
   }) {
     _send({
       'type': 'state',
@@ -135,6 +137,8 @@ class WheelDeckClient {
       'accelerator': accelerator,
       'brake': brake,
       'clutch': clutch,
+      'cameraX': cameraX,
+      'cameraY': cameraY,
     });
   }
 

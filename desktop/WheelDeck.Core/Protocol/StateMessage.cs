@@ -30,4 +30,14 @@ public sealed record StateMessage
     /// <summary>Clutch pedal pressure, 0.0 at rest to 1.0 fully pressed.</summary>
     [JsonPropertyName("clutch")]
     public double Clutch { get; init; }
+
+    /// <summary>Interior-camera horizontal look, -1.0..1.0. Absent in older
+    /// frames, which default to centered.</summary>
+    [JsonPropertyName("cameraX")]
+    public double CameraX { get; init; }
+
+    /// <summary>Interior-camera vertical look, -1.0..1.0. Absent in older
+    /// frames, which default to centered.</summary>
+    [JsonPropertyName("cameraY")]
+    public double CameraY { get; init; }
 }
