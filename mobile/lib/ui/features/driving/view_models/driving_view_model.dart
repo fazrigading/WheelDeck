@@ -205,6 +205,9 @@ class DrivingViewModel extends ChangeNotifier {
     await _loadBindings();
     await _loadDashboardState();
     await _loadProfile();
+    try {
+      _connectionRepository.sendMappingMode(_mapping, preset: _activeProfile);
+    } catch (_) {}
     if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
   }

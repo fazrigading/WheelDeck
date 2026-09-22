@@ -396,6 +396,60 @@ public sealed class InputMapperTests
         Assert.True(_backend.LastButtonPressed);
     }
 
+    [Fact]
+    public void ActivePreset_DefaultsToSequential()
+    {
+        Assert.Equal(InputMapper.SequentialPreset, _mapper.ActivePreset);
+    }
+
+    [Fact]
+    public void ApplyButton_PresetScopedLookup_SequentialUnchanged()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+        _mapper.ActivePreset = "Sequential";
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Space, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_UnknownPreset_FallsBackToSequentialTables()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+        _mapper.ActivePreset = "NoSuchPreset";
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Space, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_HybridPriority_HoldsUnderAnotherPreset()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+        _mapper.ActivePreset = "Real Automatic";
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(ButtonId.A, _backend.LastButtonId);
+        Assert.True(_backend.LastButtonPressed);
+    }
+
     private sealed class FakeBackend : VirtualOutputBackend
     {
         public float LastSteering { get; private set; }

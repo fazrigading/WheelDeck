@@ -209,7 +209,7 @@ instead of replacing one.
   `plan/feature-driving-dashboard-v2-1.md` with the same structural assertions
   for each new preset: slots tile their blocks without overlap, and every
   non-null slot control exists in `ControlId.values`. Satisfies REQ-011. | ✅ | 2026-09-22 |
-| TASK-047 | Scope the desktop binding tables per active preset once REQ-011's presets exist: extend `InputMapper` with per-preset key and button tables (or a preset overlay applied at preset-selection time), so each preset carries its own defaults per REQ-018. Satisfies REQ-018. | | |
+| TASK-047 | Scope the desktop binding tables per active preset once REQ-011's presets exist: extend `InputMapper` with per-preset key and button tables (or a preset overlay applied at preset-selection time), so each preset carries its own defaults per REQ-018. Satisfies REQ-018. (Preset overlays in `InputMapper` with Sequential fallback; active preset rides the mapping frame; overlays empty — all presets share Sequential defaults, PRND intentionally unbound.) | ✅ | 2026-09-22 |
 
 ### Implementation Phase 7
 
