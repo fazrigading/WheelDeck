@@ -44,7 +44,10 @@ class WheelDeckClient(
     private val seq = AtomicLong(0)
     private var webSocket: WebSocket? = null
     private var sessionToken: String? = null
-    private var lastTarget: ConnectionTarget? = null
+
+    /// Last connection target, used to reconnect after a lifecycle pause.
+    var lastTarget: ConnectionTarget? = null
+        private set
     private var heartbeatJob: Job? = null
     private var reconnectJob: Job? = null
 

@@ -4,6 +4,7 @@ package dev.fazrigading.wheeldeck.domain.models
 /// `docs/mobile-interface.md`.
 enum class ConnectionStatus {
     Disconnected,
+    Discovering,
     Connecting,
     PairingRequired,
     Connected,
