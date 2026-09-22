@@ -36,6 +36,7 @@ class LayoutEditor extends StatefulWidget {
     this.onBindRequested,
     this.addableControls = const [],
     this.developerPresetNames = const {'Sequential'},
+    this.onSaveProfile,
   });
 
   final LayoutEditViewModel edit;
@@ -57,6 +58,11 @@ class LayoutEditor extends StatefulWidget {
 
   /// Developer preset names; saving under one is refused (REQ-007).
   final Set<String> developerPresetNames;
+
+  /// Persists a saved profile; null keeps the edit session's in-memory
+  /// snapshot. False reports a save failure inline.
+  final Future<bool> Function(String name, DrivingLayout layout)?
+  onSaveProfile;
 
   @override
   State<LayoutEditor> createState() => _LayoutEditorState();
@@ -211,7 +217,13 @@ class _LayoutEditorState extends State<LayoutEditor> {
           (context) => _SaveDialog(
             controller: _saveController,
             takenNames: widget.developerPresetNames,
-            onSave: (name) => _edit.saveAs(name),
+            onSave: (name) async {
+              final hook = widget.onSaveProfile;
+              if (hook != null) {
+                return hook(name, _edit.workingLayout);
+              }
+              return _edit.saveAs(name);
+            },
           ),
     );
   }
@@ -399,7 +411,7 @@ class _SaveDialog extends StatefulWidget {
 
   final TextEditingController controller;
   final Set<String> takenNames;
-  final bool Function(String name) onSave;
+  final Future<bool> Function(String name) onSave;
 
   @override
   State<_SaveDialog> createState() => _SaveDialogState();
@@ -408,7 +420,7 @@ class _SaveDialog extends StatefulWidget {
 class _SaveDialogState extends State<_SaveDialog> {
   String? _error;
 
-  void _submit() {
+  void _submit() async {
     final name = widget.controller.text.trim();
     if (name.isEmpty) {
       setState(() => _error = 'Enter a profile name.');
@@ -418,8 +430,11 @@ class _SaveDialogState extends State<_SaveDialog> {
       setState(() => _error = 'That name belongs to a developer preset.');
       return;
     }
-    widget.onSave(name);
-    Navigator.of(context).pop();
+    if (!await widget.onSave(name)) {
+      if (mounted) setState(() => _error = 'Save failed. Try again.');
+      return;
+    }
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override

@@ -8,7 +8,9 @@ import 'package:wheeldeck/data/repositories/pedal_repository.dart';
 import 'package:wheeldeck/data/repositories/sensor_repository.dart';
 import 'package:wheeldeck/data/services/camera_pad_mode.dart';
 import 'package:wheeldeck/data/services/dashboard_input.dart';
+import 'package:wheeldeck/data/services/driving_layout.dart';
 import 'package:wheeldeck/data/services/engine_start_mode.dart';
+import 'package:wheeldeck/data/services/layout_profile.dart';
 import 'package:wheeldeck/data/services/pedal_input.dart';
 import 'package:wheeldeck/data/services/steering_sensor.dart';
 import 'package:wheeldeck/data/services/wheeldeck_client.dart';
@@ -193,5 +195,60 @@ void main() {
 
     expect(viewModel.engineStartMode, EngineStartMode.singlePress);
     expect(viewModel.visibleExtras, {ControlId.airHorn});
+  });
+
+  group('TASK-024 layout profiles', () {
+    test('active profile defaults to Sequential', () async {
+      SharedPreferences.setMockInitialValues({});
+      viewModel = buildViewModel();
+      await viewModel.init();
+
+      expect(viewModel.activeProfile, 'Sequential');
+      expect(
+        viewModel.activeLayout.slots.length,
+        DrivingLayout.sequential().slots.length,
+      );
+    });
+
+    test('selectProfile switches layout and persists the name', () async {
+      SharedPreferences.setMockInitialValues({});
+      viewModel = buildViewModel();
+      await viewModel.init();
+
+      const mine = DrivingLayout(
+        name: 'Mine',
+        slots: [
+          LayoutSlot(
+            rect: CellRect(rowStart: 1, colStart: 1, rowSpan: 1, colSpan: 1),
+            kind: SlotKind.button,
+            control: ControlId.horn,
+          ),
+        ],
+      );
+      await LayoutProfileStore.saveProfile(
+        const LayoutProfile(name: 'Mine', layout: mine),
+      );
+
+      await viewModel.selectProfile('Mine');
+      expect(viewModel.activeProfile, 'Mine');
+      expect(viewModel.activeLayout.slots, hasLength(1));
+      expect(await LayoutProfileStore.loadActiveName(), 'Mine');
+
+      await viewModel.selectProfile('Nope');
+      expect(viewModel.activeLayout.slots.length, greaterThan(1));
+    });
+
+    test('applySessionLayout overrides until selectProfile clears it', () async {
+      SharedPreferences.setMockInitialValues({});
+      viewModel = buildViewModel();
+      await viewModel.init();
+
+      const session = DrivingLayout(name: 'session', slots: []);
+      viewModel.applySessionLayout(session);
+      expect(viewModel.activeLayout, session);
+
+      await viewModel.selectProfile('Sequential');
+      expect(viewModel.activeLayout, isNot(session));
+    });
   });
 }

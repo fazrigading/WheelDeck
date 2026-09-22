@@ -8,6 +8,7 @@ import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_visibility.dart';
 import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
+import '../../../../data/services/layout_profile.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
 import '../../../../data/services/camera_pad_mode.dart';
@@ -40,6 +41,8 @@ class SettingsViewModel extends ChangeNotifier {
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
   final Map<String, String> _bindingOverrides = {};
   bool _loaded = false;
+  List<LayoutProfile> _layoutProfiles = const [];
+  String _activeLayoutProfile = LayoutProfileStore.defaultProfileName;
 
   InputMapping get mapping => _mapping;
   ControllerVisibility get visibility => _visibility;
@@ -54,6 +57,33 @@ class SettingsViewModel extends ChangeNotifier {
   EngineStartMode get engineStartMode => _engineStartMode;
   Set<ControlId> get visibleExtras => Set.unmodifiable(_visibleExtras);
   bool get loaded => _loaded;
+
+  /// Every profile from the store: developer presets first, then user
+  /// profiles.
+  List<LayoutProfile> get layoutProfiles =>
+      List.unmodifiable(_layoutProfiles);
+
+  /// Active layout profile name; the driving view resolves the layout.
+  String get activeLayoutProfile => _activeLayoutProfile;
+
+  /// Best-effort profile load. Never throws.
+  Future<void> loadLayoutProfiles() async {
+    try {
+      _layoutProfiles = await LayoutProfileStore.loadAll();
+      _activeLayoutProfile = await LayoutProfileStore.loadActiveName();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// Selects a profile and persists it as active. The driving view applies
+  /// the layout on return through its settings refresh.
+  Future<void> selectLayoutProfile(String name) async {
+    try {
+      _activeLayoutProfile = name;
+      notifyListeners();
+      await LayoutProfileStore.saveActiveName(name);
+    } catch (_) {}
+  }
 
   Future<void> init() async {
     try {
@@ -99,6 +129,7 @@ class SettingsViewModel extends ChangeNotifier {
     }
     _loaded = true;
     notifyListeners();
+    await loadLayoutProfiles();
   }
 
   String bindingFor(ControlId c) {
@@ -202,6 +233,8 @@ class SettingsViewModel extends ChangeNotifier {
     _engineStartMode = EngineStartMode.fallback;
     _visibleExtras = DashboardVisibility.defaults;
     _bindingOverrides.clear();
+    _activeLayoutProfile = LayoutProfileStore.defaultProfileName;
+    await LayoutProfileStore.saveActiveName(_activeLayoutProfile);
     notifyListeners();
     await _settingsRepository.resetAll();
     _connectionRepository.sendMappingMode(_mapping);

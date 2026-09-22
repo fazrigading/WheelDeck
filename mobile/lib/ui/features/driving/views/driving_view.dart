@@ -7,8 +7,8 @@ import '../../../../data/repositories/pedal_repository.dart';
 import '../../../../data/repositories/sensor_repository.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
-import '../../../../data/services/driving_layout.dart';
 import '../../../../data/services/input_mapping.dart';
+import '../../../../data/services/layout_profile.dart';
 import '../../../../data/services/pedal_side.dart';
 import '../../../../data/services/gyroscope_service.dart';
 import '../../../../data/services/pedal_input.dart';
@@ -61,9 +61,6 @@ class _DrivingViewState extends State<DrivingView> {
   /// Open edit session, or null while driving. The connection is untouched:
   /// entering and exiting edit mode never disconnects.
   LayoutEditViewModel? _editViewModel;
-
-  /// Session layout applied from the editor; null renders the preset.
-  DrivingLayout? _sessionLayout;
 
   @override
   void initState() {
@@ -185,9 +182,8 @@ class _DrivingViewState extends State<DrivingView> {
   /// mode, which restores driving input.
   void _beginEdit() {
     final edit =
-        LayoutEditViewModel(
-          initialLayout: _sessionLayout ?? DrivingLayout.sequential(),
-        )..beginEdit();
+        LayoutEditViewModel(initialLayout: _viewModel.activeLayout)
+          ..beginEdit();
     setState(() {
       _editViewModel?.dispose();
       _editViewModel = edit;
@@ -196,7 +192,7 @@ class _DrivingViewState extends State<DrivingView> {
 
   void _finishEdit() {
     final edit = _editViewModel;
-    if (edit != null) _sessionLayout = edit.workingLayout;
+    if (edit != null) _viewModel.applySessionLayout(edit.workingLayout);
     _closeEdit();
   }
 
@@ -363,11 +359,16 @@ class _DrivingViewState extends State<DrivingView> {
               onCameraPadModeSwitch: _viewModel.toggleCameraPadMode,
               onBindRequested: _openBinder,
               addableControls: _addableControls(),
+              developerPresetNames:
+                  LayoutProfileStore.developerPresetNames,
+              onSaveProfile: (name, layout) => LayoutProfileStore.saveProfile(
+                LayoutProfile(name: name, layout: layout),
+              ),
             ),
       );
     }
     return BlockGrid(
-      layout: _sessionLayout ?? DrivingLayout.sequential(),
+      layout: _viewModel.activeLayout,
       input: _viewModel.dashboardInput,
       bindingFor: _viewModel.bindingFor,
       gate: _viewModel.sendGate,

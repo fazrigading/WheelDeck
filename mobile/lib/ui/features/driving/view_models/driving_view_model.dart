@@ -13,8 +13,10 @@ import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
 import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/driving_layout.dart';
 import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
+import '../../../../data/services/layout_profile.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
 import '../../../../data/services/camera_pad_mode.dart';
@@ -70,6 +72,12 @@ class DrivingViewModel extends ChangeNotifier {
   CameraPadMode _cameraPadMode = CameraPadMode.fallback;
   EngineStartMode _engineStartMode = EngineStartMode.fallback;
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
+  String _activeProfile = LayoutProfileStore.defaultProfileName;
+  DrivingLayout _storedLayout = DrivingLayout.sequential();
+
+  /// Unsaved editor result for this session; cleared on profile switches
+  /// and settings refreshes.
+  DrivingLayout? _sessionLayout;
 
   /// Normalized steering angle snapshot (-1.0..1.0).
   SteeringState get steering => _steering;
@@ -95,6 +103,32 @@ class DrivingViewModel extends ChangeNotifier {
 
   /// Current mapping mode, for the binder dialog label.
   InputMapping get mapping => _mapping;
+
+  /// Active layout profile name. Layout only; bindings and the rest stay
+  /// global (REQ-008).
+  String get activeProfile => _activeProfile;
+
+  /// Layout the grid renders: the session edit when one is applied, else
+  /// the stored profile layout.
+  DrivingLayout get activeLayout => _sessionLayout ?? _storedLayout;
+
+  /// Applies an editor result for this session. Not persisted.
+  void applySessionLayout(DrivingLayout layout) {
+    _sessionLayout = layout;
+    notifyListeners();
+  }
+
+  /// Switches to the named profile, clearing any session edit. Best-effort:
+  /// never throws; unknown names fall back to the Sequential preset.
+  Future<void> selectProfile(String name) async {
+    try {
+      _storedLayout = await LayoutProfileStore.layoutFor(name);
+      _activeProfile = name;
+      _sessionLayout = null;
+      notifyListeners();
+      await LayoutProfileStore.saveActiveName(name);
+    } catch (_) {}
+  }
 
   /// Persists a per-mode binding override (empty means unbound) and refreshes
   /// the gate resolution. Best-effort: never throws.
@@ -170,6 +204,7 @@ class DrivingViewModel extends ChangeNotifier {
     await _loadWheelState();
     await _loadBindings();
     await _loadDashboardState();
+    await _loadProfile();
     if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
   }
@@ -208,6 +243,14 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Best-effort load of the active profile name and its layout.
+  Future<void> _loadProfile() async {
+    try {
+      _activeProfile = await LayoutProfileStore.loadActiveName();
+      _storedLayout = await LayoutProfileStore.layoutFor(_activeProfile);
+    } catch (_) {}
+  }
+
   Future<void> refreshWheel() async {
     await _loadWheelState();
     if (isRotatable) _awaitingCalibration = false;
@@ -232,6 +275,8 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
     await _loadBindings();
     await _loadDashboardState();
+    _sessionLayout = null;
+    await _loadProfile();
   }
 
   /// Best-effort load of engine-start mode and visible dashboard extras.
