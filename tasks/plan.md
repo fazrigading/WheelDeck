@@ -1,6 +1,6 @@
 # Implementation Plan: Flutter → Kotlin (Android-native) Migration
 
-Status: **ongoing** — Tasks 1–4 complete (2026-09-22).
+Status: **ongoing** — Tasks 1–5 complete (2026-09-22).
 
 Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose app in `android/`, slice by slice, against the same `protocol/schema/` contract. Flutter stays runnable as the working reference until Kotlin reaches functional parity **plus the seven known fixes from `TODO.md`**, then `mobile/` is deleted. Desktop (.NET) is untouched. Local data starts fresh — no SharedPreferences migration.
 
@@ -80,12 +80,12 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Files likely touched:** `.../data/services/wheeldeck_client.kt`, `android/app/src/test/`.
   - **Reference:** `mobile/lib/data/services/wheeldeck_client.dart`, `docs/adr/0002-*`, `docs/adr/0003-*`.
 
-- [ ] **Task 5: Pairing + session** (M)
+- [x] **Task 5: Pairing + session** (M)
   - PIN pairing flow, pairing-challenge model, session token issue/reuse, `PairedDevice` persistence in DataStore. Desktop enforces 30-day expiry; phone handles token storage and presentation.
   - **Acceptance criteria:**
-    - [ ] `pairing_test` port passes
-    - [ ] Token survives app restart; re-pair skipped while token valid
-  - **Verification:** `./gradlew test`; manual pair/unpair/restart against real desktop.
+    - [x] `pairing_test` port passes — 5 tests
+    - [x] Token survives app restart (DataStore Preferences); re-pair skipped while token valid (client goes straight to Connected on restore)
+  - **Verification:** `./gradlew test`. Done in `9c4f1a2`. Manual pair/unpair/restart against real desktop deferred to Checkpoint A.
   - **Dependencies:** Task 4.
   - **Files likely touched:** `.../data/services/pairing.kt`, `.../data/repositories/paired_device_repository.kt`, `.../data/repositories/session_repository.kt`, `.../domain/models/pairing_challenge.kt`.
   - **Reference:** `mobile/lib/data/services/pairing.dart`, `mobile/lib/domain/models/pairing_challenge.dart`.
