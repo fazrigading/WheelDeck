@@ -101,8 +101,8 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Reference:** `mobile/lib/ui/features/connection/**`, `mobile/lib/ui/core/**`.
 
 ### Checkpoint A: Connection works end-to-end
-- [ ] Kotlin app pairs with a real desktop over Wi-Fi, reconnects after Wi-Fi fade, heartbeats hold
-- [ ] Flutter app still builds and `flutter test` passes (regression guard)
+- [x] Kotlin app pairs with a real desktop over Wi-Fi, reconnects after Wi-Fi fade, heartbeats hold
+- [x] Flutter app still builds and `flutter test` passes (regression guard)
 
 ### Phase 3: Input capture + driving core
 
