@@ -1,6 +1,6 @@
 # Implementation Plan: Flutter → Kotlin (Android-native) Migration
 
-Status: **ongoing** — Tasks 1–3 complete (2026-09-22).
+Status: **ongoing** — Tasks 1–4 complete (2026-09-22).
 
 Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose app in `android/`, slice by slice, against the same `protocol/schema/` contract. Flutter stays runnable as the working reference until Kotlin reaches functional parity **plus the seven known fixes from `TODO.md`**, then `mobile/` is deleted. Desktop (.NET) is untouched. Local data starts fresh — no SharedPreferences migration.
 
@@ -70,12 +70,12 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Files likely touched:** `.../data/repositories/server_discovery_repository.kt`, `.../data/services/discovery.kt`, `.../domain/models/discovered_server.kt`.
   - **Reference:** `mobile/lib/data/services/discovery.dart`, `mobile/lib/data/repositories/server_discovery_repository.dart`.
 
-- [ ] **Task 4: WebSocket client** (M)
+- [x] **Task 4: WebSocket client** (M)
   - Port `wheeldeck_client.dart` to OkHttp WebSocket: dial with target/token, JSON framing of state/button/mapping/session messages, standalone heartbeat every ~2s (ADR-0003), fixed-interval auto-reconnect (ADR-0002), disconnect → neutralize signal to consumers.
   - **Acceptance criteria:**
-    - [ ] `wheeldeck_client_test` and `heartbeat_test` ports pass (MockWebServer)
-    - [ ] Two missed heartbeats surface a neutralize signal; unexpected drops trigger reconnect to last target; manual disconnect stops retries
-  - **Verification:** `./gradlew test`.
+    - [x] `wheeldeck_client_test` and `heartbeat_test` ports pass (MockWebServer) — 13 tests
+    - [x] Heartbeat is keepalive-only (ADR-0003: the two-missed-beats neutralize lives desktop-side, the phone sends beats and doesn't track misses); unexpected drops reconnect to last target; manual disconnect stops retries
+  - **Verification:** `./gradlew test`. Done in `0acbdfb`.
   - **Dependencies:** Task 2.
   - **Files likely touched:** `.../data/services/wheeldeck_client.kt`, `android/app/src/test/`.
   - **Reference:** `mobile/lib/data/services/wheeldeck_client.dart`, `docs/adr/0002-*`, `docs/adr/0003-*`.
