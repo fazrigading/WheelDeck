@@ -1,25 +1,27 @@
 ---
 goal: Let the user move, resize, and add or remove dashboard controls, with profiles, modules, additional layout presets, and selectable camera control types
-version: 1.1
+version: 1.2
 date_created: 2026-09-17
-last_updated: 2026-09-17
+last_updated: 2026-09-22
 owner: Fazri Gading
-status: 'On Hold'
+status: 'Planned'
 tags: [feature, mobile, layout, editor, backlog]
 ---
 
 # Introduction
 
-![Status: On Hold](https://img.shields.io/badge/status-On%20Hold-orange)
+![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+
+> **2026-09-22:** Phase 1 complete — TASK-001 through TASK-005 settled (see
+> Phase 1 table and section 7). DEP-002 cleared: the fixed Sequential placement
+> was judged good in the running app. Plan un-held (On Hold → Planned);
+> Phases 2 through 7 unblocked.
 
 This plan delivers a user-editable dashboard layout: the user moves controls
 between cells, adds and removes them, and saves the result as a profile. It then
 layers on modules (reusable multi-cell groups), additional layout presets, and
 selectable camera control types.
 
-The plan is **On Hold** because it depends on the placement work in
-`plan/feature-driving-dashboard-v2-1.md` being finished and judged. The editor's
-UX cannot be evaluated until the fixed Sequential placement is known to be good.
 Phase 1 exists to settle the design questions the editor raises; Phases 2 through
 7 are the build.
 
@@ -57,17 +59,17 @@ instead of replacing one.
   **H-Shifter**, 4x4.
 - **REQ-011**: The following layout presets ship alongside the existing
   Sequential preset: **Simple Automatic**, **Real Automatic**, **H-Shifter**.
-- **REQ-012**: The camera control type is selectable in Settings. Four types are
-  defined in REQ-013 through REQ-016.
+- **REQ-012**: The camera control type is selectable in Settings. Three types are
+  defined in REQ-013, REQ-014, and REQ-016. (Semi-Analog deleted per TASK-005.)
 - **REQ-013**: Camera type **Simple**: three buttons, each 3 rows x 1 column,
   inside a 3x3 module — Look Left Window (`Numpad/`), Recenter (`Numpad5`),
   Look Right Window (`Numpad*`).
 - **REQ-014**: Camera type **D-pad**: eight directions plus a center recenter.
   The four diagonals (up-left, up-right, down-left, down-right) do not exist in
   this type. This is the type shipped by the v2 plan and remains the default.
-- **REQ-015**: Camera type **Semi-Analog**: undecided. It requires its own
-  design pass before it can be specified. Phase 7 must not begin for this type
-  until REQ-015 is replaced with a concrete specification.
+- **REQ-015**: DELETED per TASK-005 (2026-09-22) — Semi-Analog had no design and
+  the Analog type already covers continuous-axis users. Re-add only with a
+  concrete specification.
 - **REQ-016**: Camera type **Analog**: no recenter key. All nine directions are
   available, driven by a movable sphere inside a circular container, visually
   similar to an Xbox or PlayStation analog stick. This type requires a
@@ -124,11 +126,11 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Confirm or override ASSUMPTION-001 (phone owns the layout; sync to the desktop is out of scope). Record the outcome by replacing ASSUMPTION-001's text in this file with a settled **REQ-018** bullet. If the outcome is desktop-authored, TASK-022 and TASK-023 change scope and the plan must be revised before Phase 4. | | |
-| TASK-002 | Confirm or override ASSUMPTION-002 (no transport between devices in this plan). If the outcome is that the desktop authors the layout, record the chosen transport — a JSON export and import file, a new WebSocket message type, or the phone pulling a desktop-authored file — as a new requirement, and add the corresponding `protocol/schema` entry to section 5. | | |
-| TASK-003 | Confirm or override ASSUMPTION-003 (overlapping drops are refused). If the outcome is push-neighbours or allow-overlap, replace REQ-005's text and add the resulting editor interaction rules to Phase 3 as new tasks. | | |
-| TASK-004 | Confirm or override ASSUMPTION-005 (one layout per device, not per aspect class). If a layout is needed per aspect class, add the aspect-keying rule to REQ-006 and add a migration task to Phase 4 covering profiles saved before the rule existed. | | |
-| TASK-005 | Replace REQ-015 with a concrete Semi-Analog specification, or delete REQ-015 and the Semi-Analog tasks from Phase 7. Record which was done in this file. | | |
+| TASK-001 | Confirm or override ASSUMPTION-001 (phone owns the layout; sync to the desktop is out of scope). Record the outcome by replacing ASSUMPTION-001's text in this file with a settled **REQ-018** bullet. If the outcome is desktop-authored, TASK-022 and TASK-023 change scope and the plan must be revised before Phase 4. **Outcome 2026-09-22: confirmed phone-owns; recorded in ASSUMPTION-001 as settled (no new REQ number — REQ-018 is already taken by the binding-table scope rule). No scope change to TASK-022/TASK-023.** | x | 2026-09-22 |
+| TASK-002 | Confirm or override ASSUMPTION-002 (no transport between devices in this plan). If the outcome is that the desktop authors the layout, record the chosen transport — a JSON export and import file, a new WebSocket message type, or the phone pulling a desktop-authored file — as a new requirement, and add the corresponding `protocol/schema` entry to section 5. **Outcome 2026-09-22: confirmed no transport; no new requirement, no section 5 entry.** | x | 2026-09-22 |
+| TASK-003 | Confirm or override ASSUMPTION-003 (overlapping drops are refused). If the outcome is push-neighbours or allow-overlap, replace REQ-005's text and add the resulting editor interaction rules to Phase 3 as new tasks. **Outcome 2026-09-22: confirmed refuse-overlap; REQ-005 unchanged, no new Phase 3 tasks.** | x | 2026-09-22 |
+| TASK-004 | Confirm or override ASSUMPTION-005 (one layout per device, not per aspect class). If a layout is needed per aspect class, add the aspect-keying rule to REQ-006 and add a migration task to Phase 4 covering profiles saved before the rule existed. **Outcome 2026-09-22: confirmed one layout per device; REQ-006 unchanged, no Phase 4 migration task.** | x | 2026-09-22 |
+| TASK-005 | Replace REQ-015 with a concrete Semi-Analog specification, or delete REQ-015 and the Semi-Analog tasks from Phase 7. Record which was done in this file. **Outcome 2026-09-22: deleted — REQ-015 removed, TASK-039 enum drops `semiAnalog`, TASK-045 removed, REQ-012 now reads three types. Re-add Semi-Analog only with a real design.** | x | 2026-09-22 |
 
 ### Implementation Phase 2
 
@@ -216,13 +218,13 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|----------|
-| TASK-039 | Create `mobile/lib/data/services/camera_control_type.dart` following PAT-001: `enum CameraControlType { dpad, simple, semiAnalog, analog }` with wire values, a `prefsKey` of `wheeldeck.camera_control_type`, and a `fallback` of `dpad`. Satisfies REQ-012 and CON-002. | | |
+| TASK-039 | Create `mobile/lib/data/services/camera_control_type.dart` following PAT-001: `enum CameraControlType { dpad, simple, analog }` with wire values, a `prefsKey` of `wheeldeck.camera_control_type`, and a `fallback` of `dpad`. (`semiAnalog` removed per TASK-005.) Satisfies REQ-012 and CON-002. | | |
 | TASK-040 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `Camera control` section with a `SegmentedButton` over `CameraControlType`, visible only when the layout contains a camera pad slot. Satisfies REQ-012. | | |
 | TASK-041 | In `mobile/lib/ui/features/driving/views/camera_pad.dart`, dispatch on the selected type, keeping the existing D-pad implementation as the `dpad` branch. Satisfies REQ-012 and REQ-014. | | |
 | TASK-042 | In the same file, implement the `simple` branch: three buttons each 3 rows x 1 column inside the 3x3 region — Look Left Window on `Numpad/`, Recenter on `Numpad5`, Look Right Window on `Numpad*`. Add `KeyCode.NumpadDivide` and `KeyCode.NumpadMultiply` to `desktop/WheelDeck.Core/Output/KeyCode.cs` and to **both** backend key tables, per CON-002 of `plan/feature-driving-dashboard-v2-1.md`. Satisfies REQ-013. | | |
 | TASK-043 | Implement the `analog` branch's protocol addition before its UI: add an interior-camera axis to the state message and to `InputMapper.ApplyState` in `desktop/WheelDeck.Core/Input/InputMapper.cs`, following the existing steering axis path. This is CON-004's gated protocol work. Satisfies REQ-016 and CON-004. | | |
 | TASK-044 | Implement the `analog` branch's UI in `camera_pad.dart`: a movable sphere inside a circular container reporting continuous x and y, visually modelled on a controller analog stick, with no recenter key. Satisfies REQ-016. | | |
-| TASK-045 | Implement the `semiAnalog` branch only if TASK-005 replaced REQ-015 with a concrete specification. Otherwise skip this task and leave `semiAnalog` mapping to the `dpad` branch. Satisfies REQ-015. | | |
+| TASK-045 | DELETED per TASK-005 (2026-09-22) — REQ-015 removed, no `semiAnalog` branch. | — | 2026-09-22 |
 | TASK-046 | Create `mobile/test/ui/features/driving/camera_control_type_test.dart` asserting: each type renders its documented shape; the type persists across a reload; `resetToDefaults` restores `dpad`; and the Simple type emits `NumpadDivide`, `Numpad5`, and `NumpadMultiply`. Satisfies REQ-012, REQ-013, and REQ-014. | | |
 
 ## 3. Alternatives
@@ -356,24 +358,22 @@ instead of replacing one.
   profiles. Mitigation: profiles are small and the list is read on screen entry,
   not per frame. If it becomes measurable, cache the merged list and invalidate
   on write.
-- **RISK-005**: REQ-015's Semi-Analog type is undefined, so its Phase 7 task
-  may be skipped and leave an enum value with no implementation. Mitigation:
-  TASK-045 explicitly maps `semiAnalog` to the `dpad` branch when unspecified, so
-  selecting it is never broken, only indistinguishable from D-pad.
-- **ASSUMPTION-001**: The phone owns the layout. Desktop-authored arrangement is
-  out of scope for this plan. Settled or overridden by TASK-001.
-- **ASSUMPTION-002**: There is no transport between the phone and the desktop for
-  layout data in this plan. Settled or overridden by TASK-002.
-- **ASSUMPTION-003**: An overlapping drop is refused rather than pushing
-  neighbours or allowing overlap. Predictable and trivially undoable, since the
-  layout is unchanged. Settled or overridden by TASK-003.
+- **RISK-005**: Closed 2026-09-22 — REQ-015 deleted and TASK-045 removed per
+  TASK-005, so no unspecified enum value remains.
+- **ASSUMPTION-001**: SETTLED 2026-09-22 (TASK-001) — confirmed: the phone owns
+  the layout; desktop-authored arrangement stays out of scope.
+- **ASSUMPTION-002**: SETTLED 2026-09-22 (TASK-002) — confirmed: no transport
+  between phone and desktop for layout data in this plan.
+- **ASSUMPTION-003**: SETTLED 2026-09-22 (TASK-003) — confirmed: an overlapping
+  drop is refused rather than pushing neighbours or allowing overlap.
+  Predictable and trivially undoable, since the layout is unchanged.
 - **ASSUMPTION-004**: A profile captures layout only; bindings, pedal sides, and
   visibility remain global. Not gated by a Phase 1 task: no requirement in this
   plan depends on it except REQ-008, which states it directly. Revisit if a user
   expects a profile to carry their bindings too.
-- **ASSUMPTION-005**: One layout applies per device, not per aspect class. The
-  cell model is proportional, so a layout authored at one aspect reflows
-  acceptably at another. Settled or overridden by TASK-004.
+- **ASSUMPTION-005**: SETTLED 2026-09-22 (TASK-004) — confirmed: one layout
+  applies per device, not per aspect class. The cell model is proportional, so a
+  layout authored at one aspect reflows acceptably at another.
 - **ASSUMPTION-006**: The H-Shifter module's slot contents are not yet specified.
   TASK-029 emits holes and records the gap rather than guessing.
 
@@ -389,5 +389,5 @@ instead of replacing one.
 - `plan/references/steering-wheel-button-research.md` — button-layout research
   that informs the H-Shifter module's contents, which ASSUMPTION-006 leaves open.
 - `docs/adr/0006-camera-pad-wire-identifiers.md` — camera control types
-  (REQ-013, REQ-015, REQ-016) add their own wire identifier sets under the same
+  (REQ-013, REQ-016) add their own wire identifier sets under the same
   pattern.
