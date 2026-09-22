@@ -1,6 +1,7 @@
 package dev.fazrigading.wheeldeck
 
 import android.content.Context
+import dev.fazrigading.wheeldeck.data.repositories.DataStorePairedDeviceStore
 import dev.fazrigading.wheeldeck.data.repositories.PairedDeviceRepository
 import dev.fazrigading.wheeldeck.data.services.DataStoreSessionTokenStore
 import dev.fazrigading.wheeldeck.data.services.PairingController
@@ -15,5 +16,7 @@ class AppContainer(appContext: Context) {
     }
     val sessionTokenStore: DataStoreSessionTokenStore by lazy { DataStoreSessionTokenStore(appContext) }
     val pairingController: PairingController by lazy { PairingController(sessionTokenStore, wheelDeckClient) }
-    val pairedDeviceRepository: PairedDeviceRepository by lazy { PairedDeviceRepository(appContext) }
+    val pairedDeviceRepository: PairedDeviceRepository by lazy {
+        PairedDeviceRepository(DataStorePairedDeviceStore(appContext))
+    }
 }
