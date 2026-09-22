@@ -19,6 +19,7 @@ import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/layout_profile.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/spring_back.dart';
 import '../../../../data/services/wheel_mode.dart';
@@ -70,6 +71,7 @@ class DrivingViewModel extends ChangeNotifier {
   int _rotationDegree = RotationDegree.fallback;
   bool _springBack = SpringBack.fallback;
   CameraPadMode _cameraPadMode = CameraPadMode.fallback;
+  CameraControlType _cameraControlType = CameraControlType.fallback;
   EngineStartMode _engineStartMode = EngineStartMode.fallback;
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
   String _activeProfile = LayoutProfileStore.defaultProfileName;
@@ -181,6 +183,9 @@ class DrivingViewModel extends ChangeNotifier {
   bool get springBack => _springBack;
   CameraPadMode get cameraPadMode => _cameraPadMode;
 
+  /// Which camera control the pad renders; the pad widget dispatches on it.
+  CameraControlType get cameraControlType => _cameraControlType;
+
   /// Engine-start interaction mode (hold-confirm vs single press).
   EngineStartMode get engineStartMode => _engineStartMode;
 
@@ -243,6 +248,9 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
     try {
       _cameraPadMode = await CameraPadMode.load();
+    } catch (_) {}
+    try {
+      _cameraControlType = await CameraControlType.load();
     } catch (_) {}
   }
 

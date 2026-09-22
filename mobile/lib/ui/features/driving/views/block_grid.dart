@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
@@ -34,6 +35,7 @@ class BlockGrid extends StatelessWidget {
     this.cameraPadMode = CameraPadMode.fallback,
     required this.onCameraPadModeSwitch,
     this.onBindRequested,
+    this.cameraControlType = CameraControlType.dpad,
     this.editing = false,
     this.onEditIntent,
     this.editSlotWrapper,
@@ -65,6 +67,9 @@ class BlockGrid extends StatelessWidget {
   final CameraPadMode cameraPadMode;
   final VoidCallback onCameraPadModeSwitch;
   final ValueChanged<ControlId>? onBindRequested;
+
+  /// Which camera control shape the pad slot renders.
+  final CameraControlType cameraControlType;
 
   /// When true, slot gestures select instead of activating: every slot is
   /// absorbed and a tap reports its rect through [onEditIntent].
@@ -170,6 +175,7 @@ class BlockGrid extends StatelessWidget {
           bindingFor: bindingFor,
           onModeSwitch: onCameraPadModeSwitch,
           onBindRequested: onBindRequested,
+          controlType: cameraControlType,
         );
       case SlotKind.hole:
         return DashboardControl(

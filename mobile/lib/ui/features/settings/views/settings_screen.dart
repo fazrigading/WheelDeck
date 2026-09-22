@@ -6,6 +6,7 @@ import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_visibility.dart';
 import '../../../../data/services/engine_start_mode.dart';
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/input_mapping.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
@@ -237,6 +238,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 24),
               ],
 
+              // Camera control: rotatable grid only, and only when the
+              // active layout contains a camera pad slot.
+              if (_viewModel.wheelMode == WheelMode.rotatable &&
+                  _viewModel.hasCameraPad) ...[
+                Text('Camera control', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                SegmentedButton<CameraControlType>(
+                  segments: [
+                    for (final type in CameraControlType.values)
+                      ButtonSegment(value: type, label: Text(type.label)),
+                  ],
+                  selected: {_viewModel.cameraControlType},
+                  onSelectionChanged:
+                      (s) => _viewModel.selectCameraControlType(s.first),
+                ),
+                const SizedBox(height: 24),
+              ],
+
               // Pedal sides: meaningless in rotatable mode, where the
               // layout fixes clutch top-left and brake/accelerator
               // bottom-right (REQ-010).
@@ -339,8 +358,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 ),
               ),
-              const SizedBox(height: 24),
-            ],
+                const SizedBox(height: 24),
+              ],
             ),
           );
         },

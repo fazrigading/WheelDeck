@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
@@ -34,6 +35,7 @@ class LayoutEditor extends StatefulWidget {
     this.cameraPadMode = CameraPadMode.fallback,
     required this.onCameraPadModeSwitch,
     this.onBindRequested,
+    this.cameraControlType = CameraControlType.dpad,
     this.addableControls = const [],
     this.developerPresetNames = const {'Sequential'},
     this.onSaveProfile,
@@ -51,6 +53,9 @@ class LayoutEditor extends StatefulWidget {
   final CameraPadMode cameraPadMode;
   final VoidCallback onCameraPadModeSwitch;
   final ValueChanged<ControlId>? onBindRequested;
+
+  /// Which camera control shape the pad slot renders.
+  final CameraControlType cameraControlType;
 
   /// Controls offered by the add picker: every id with a binding resolved
   /// in either input mapping mode (TASK-016).
@@ -285,6 +290,7 @@ class _LayoutEditorState extends State<LayoutEditor> {
                       cameraPadMode: widget.cameraPadMode,
                       onCameraPadModeSwitch: widget.onCameraPadModeSwitch,
                       onBindRequested: widget.onBindRequested,
+                      cameraControlType: widget.cameraControlType,
                       editing: true,
                       onEditIntent: _edit.select,
                       editSlotWrapper:
