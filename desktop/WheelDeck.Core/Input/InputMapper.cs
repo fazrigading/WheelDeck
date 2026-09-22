@@ -131,7 +131,9 @@ public sealed class InputMapper
             [ControlId.CameraPadArrowUp] = KeyCode.ArrowUp,
             [ControlId.CameraPadArrowDown] = KeyCode.ArrowDown,
             [ControlId.CameraPadArrowLeft] = KeyCode.ArrowLeft,
-            [ControlId.CameraPadArrowRight] = KeyCode.ArrowRight
+            [ControlId.CameraPadArrowRight] = KeyCode.ArrowRight,
+            [ControlId.CameraSimpleLeft] = KeyCode.NumpadDivide,
+            [ControlId.CameraSimpleRight] = KeyCode.NumpadMultiply
         };
 
     private static readonly IReadOnlyDictionary<ControlId, ButtonId> DefaultButtonBindings =
@@ -230,7 +232,9 @@ public sealed class InputMapper
             [ControlId.CameraPadArrowUp] = ButtonId.None,
             [ControlId.CameraPadArrowDown] = ButtonId.None,
             [ControlId.CameraPadArrowLeft] = ButtonId.None,
-            [ControlId.CameraPadArrowRight] = ButtonId.None
+            [ControlId.CameraPadArrowRight] = ButtonId.None,
+            [ControlId.CameraSimpleLeft] = ButtonId.None,
+            [ControlId.CameraSimpleRight] = ButtonId.None
         };
 
     private readonly VirtualOutputBackend _backend;

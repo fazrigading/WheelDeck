@@ -9,6 +9,7 @@ import 'package:wheeldeck/data/services/dashboard_input.dart';
 import 'package:wheeldeck/data/services/wheeldeck_client.dart';
 import 'package:wheeldeck/ui/core/connection_coordinator.dart';
 import 'package:wheeldeck/ui/features/driving/views/camera_pad.dart';
+import 'package:wheeldeck/ui/features/driving/views/dashboard_panel.dart';
 import 'package:wheeldeck/ui/features/settings/view_models/settings_view_model.dart';
 
 void main() {
@@ -62,6 +63,8 @@ void main() {
     tester,
   ) async {
     final input = DashboardInput();
+    final events = <(ControlId, ActionType)>[];
+    input.onControlActivated((control, action) => events.add((control, action)));
     Widget pad(CameraControlType type) => MaterialApp(
       home: Scaffold(
         body: SizedBox(
@@ -83,5 +86,52 @@ void main() {
 
     await tester.pumpWidget(pad(CameraControlType.simple));
     expect(find.byKey(const ValueKey('camera-pad-center')), findsNothing);
+  });
+
+  testWidgets('TEST-011 simple taps emit divide, recenter, multiply', (
+    tester,
+  ) async {
+    final input = DashboardInput();
+    final events = <(ControlId, ActionType)>[];
+    input.onControlActivated((control, action) => events.add((control, action)));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 300,
+            height: 300,
+            child: CameraPad(
+              mode: CameraPadMode.numpad,
+              input: input,
+              bindingFor: (_) => 'K',
+              onModeSwitch: () {},
+              controlType: CameraControlType.simple,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Three 3x1 buttons fill the 3x3 region.
+    expect(find.byType(DashboardControl), findsNWidgets(3));
+
+    await tester.tap(
+      find.byKey(const ValueKey('camera-simple-cameraSimpleLeft')),
+    );
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('camera-simple-cameraPadRecenter')),
+    );
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('camera-simple-cameraSimpleRight')),
+    );
+    await tester.pump();
+
+    expect(events.map((e) => e.$1).toSet(), {
+      ControlId.cameraSimpleLeft,
+      ControlId.cameraPadRecenter,
+      ControlId.cameraSimpleRight,
+    });
   });
 }

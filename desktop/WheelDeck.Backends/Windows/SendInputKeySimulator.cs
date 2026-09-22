@@ -50,6 +50,7 @@ public sealed class SendInputKeySimulator : IDisposable
             [KeyCode.Numpad1] = 0x61, [KeyCode.Numpad2] = 0x62, [KeyCode.Numpad3] = 0x63,
             [KeyCode.Numpad4] = 0x64, [KeyCode.Numpad5] = 0x65, [KeyCode.Numpad6] = 0x66,
             [KeyCode.Numpad7] = 0x67, [KeyCode.Numpad8] = 0x68, [KeyCode.Numpad9] = 0x69,
+            [KeyCode.NumpadDivide] = 0x6F, [KeyCode.NumpadMultiply] = 0x6A,
             [KeyCode.ArrowUp] = 0x26, [KeyCode.ArrowDown] = 0x28,
             [KeyCode.ArrowLeft] = 0x25, [KeyCode.ArrowRight] = 0x27, // VK_NUMPAD1..9, VK_UP/DOWN/LEFT/RIGHT
             [KeyCode.ScrollLock] = 0x91,     // VK_SCROLL

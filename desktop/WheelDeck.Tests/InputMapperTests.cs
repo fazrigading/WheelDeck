@@ -450,6 +450,51 @@ public sealed class InputMapperTests
         Assert.True(_backend.LastButtonPressed);
     }
 
+    [Fact]
+    public void ApplyButton_SimpleLeft_SendsNumpadDivide()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraSimpleLeft,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.NumpadDivide, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_SimpleRight_SendsNumpadMultiply()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraSimpleRight,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.NumpadMultiply, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_SimpleRecenter_SendsNumpad5()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraPadRecenter,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Numpad5, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
     private sealed class FakeBackend : VirtualOutputBackend
     {
         public float LastSteering { get; private set; }
