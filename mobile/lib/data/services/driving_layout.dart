@@ -716,3 +716,121 @@ Set<CellRect> freeSpans(DrivingLayout layout, int rowSpan, int colSpan) {
   }
   return free;
 }
+
+/// A reusable named rectangle of slots sharing the cell model: placing a
+/// module stamps its slots offset by the placement rect.
+class LayoutModule {
+  const LayoutModule({
+    required this.name,
+    required this.rowSpan,
+    required this.colSpan,
+    required this.slots,
+  });
+
+  final String name;
+  final int rowSpan;
+  final int colSpan;
+
+  /// Slots relative to the module origin: each rect is offset by the
+  /// placement cell minus (1, 1).
+  final List<LayoutSlot> slots;
+
+  /// Audio player: five audio controls in a 1x5 strip.
+  static const LayoutModule audioPlayer = LayoutModule(
+    name: 'Audio player',
+    rowSpan: 1,
+    colSpan: 5,
+    slots: [
+      LayoutSlot(
+        rect: CellRect(rowStart: 1, colStart: 1, rowSpan: 1, colSpan: 1),
+        kind: SlotKind.button,
+        control: ControlId.audioVolumeDown,
+      ),
+      LayoutSlot(
+        rect: CellRect(rowStart: 1, colStart: 2, rowSpan: 1, colSpan: 1),
+        kind: SlotKind.button,
+        control: ControlId.audioPrevious,
+      ),
+      LayoutSlot(
+        rect: CellRect(rowStart: 1, colStart: 3, rowSpan: 1, colSpan: 1),
+        kind: SlotKind.button,
+        control: ControlId.audioPlayPause,
+      ),
+      LayoutSlot(
+        rect: CellRect(rowStart: 1, colStart: 4, rowSpan: 1, colSpan: 1),
+        kind: SlotKind.button,
+        control: ControlId.audioNext,
+      ),
+      LayoutSlot(
+        rect: CellRect(rowStart: 1, colStart: 5, rowSpan: 1, colSpan: 1),
+        kind: SlotKind.button,
+        control: ControlId.audioVolumeUp,
+      ),
+    ],
+  );
+
+  /// H-Shifter: every cell a hole. Slot contents are unspecified
+  /// (ASSUMPTION-006); the gap is recorded, not guessed.
+  static LayoutModule get hShifter => LayoutModule(
+    name: 'H-Shifter',
+    rowSpan: 4,
+    colSpan: 4,
+    slots: [
+      for (var row = 1; row <= 4; row++)
+        for (var col = 1; col <= 4; col++)
+          LayoutSlot(
+            rect: CellRect(
+              rowStart: row,
+              colStart: col,
+              rowSpan: 1,
+              colSpan: 1,
+            ),
+            kind: SlotKind.hole,
+          ),
+    ],
+  );
+
+}
+
+/// All shippable modules, including the hole-only H-Shifter.
+List<LayoutModule> get layoutModules => [
+  LayoutModule.audioPlayer,
+  LayoutModule.hShifter,
+];
+
+/// Places [module] as one unit with its origin at [at]'s top-left: every
+/// slot is offset by the placement cell. Refuses when the footprint leaves
+/// the grid or overlaps an already placed slot.
+LayoutEditResult placeModule(
+  DrivingLayout layout,
+  CellRect at,
+  LayoutModule module,
+) {
+  final placed = [
+    for (final slot in module.slots)
+      slot.copyWith(
+        rect: CellRect(
+          rowStart: at.rowStart + slot.rect.rowStart - 1,
+          colStart: at.colStart + slot.rect.colStart - 1,
+          rowSpan: slot.rect.rowSpan,
+          colSpan: slot.rect.colSpan,
+        ),
+      ),
+  ];
+  for (final slot in placed) {
+    if (!_inBounds(slot.rect)) {
+      return const EditRefused(EditRefusal.outOfBounds);
+    }
+    for (final existing in layout.slots) {
+      if (_overlaps(existing.rect, slot.rect)) {
+        return const EditRefused(EditRefusal.targetOccupied);
+      }
+    }
+  }
+  return EditApplied(
+    DrivingLayout(
+      name: layout.name,
+      slots: [...layout.slots, ...placed],
+    ),
+  );
+}

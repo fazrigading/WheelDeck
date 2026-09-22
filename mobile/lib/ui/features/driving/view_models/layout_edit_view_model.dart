@@ -100,6 +100,11 @@ class LayoutEditViewModel extends ChangeNotifier {
     _apply(dl.removeSlot(_working, at));
   }
 
+  /// Places [module] as one unit with its origin at [at].
+  void placeModule(dl.CellRect at, dl.LayoutModule module) {
+    _apply(dl.placeModule(_working, at, module));
+  }
+
   /// Saves the working layout under [name]. Returns false for a blank name;
   /// otherwise stores the snapshot and returns true.
   bool saveAs(String name) {

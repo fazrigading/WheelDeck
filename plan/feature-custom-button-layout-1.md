@@ -184,11 +184,11 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-027 | In `mobile/lib/data/services/driving_layout.dart`, add `class LayoutModule { final String name; final int rowSpan, colSpan; final List<LayoutSlot> slots; }`. A module is placed as one unit and its slots are offset by the placement rect. Satisfies REQ-009. | | |
-| TASK-028 | In the same file, define the **Audio player** module at 1 row x 5 columns holding `audioVolumeDown`, `audioPrevious`, `audioPlayPause`, `audioNext`, `audioVolumeUp`. All five identifiers already exist in `ControlId`. Satisfies REQ-010. | | |
-| TASK-029 | In the same file, define the **H-Shifter** module at 4x4. Its slot contents depend on TASK-005's gate logic, which is not yet specified; emit every cell as a hole and record the gap in section 8 rather than inventing placements. Satisfies REQ-010. | | |
-| TASK-030 | In `mobile/lib/ui/features/driving/views/layout_editor.dart`, add module placement to the add flow: a module is placed as one unit against a 4x4 or 1x5 free span, refused when no such span exists. Satisfies REQ-009. | | |
-| TASK-031 | Add to `mobile/test/ui/features/driving/layout_editor_test.dart`: placing the Audio player module at a free 1x5 span succeeds and yields five controls at the expected relative positions; placing it where no 1x5 span exists is refused. Satisfies REQ-009 and REQ-010. | | |
+| TASK-027 | In `mobile/lib/data/services/driving_layout.dart`, add `class LayoutModule { final String name; final int rowSpan, colSpan; final List<LayoutSlot> slots; }`. A module is placed as one unit and its slots are offset by the placement rect. Satisfies REQ-009. | ✅ | 2026-09-22 |
+| TASK-028 | In the same file, define the **Audio player** module at 1 row x 5 columns holding `audioVolumeDown`, `audioPrevious`, `audioPlayPause`, `audioNext`, `audioVolumeUp`. All five identifiers already exist in `ControlId`. Satisfies REQ-010. (All five verified present.) | ✅ | 2026-09-22 |
+| TASK-029 | In the same file, define the **H-Shifter** module at 4x4. Its slot contents depend on TASK-005's gate logic, which is not yet specified; emit every cell as a hole and record the gap in section 8 rather than inventing placements. Satisfies REQ-010. | ✅ | 2026-09-22 |
+| TASK-030 | In `mobile/lib/ui/features/driving/views/layout_editor.dart`, add module placement to the add flow: a module is placed as one unit against a 4x4 or 1x5 free span, refused when no such span exists. Satisfies REQ-009. (Picker module section + tap-to-place with shape-matched highlights.) | ✅ | 2026-09-22 |
+| TASK-031 | Add to `mobile/test/ui/features/driving/layout_editor_test.dart`: placing the Audio player module at a free 1x5 span succeeds and yields five controls at the expected relative positions; placing it where no 1x5 span exists is refused. Satisfies REQ-009 and REQ-010. | ✅ | 2026-09-22 |
 
 ### Implementation Phase 6
 

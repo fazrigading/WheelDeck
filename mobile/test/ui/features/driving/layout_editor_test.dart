@@ -22,6 +22,33 @@ void main() {
   late Map<ControlId, String> bindings;
   late LayoutEditViewModel edit;
 
+  DrivingLayout fixtureLayout() => const DrivingLayout(
+    name: 'Edit fixture',
+    slots: [
+      LayoutSlot(
+        rect: _hornAt,
+        kind: SlotKind.button,
+        control: ControlId.horn,
+      ),
+      LayoutSlot(
+        rect: CellRect(rowStart: 1, colStart: 3, rowSpan: 1, colSpan: 1),
+        kind: SlotKind.button,
+        control: ControlId.wipers,
+      ),
+      LayoutSlot(
+        rect: CellRect(rowStart: 5, colStart: 6, rowSpan: 2, colSpan: 2),
+        kind: SlotKind.wheel,
+      ),
+    ],
+  );
+
+  LayoutEditViewModel freshEdit(DrivingLayout layout) {
+    final vm = LayoutEditViewModel(initialLayout: layout);
+    vm.beginEdit();
+    addTearDown(vm.dispose);
+    return vm;
+  }
+
   setUp(() {
     input = DashboardInput();
     events = [];
@@ -29,35 +56,15 @@ void main() {
       (control, action) => events.add((control, action)),
     );
     bindings = {for (final c in ControlId.values) c: 'K'};
-    edit = LayoutEditViewModel(
-      initialLayout: DrivingLayout(
-        name: 'Edit fixture',
-        slots: [
-          LayoutSlot(
-            rect: _hornAt,
-            kind: SlotKind.button,
-            control: ControlId.horn,
-          ),
-          LayoutSlot(
-            rect: CellRect(rowStart: 1, colStart: 3, rowSpan: 1, colSpan: 1),
-            kind: SlotKind.button,
-            control: ControlId.wipers,
-          ),
-          const LayoutSlot(
-            rect: CellRect(rowStart: 5, colStart: 6, rowSpan: 2, colSpan: 2),
-            kind: SlotKind.wheel,
-          ),
-        ],
-      ),
-    );
-    edit.beginEdit();
-    addTearDown(edit.dispose);
+    edit = freshEdit(fixtureLayout());
   });
 
   Future<void> pumpEditor(
     WidgetTester tester, {
+    DrivingLayout? layout,
     Future<bool> Function(String name, DrivingLayout layout)? onSaveProfile,
   }) async {
+    if (layout != null) edit = freshEdit(layout);
     tester.view.physicalSize = reference;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -262,5 +269,55 @@ void main() {
 
     expect(saved.keys, ['Hooked']);
     expect(edit.savedProfiles, isEmpty);
+  });
+
+  testWidgets('TEST-009 audio module places at a free 1x5 span', (
+    tester,
+  ) async {
+    await pumpEditor(tester);
+
+    await tester.tap(find.byKey(const ValueKey('editor-add')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('add-module-Audio player')));
+    await tester.pumpAndSettle();
+
+    // Free row 2: tap cell (2,1).
+    await tester.tapAt(const Offset(80, 202.5));
+    await tester.pump();
+
+    final audio =
+        edit.workingLayout.slots
+            .where((slot) => slot.control?.name.startsWith('audio') ?? false)
+            .toList();
+    expect(audio.length, 5);
+    expect(audio[0].control, ControlId.audioVolumeDown);
+    expect(
+      audio[0].rect,
+      const CellRect(rowStart: 2, colStart: 1, rowSpan: 1, colSpan: 1),
+    );
+    expect(audio[4].control, ControlId.audioVolumeUp);
+    expect(
+      audio[4].rect,
+      const CellRect(rowStart: 2, colStart: 5, rowSpan: 1, colSpan: 1),
+    );
+    expect(edit.lastRefusal, isNull);
+  });
+
+  testWidgets('module refused where no matching free span exists', (
+    tester,
+  ) async {
+    await pumpEditor(tester, layout: DrivingLayout.sequential());
+
+    await tester.tap(find.byKey(const ValueKey('editor-add')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('add-module-H-Shifter')));
+    await tester.pumpAndSettle();
+
+    // The Sequential preset tiles the grid: no 4x4 span fits anywhere.
+    await tester.tapAt(const Offset(80, 67.5));
+    await tester.pump();
+
+    expect(edit.lastRefusal, EditRefusal.targetOccupied);
+    expect(find.byKey(const ValueKey('refusal-flash')), findsOneWidget);
   });
 }
