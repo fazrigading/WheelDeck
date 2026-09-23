@@ -396,12 +396,131 @@ public sealed class InputMapperTests
         Assert.True(_backend.LastButtonPressed);
     }
 
+    [Fact]
+    public void ActivePreset_DefaultsToSequential()
+    {
+        Assert.Equal(InputMapper.SequentialPreset, _mapper.ActivePreset);
+    }
+
+    [Fact]
+    public void ApplyButton_PresetScopedLookup_SequentialUnchanged()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+        _mapper.ActivePreset = "Sequential";
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Space, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_UnknownPreset_FallsBackToSequentialTables()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+        _mapper.ActivePreset = "NoSuchPreset";
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Space, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_HybridPriority_HoldsUnderAnotherPreset()
+    {
+        _mapper.Mode = MappingMode.ControllerButton;
+        _mapper.ActivePreset = "Real Automatic";
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.ParkingBrake,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(ButtonId.A, _backend.LastButtonId);
+        Assert.True(_backend.LastButtonPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_SimpleLeft_SendsNumpadDivide()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraSimpleLeft,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.NumpadDivide, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_SimpleRight_SendsNumpadMultiply()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraSimpleRight,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.NumpadMultiply, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyButton_SimpleRecenter_SendsNumpad5()
+    {
+        _mapper.Mode = MappingMode.SimulatedKeyPress;
+
+        _mapper.ApplyButton(new ButtonMessage
+        {
+            Control = ControlId.CameraPadRecenter,
+            Action = ActionType.Press
+        });
+
+        Assert.Equal(KeyCode.Numpad5, _backend.LastKeyCode);
+        Assert.True(_backend.LastKeyPressed);
+    }
+
+    [Fact]
+    public void ApplyState_RoutesCameraAxes()
+    {
+        _mapper.ApplyState(new StateMessage { CameraX = 0.5, CameraY = -0.5 });
+
+        Assert.Equal(0.5f, _backend.LastCameraX);
+        Assert.Equal(-0.5f, _backend.LastCameraY);
+    }
+
+    [Fact]
+    public void ApplyState_ClampsCameraAxesToMinusOneToOne()
+    {
+        _mapper.ApplyState(new StateMessage { CameraX = 5.0, CameraY = -5.0 });
+
+        Assert.Equal(1.0f, _backend.LastCameraX);
+        Assert.Equal(-1.0f, _backend.LastCameraY);
+    }
+
     private sealed class FakeBackend : VirtualOutputBackend
     {
         public float LastSteering { get; private set; }
         public float LastAccelerator { get; private set; }
         public float LastBrake { get; private set; }
         public float LastClutch { get; private set; }
+        public float LastCameraX { get; private set; }
+        public float LastCameraY { get; private set; }
 
         public KeyCode? LastKeyCode { get; private set; }
         public bool LastKeyPressed { get; private set; }
@@ -423,6 +542,8 @@ public sealed class InputMapperTests
                 case AxisType.Accelerator: LastAccelerator = value; break;
                 case AxisType.Brake: LastBrake = value; break;
                 case AxisType.Clutch: LastClutch = value; break;
+                case AxisType.CameraX: LastCameraX = value; break;
+                case AxisType.CameraY: LastCameraY = value; break;
             }
         }
 

@@ -1,25 +1,31 @@
 ---
 goal: Let the user move, resize, and add or remove dashboard controls, with profiles, modules, additional layout presets, and selectable camera control types
-version: 1.1
+version: 1.3
 date_created: 2026-09-17
-last_updated: 2026-09-17
+last_updated: 2026-09-22
 owner: Fazri Gading
-status: 'On Hold'
+status: 'Completed'
 tags: [feature, mobile, layout, editor, backlog]
 ---
 
 # Introduction
 
-![Status: On Hold](https://img.shields.io/badge/status-On%20Hold-orange)
+![Status: Complete](https://img.shields.io/badge/status-Complete-green)
+
+> **2026-09-22:** All phases complete — issues #64–#75 closed on
+> `feature/custom-button-layout`. Remaining: none; Semi-Analog stays deleted
+> until a real design exists.
+
+> **2026-09-22:** Phase 1 complete — TASK-001 through TASK-005 settled (see
+> Phase 1 table and section 7). DEP-002 cleared: the fixed Sequential placement
+> was judged good in the running app. Plan un-held (On Hold → Planned);
+> Phases 2 through 7 unblocked.
 
 This plan delivers a user-editable dashboard layout: the user moves controls
 between cells, adds and removes them, and saves the result as a profile. It then
 layers on modules (reusable multi-cell groups), additional layout presets, and
 selectable camera control types.
 
-The plan is **On Hold** because it depends on the placement work in
-`plan/feature-driving-dashboard-v2-1.md` being finished and judged. The editor's
-UX cannot be evaluated until the fixed Sequential placement is known to be good.
 Phase 1 exists to settle the design questions the editor raises; Phases 2 through
 7 are the build.
 
@@ -57,17 +63,17 @@ instead of replacing one.
   **H-Shifter**, 4x4.
 - **REQ-011**: The following layout presets ship alongside the existing
   Sequential preset: **Simple Automatic**, **Real Automatic**, **H-Shifter**.
-- **REQ-012**: The camera control type is selectable in Settings. Four types are
-  defined in REQ-013 through REQ-016.
+- **REQ-012**: The camera control type is selectable in Settings. Three types are
+  defined in REQ-013, REQ-014, and REQ-016. (Semi-Analog deleted per TASK-005.)
 - **REQ-013**: Camera type **Simple**: three buttons, each 3 rows x 1 column,
   inside a 3x3 module — Look Left Window (`Numpad/`), Recenter (`Numpad5`),
   Look Right Window (`Numpad*`).
 - **REQ-014**: Camera type **D-pad**: eight directions plus a center recenter.
   The four diagonals (up-left, up-right, down-left, down-right) do not exist in
   this type. This is the type shipped by the v2 plan and remains the default.
-- **REQ-015**: Camera type **Semi-Analog**: undecided. It requires its own
-  design pass before it can be specified. Phase 7 must not begin for this type
-  until REQ-015 is replaced with a concrete specification.
+- **REQ-015**: DELETED per TASK-005 (2026-09-22) — Semi-Analog had no design and
+  the Analog type already covers continuous-axis users. Re-add only with a
+  concrete specification.
 - **REQ-016**: Camera type **Analog**: no recenter key. All nine directions are
   available, driven by a movable sphere inside a circular container, visually
   similar to an Xbox or PlayStation analog stick. This type requires a
@@ -124,11 +130,11 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Confirm or override ASSUMPTION-001 (phone owns the layout; sync to the desktop is out of scope). Record the outcome by replacing ASSUMPTION-001's text in this file with a settled **REQ-018** bullet. If the outcome is desktop-authored, TASK-022 and TASK-023 change scope and the plan must be revised before Phase 4. | | |
-| TASK-002 | Confirm or override ASSUMPTION-002 (no transport between devices in this plan). If the outcome is that the desktop authors the layout, record the chosen transport — a JSON export and import file, a new WebSocket message type, or the phone pulling a desktop-authored file — as a new requirement, and add the corresponding `protocol/schema` entry to section 5. | | |
-| TASK-003 | Confirm or override ASSUMPTION-003 (overlapping drops are refused). If the outcome is push-neighbours or allow-overlap, replace REQ-005's text and add the resulting editor interaction rules to Phase 3 as new tasks. | | |
-| TASK-004 | Confirm or override ASSUMPTION-005 (one layout per device, not per aspect class). If a layout is needed per aspect class, add the aspect-keying rule to REQ-006 and add a migration task to Phase 4 covering profiles saved before the rule existed. | | |
-| TASK-005 | Replace REQ-015 with a concrete Semi-Analog specification, or delete REQ-015 and the Semi-Analog tasks from Phase 7. Record which was done in this file. | | |
+| TASK-001 | Confirm or override ASSUMPTION-001 (phone owns the layout; sync to the desktop is out of scope). Record the outcome by replacing ASSUMPTION-001's text in this file with a settled **REQ-018** bullet. If the outcome is desktop-authored, TASK-022 and TASK-023 change scope and the plan must be revised before Phase 4. **Outcome 2026-09-22: confirmed phone-owns; recorded in ASSUMPTION-001 as settled (no new REQ number — REQ-018 is already taken by the binding-table scope rule). No scope change to TASK-022/TASK-023.** | ✅ | 2026-09-22 |
+| TASK-002 | Confirm or override ASSUMPTION-002 (no transport between devices in this plan). If the outcome is that the desktop authors the layout, record the chosen transport — a JSON export and import file, a new WebSocket message type, or the phone pulling a desktop-authored file — as a new requirement, and add the corresponding `protocol/schema` entry to section 5. **Outcome 2026-09-22: confirmed no transport; no new requirement, no section 5 entry.** | ✅ | 2026-09-22 |
+| TASK-003 | Confirm or override ASSUMPTION-003 (overlapping drops are refused). If the outcome is push-neighbours or allow-overlap, replace REQ-005's text and add the resulting editor interaction rules to Phase 3 as new tasks. **Outcome 2026-09-22: confirmed refuse-overlap; REQ-005 unchanged, no new Phase 3 tasks.** | ✅ | 2026-09-22 |
+| TASK-004 | Confirm or override ASSUMPTION-005 (one layout per device, not per aspect class). If a layout is needed per aspect class, add the aspect-keying rule to REQ-006 and add a migration task to Phase 4 covering profiles saved before the rule existed. **Outcome 2026-09-22: confirmed one layout per device; REQ-006 unchanged, no Phase 4 migration task.** | ✅ | 2026-09-22 |
+| TASK-005 | Replace REQ-015 with a concrete Semi-Analog specification, or delete REQ-015 and the Semi-Analog tasks from Phase 7. Record which was done in this file. **Outcome 2026-09-22: deleted — REQ-015 removed, TASK-039 enum drops `semiAnalog`, TASK-045 removed, REQ-012 now reads three types. Re-add Semi-Analog only with a real design.** | ✅ | 2026-09-22 |
 
 ### Implementation Phase 2
 
@@ -137,13 +143,13 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-006 | In `mobile/lib/data/services/driving_layout.dart`, add value equality and a `copyWith` to `CellRect`, and a `copyWith` to `LayoutSlot` so both can be rebuilt during an edit without mutation. Satisfies REQ-001 and REQ-002. | | |
-| TASK-007 | In the same file, add `LayoutEditResult applyMove(DrivingLayout layout, CellRect from, CellRect to)` returning either the new layout or a refusal reason. Refuse when `to` overlaps an occupied slot, per REQ-005, and expose the reason so the editor can show why a drop failed. Satisfies REQ-005. | | |
-| TASK-008 | In the same file, add `LayoutEditResult addControl(DrivingLayout layout, CellRect at, ControlId control)` and `LayoutEditResult removeSlot(DrivingLayout layout, CellRect at)`. Both refuse when the target span is already occupied. Satisfies REQ-003. | | |
-| TASK-009 | In the same file, add `Set<CellRect> freeSpans(DrivingLayout layout, int rowSpan, int colSpan)` returning every position where a slot of the given span fits without overlap. The editor uses this to highlight valid drop targets, which is what enforces REQ-004's whole-cell constraint. Satisfies REQ-004. | | |
-| TASK-010 | Create `mobile/lib/ui/features/driving/view_models/layout_edit_view_model.dart`. It wraps a `DrivingLayout`, exposes `beginEdit()`, `cancelEdit()`, `move(from, to)`, `addControl(at, control)`, `remove(at)`, and `saveAs(String name)`, and exposes `freeSpans` for the current drag. Every mutation is best-effort and never throws, per GUD-002. Satisfies REQ-002, REQ-003, and REQ-017. | | |
-| TASK-011 | In `mobile/lib/ui/features/driving/views/block_grid.dart`, add an `editing` bool and an `onEditIntent` callback. When `editing` is true, route drag gestures on a slot to the edit view model instead of to the control's activation, so tapping a button in edit mode selects it rather than sending its event. Satisfies REQ-017. | | |
-| TASK-012 | In `mobile/lib/ui/features/driving/views/driving_view.dart`, add an edit-mode entry point and an edit-mode exit that restores normal input. Satisfies REQ-017. | | |
+| TASK-006 | In `mobile/lib/data/services/driving_layout.dart`, add value equality and a `copyWith` to `CellRect`, and a `copyWith` to `LayoutSlot` so both can be rebuilt during an edit without mutation. Satisfies REQ-001 and REQ-002. (`CellRect` equality predates this task; `copyWith` plus `LayoutSlot` equality added here.) | ✅ | 2026-09-22 |
+| TASK-007 | In the same file, add `LayoutEditResult applyMove(DrivingLayout layout, CellRect from, CellRect to)` returning either the new layout or a refusal reason. Refuse when `to` overlaps an occupied slot, per REQ-005, and expose the reason so the editor can show why a drop failed. Satisfies REQ-005. (Shipped as sealed `EditApplied`/`EditRefused` with `EditRefusal` reason.) | ✅ | 2026-09-22 |
+| TASK-008 | In the same file, add `LayoutEditResult addControl(DrivingLayout layout, CellRect at, ControlId control)` and `LayoutEditResult removeSlot(DrivingLayout layout, CellRect at)`. Both refuse when the target span is already occupied. Satisfies REQ-003. (`removeSlot` also refuses structural pedal/wheel slots, covering the Phase 3 structural rule at the primitive layer.) | ✅ | 2026-09-22 |
+| TASK-009 | In the same file, add `Set<CellRect> freeSpans(DrivingLayout layout, int rowSpan, int colSpan)` returning every position where a slot of the given span fits without overlap. The editor uses this to highlight valid drop targets, which is what enforces REQ-004's whole-cell constraint. Satisfies REQ-004. | ✅ | 2026-09-22 |
+| TASK-010 | Create `mobile/lib/ui/features/driving/view_models/layout_edit_view_model.dart`. It wraps a `DrivingLayout`, exposes `beginEdit()`, `cancelEdit()`, `move(from, to)`, `addControl(at, control)`, `remove(at)`, and `saveAs(String name)`, and exposes `freeSpans` for the current drag. Every mutation is best-effort and never throws, per GUD-002. Satisfies REQ-002, REQ-003, and REQ-017. | ✅ | 2026-09-22 |
+| TASK-011 | In `mobile/lib/ui/features/driving/views/block_grid.dart`, add an `editing` bool and an `onEditIntent` callback. When `editing` is true, route drag gestures on a slot to the edit view model instead of to the control's activation, so tapping a button in edit mode selects it rather than sending its event. Satisfies REQ-017. (AbsorbPointer + tap-to-`onEditIntent`; all inner controls suppressed.) | ✅ | 2026-09-22 |
+| TASK-012 | In `mobile/lib/ui/features/driving/views/driving_view.dart`, add an edit-mode entry point and an edit-mode exit that restores normal input. Satisfies REQ-017. (Entry FAB in rotatable mode; Done applies session layout, Cancel discards; connection untouched.) | ✅ | 2026-09-22 |
 
 ### Implementation Phase 3
 
@@ -152,13 +158,13 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-013 | Create `mobile/lib/ui/features/driving/views/layout_editor.dart`. It renders the current layout through the existing `BlockGrid` with `editing: true`, and overlays a `Positioned` highlight for every rect in `freeSpans` for the current drag span. Satisfies REQ-002 and REQ-004. | | |
-| TASK-014 | In the same file, make each occupied slot draggable. On drag start, capture the slot's span; on drag update, compute the target `CellRect` from the pointer position against the block geometry; on drag end, call `move(from, to)`. Highlight the candidate target only when it is in `freeSpans`. Satisfies REQ-002 and PERF-001. | | |
-| TASK-015 | In the same file, render a refusal when `applyMove` rejects a drop: flash the target red and leave the layout unchanged. Do not push neighbours, per REQ-005. Satisfies REQ-005. | | |
-| TASK-016 | In the same file, show a picker of controls available to add, sourced from every `ControlId` value that has a binding resolved in either input mapping mode. Placing one calls `addControl`. Satisfies REQ-003. | | |
-| TASK-017 | In the same file, add a remove affordance on each selected slot calling `remove`. Removing a `SlotKind.pedal` or `SlotKind.wheel` slot is refused, because those slots are structural rather than additive. Satisfies REQ-003. | | |
-| TASK-018 | In the same file, add a save action that prompts for a profile name and calls `saveAs`. A name matching a developer preset is refused, per REQ-007. Satisfies REQ-006 and REQ-007. | | |
-| TASK-019 | Create `mobile/test/ui/features/driving/layout_editor_test.dart` asserting: a move into a free span succeeds; a move onto an occupied span is refused and the layout is unchanged; a move on a control outside edit mode still sends its activation event; a removal of a structural slot is refused; and a save using a developer preset's name is refused. Satisfies REQ-002, REQ-003, REQ-005, and REQ-007. | | |
+| TASK-013 | Create `mobile/lib/ui/features/driving/views/layout_editor.dart`. It renders the current layout through the existing `BlockGrid` with `editing: true`, and overlays a `Positioned` highlight for every rect in `freeSpans` for the current drag span. Satisfies REQ-002 and REQ-004. (DragTarget overlay per free span; candidate greens only inside `freeSpans`.) | ✅ | 2026-09-22 |
+| TASK-014 | In the same file, make each occupied slot draggable. On drag start, capture the slot's span; on drag update, compute the target `CellRect` from the pointer position against the block geometry; on drag end, call `move(from, to)`. Highlight the candidate target only when it is in `freeSpans`. Satisfies REQ-002 and PERF-001. (`Draggable` per slot via `editSlotWrapper`; feedback in overlay, hover rebuilds only its target, model notified once on drop.) | ✅ | 2026-09-22 |
+| TASK-015 | In the same file, render a refusal when `applyMove` rejects a drop: flash the target red and leave the layout unchanged. Do not push neighbours, per REQ-005. Satisfies REQ-005. | ✅ | 2026-09-22 |
+| TASK-016 | In the same file, show a picker of controls available to add, sourced from every `ControlId` value that has a binding resolved in either input mapping mode. Placing one calls `addControl`. Satisfies REQ-003. (Picker + tap-to-place 1x1; occupied targets flash refusal. Source via `bindingForMode` both modes.) | ✅ | 2026-09-22 |
+| TASK-017 | In the same file, add a remove affordance on each selected slot calling `remove`. Removing a `SlotKind.pedal` or `SlotKind.wheel` slot is refused, because those slots are structural rather than additive. Satisfies REQ-003. (Toolbar Remove on selection; primitive refuses pedal/wheel.) | ✅ | 2026-09-22 |
+| TASK-018 | In the same file, add a save action that prompts for a profile name and calls `saveAs`. A name matching a developer preset is refused, per REQ-007. Satisfies REQ-006 and REQ-007. (Inline dialog validation; canonical preset list lands with #69 store.) | ✅ | 2026-09-22 |
+| TASK-019 | Create `mobile/test/ui/features/driving/layout_editor_test.dart` asserting: a move into a free span succeeds; a move onto an occupied span is refused and the layout is unchanged; a move on a control outside edit mode still sends its activation event; a removal of a structural slot is refused; and a save using a developer preset's name is refused. Satisfies REQ-002, REQ-003, REQ-005, and REQ-007. (TEST-001/002 done in #67; activation routing covered in `block_grid_test.dart`; structural-save assertions land with #68.) | ✅ | 2026-09-22 |
 
 ### Implementation Phase 4
 
@@ -167,13 +173,13 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-020 | Create `mobile/lib/data/services/layout_profile.dart`. Define `class LayoutProfile { final String name; final DrivingLayout layout; final bool isDeveloperPreset; }` and a `LayoutProfileStore` following PAT-001, serialising to `SharedPreferences` under the key `wheeldeck.layout_profiles`. Satisfies REQ-006 and CON-002. | | |
-| TASK-021 | In the same file, serialise each profile as a JSON string via `dart:convert`, holding the profile name, an `isDeveloperPreset` flag always written false, and one entry per slot with its rect and control wire value. Satisfies REQ-006 and CON-002. | | |
-| TASK-022 | In the same file, drop unknown control wire values on load and substitute `SlotKind.hole`, so a profile saved by an older build still loads after an enum change. Follow PAT-001's precedent in `DashboardVisibility.load`. Satisfies CON-002. | | |
-| TASK-023 | In the same file, expose `List<LayoutProfile> loadAll()` merging the persisted user profiles with the developer presets compiled into the app. A persisted entry whose name matches a developer preset is ignored on load, enforcing REQ-007 at the storage boundary as well as in the editor. Satisfies REQ-006 and REQ-007. | | |
-| TASK-024 | In `mobile/lib/ui/features/driving/view_models/driving_view_model.dart`, add the active profile name, load it in `init`, expose it, and resolve the active `DrivingLayout` from it. Add `selectProfile(String name)` and include the active profile in `resetToDefaults`. Satisfies REQ-006. | | |
-| TASK-025 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `Layout profile` section listing every profile from `LayoutProfileStore.loadAll()`, marking developer presets as read-only. Selecting one calls `selectProfile`. Satisfies REQ-006 and REQ-007. | | |
-| TASK-026 | Create `mobile/test/data/services/layout_profile_test.dart` asserting: a saved profile round-trips to an identical layout; an unknown control wire value loads as a hole; a persisted entry naming a developer preset is ignored; and a rename preserves the layout. Satisfies REQ-006, REQ-007, and CON-002. | | |
+| TASK-020 | Create `mobile/lib/data/services/layout_profile.dart`. Define `class LayoutProfile { final String name; final DrivingLayout layout; final bool isDeveloperPreset; }` and a `LayoutProfileStore` following PAT-001, serialising to `SharedPreferences` under the key `wheeldeck.layout_profiles`. Satisfies REQ-006 and CON-002. | ✅ | 2026-09-22 |
+| TASK-021 | In the same file, serialise each profile as a JSON string via `dart:convert`, holding the profile name, an `isDeveloperPreset` flag always written false, and one entry per slot with its rect and control wire value. Satisfies REQ-006 and CON-002. (Plus kind/pedal so round-trips are identical.) | ✅ | 2026-09-22 |
+| TASK-022 | In the same file, drop unknown control wire values on load and substitute `SlotKind.hole`, so a profile saved by an older build still loads after an enum change. Follow PAT-001's precedent in `DashboardVisibility.load`. Satisfies CON-002. | ✅ | 2026-09-22 |
+| TASK-023 | In the same file, expose `List<LayoutProfile> loadAll()` merging the persisted user profiles with the developer presets compiled into the app. A persisted entry whose name matches a developer preset is ignored on load, enforcing REQ-007 at the storage boundary as well as in the editor. Satisfies REQ-006 and REQ-007. | ✅ | 2026-09-22 |
+| TASK-024 | In `mobile/lib/ui/features/driving/view_models/driving_view_model.dart`, add the active profile name, load it in `init`, expose it, and resolve the active `DrivingLayout` from it. Add `selectProfile(String name)` and include the active profile in `resetToDefaults`. Satisfies REQ-006. (Reset zeroes the active name in `SettingsViewModel.resetToDefaults`; selection/refresh flow through the store.) | ✅ | 2026-09-22 |
+| TASK-025 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `Layout profile` section listing every profile from `LayoutProfileStore.loadAll()`, marking developer presets as read-only. Selecting one calls `selectProfile`. Satisfies REQ-006 and REQ-007. (Rotatable-only section via `SettingsViewModel`.) | ✅ | 2026-09-22 |
+| TASK-026 | Create `mobile/test/data/services/layout_profile_test.dart` asserting: a saved profile round-trips to an identical layout; an unknown control wire value loads as a hole; a persisted entry naming a developer preset is ignored; and a rename preserves the layout. Satisfies REQ-006, REQ-007, and CON-002. | ✅ | 2026-09-22 |
 
 ### Implementation Phase 5
 
@@ -182,11 +188,11 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-027 | In `mobile/lib/data/services/driving_layout.dart`, add `class LayoutModule { final String name; final int rowSpan, colSpan; final List<LayoutSlot> slots; }`. A module is placed as one unit and its slots are offset by the placement rect. Satisfies REQ-009. | | |
-| TASK-028 | In the same file, define the **Audio player** module at 1 row x 5 columns holding `audioVolumeDown`, `audioPrevious`, `audioPlayPause`, `audioNext`, `audioVolumeUp`. All five identifiers already exist in `ControlId`. Satisfies REQ-010. | | |
-| TASK-029 | In the same file, define the **H-Shifter** module at 4x4. Its slot contents depend on TASK-005's gate logic, which is not yet specified; emit every cell as a hole and record the gap in section 8 rather than inventing placements. Satisfies REQ-010. | | |
-| TASK-030 | In `mobile/lib/ui/features/driving/views/layout_editor.dart`, add module placement to the add flow: a module is placed as one unit against a 4x4 or 1x5 free span, refused when no such span exists. Satisfies REQ-009. | | |
-| TASK-031 | Add to `mobile/test/ui/features/driving/layout_editor_test.dart`: placing the Audio player module at a free 1x5 span succeeds and yields five controls at the expected relative positions; placing it where no 1x5 span exists is refused. Satisfies REQ-009 and REQ-010. | | |
+| TASK-027 | In `mobile/lib/data/services/driving_layout.dart`, add `class LayoutModule { final String name; final int rowSpan, colSpan; final List<LayoutSlot> slots; }`. A module is placed as one unit and its slots are offset by the placement rect. Satisfies REQ-009. | ✅ | 2026-09-22 |
+| TASK-028 | In the same file, define the **Audio player** module at 1 row x 5 columns holding `audioVolumeDown`, `audioPrevious`, `audioPlayPause`, `audioNext`, `audioVolumeUp`. All five identifiers already exist in `ControlId`. Satisfies REQ-010. (All five verified present.) | ✅ | 2026-09-22 |
+| TASK-029 | In the same file, define the **H-Shifter** module at 4x4. Its slot contents depend on TASK-005's gate logic, which is not yet specified; emit every cell as a hole and record the gap in section 8 rather than inventing placements. Satisfies REQ-010. | ✅ | 2026-09-22 |
+| TASK-030 | In `mobile/lib/ui/features/driving/views/layout_editor.dart`, add module placement to the add flow: a module is placed as one unit against a 4x4 or 1x5 free span, refused when no such span exists. Satisfies REQ-009. (Picker module section + tap-to-place with shape-matched highlights.) | ✅ | 2026-09-22 |
+| TASK-031 | Add to `mobile/test/ui/features/driving/layout_editor_test.dart`: placing the Audio player module at a free 1x5 span succeeds and yields five controls at the expected relative positions; placing it where no 1x5 span exists is refused. Satisfies REQ-009 and REQ-010. | ✅ | 2026-09-22 |
 
 ### Implementation Phase 6
 
@@ -195,19 +201,19 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|----------|
-| TASK-032 | Confirm that every control the three presets call for exists in `ControlId` on both sides. The Sequential preset's Phase 5, 6, and 7 additions in `plan/feature-driving-dashboard-v2-1.md` are expected to cover this; record any control still missing and add it following that plan's CON-003 contract, which requires a schema entry in the same change as the enum entry. Satisfies REQ-011. | | |
-| TASK-033 | Add `static DrivingLayout simpleAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. | | |
-| TASK-034 | Add `static DrivingLayout realAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. | | |
-| TASK-035 | Add `static DrivingLayout hShifter()` to `driving_layout.dart`, placing the H-Shifter module from TASK-029. Satisfies REQ-010 and REQ-011. | | |
-| TASK-036 | Register the three presets in `LayoutProfileStore.loadAll()` as developer presets, per TASK-023. Satisfies REQ-007 and REQ-011. | | |
+| TASK-032 | Confirm that every control the three presets call for exists in `ControlId` on both sides. The Sequential preset's Phase 5, 6, and 7 additions in `plan/feature-driving-dashboard-v2-1.md` are expected to cover this; record any control still missing and add it following that plan's CON-003 contract, which requires a schema entry in the same change as the enum entry. Satisfies REQ-011. (2026-09-22: all covered — PRND exists mobile/desktop/schema; no additions.) | ✅ | 2026-09-22 |
+| TASK-033 | Add `static DrivingLayout simpleAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. (Sequential transform; gear cells holed.) | ✅ | 2026-09-22 |
+| TASK-034 | Add `static DrivingLayout realAutomatic()` to `driving_layout.dart`. Satisfies REQ-011. (Gear cells become Drive/Reverse; Neutral already in block F.) | ✅ | 2026-09-22 |
+| TASK-035 | Add `static DrivingLayout hShifter()` to `driving_layout.dart`, placing the H-Shifter module from TASK-029. Satisfies REQ-010 and REQ-011. (Module lands on Block A at (1,1); clutch/gears yield to physical hardware.) | ✅ | 2026-09-22 |
+| TASK-036 | Register the three presets in `LayoutProfileStore.loadAll()` as developer presets, per TASK-023. Satisfies REQ-007 and REQ-011. | ✅ | 2026-09-22 |
 | TASK-037 | Add matching keyboard entries to
   `mobile/lib/data/services/controller_preset.dart` for any control the three
-  presets introduce that is not already present. Satisfies REQ-011. | | |
+  presets introduce that is not already present. Satisfies REQ-011. (2026-09-22: no-op — presets introduce no new ControlIds; Drive/Reverse/Neutral ship unbound user-set-able, mirroring the desktop tables.) | ✅ | 2026-09-22 |
 | TASK-038 | Extend `mobile/test/data/services/driving_layout_test.dart` from
   `plan/feature-driving-dashboard-v2-1.md` with the same structural assertions
   for each new preset: slots tile their blocks without overlap, and every
-  non-null slot control exists in `ControlId.values`. Satisfies REQ-011. | | |
-| TASK-047 | Scope the desktop binding tables per active preset once REQ-011's presets exist: extend `InputMapper` with per-preset key and button tables (or a preset overlay applied at preset-selection time), so each preset carries its own defaults per REQ-018. Satisfies REQ-018. | | |
+  non-null slot control exists in `ControlId.values`. Satisfies REQ-011. | ✅ | 2026-09-22 |
+| TASK-047 | Scope the desktop binding tables per active preset once REQ-011's presets exist: extend `InputMapper` with per-preset key and button tables (or a preset overlay applied at preset-selection time), so each preset carries its own defaults per REQ-018. Satisfies REQ-018. (Preset overlays in `InputMapper` with Sequential fallback; active preset rides the mapping frame; overlays empty — all presets share Sequential defaults, PRND intentionally unbound.) | ✅ | 2026-09-22 |
 
 ### Implementation Phase 7
 
@@ -216,14 +222,14 @@ instead of replacing one.
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|----------|
-| TASK-039 | Create `mobile/lib/data/services/camera_control_type.dart` following PAT-001: `enum CameraControlType { dpad, simple, semiAnalog, analog }` with wire values, a `prefsKey` of `wheeldeck.camera_control_type`, and a `fallback` of `dpad`. Satisfies REQ-012 and CON-002. | | |
-| TASK-040 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `Camera control` section with a `SegmentedButton` over `CameraControlType`, visible only when the layout contains a camera pad slot. Satisfies REQ-012. | | |
-| TASK-041 | In `mobile/lib/ui/features/driving/views/camera_pad.dart`, dispatch on the selected type, keeping the existing D-pad implementation as the `dpad` branch. Satisfies REQ-012 and REQ-014. | | |
-| TASK-042 | In the same file, implement the `simple` branch: three buttons each 3 rows x 1 column inside the 3x3 region — Look Left Window on `Numpad/`, Recenter on `Numpad5`, Look Right Window on `Numpad*`. Add `KeyCode.NumpadDivide` and `KeyCode.NumpadMultiply` to `desktop/WheelDeck.Core/Output/KeyCode.cs` and to **both** backend key tables, per CON-002 of `plan/feature-driving-dashboard-v2-1.md`. Satisfies REQ-013. | | |
-| TASK-043 | Implement the `analog` branch's protocol addition before its UI: add an interior-camera axis to the state message and to `InputMapper.ApplyState` in `desktop/WheelDeck.Core/Input/InputMapper.cs`, following the existing steering axis path. This is CON-004's gated protocol work. Satisfies REQ-016 and CON-004. | | |
-| TASK-044 | Implement the `analog` branch's UI in `camera_pad.dart`: a movable sphere inside a circular container reporting continuous x and y, visually modelled on a controller analog stick, with no recenter key. Satisfies REQ-016. | | |
-| TASK-045 | Implement the `semiAnalog` branch only if TASK-005 replaced REQ-015 with a concrete specification. Otherwise skip this task and leave `semiAnalog` mapping to the `dpad` branch. Satisfies REQ-015. | | |
-| TASK-046 | Create `mobile/test/ui/features/driving/camera_control_type_test.dart` asserting: each type renders its documented shape; the type persists across a reload; `resetToDefaults` restores `dpad`; and the Simple type emits `NumpadDivide`, `Numpad5`, and `NumpadMultiply`. Satisfies REQ-012, REQ-013, and REQ-014. | | |
+| TASK-039 | Create `mobile/lib/data/services/camera_control_type.dart` following PAT-001: `enum CameraControlType { dpad, simple, analog }` with wire values, a `prefsKey` of `wheeldeck.camera_control_type`, and a `fallback` of `dpad`. (`semiAnalog` removed per TASK-005.) Satisfies REQ-012 and CON-002. | ✅ | 2026-09-22 |
+| TASK-040 | In `mobile/lib/ui/features/settings/views/settings_screen.dart`, add a `Camera control` section with a `SegmentedButton` over `CameraControlType`, visible only when the layout contains a camera pad slot. Satisfies REQ-012. (Rotatable-gated + `hasCameraPad` from the active layout.) | ✅ | 2026-09-22 |
+| TASK-041 | In `mobile/lib/ui/features/driving/views/camera_pad.dart`, dispatch on the selected type, keeping the existing D-pad implementation as the `dpad` branch. Satisfies REQ-012 and REQ-014. (Simple/Analog branches placeholder until #74/#75.) | ✅ | 2026-09-22 |
+| TASK-042 | In the same file, implement the `simple` branch: three buttons each 3 rows x 1 column inside the 3x3 region — Look Left Window on `Numpad/`, Recenter on `Numpad5`, Look Right Window on `Numpad*`. Add `KeyCode.NumpadDivide` and `KeyCode.NumpadMultiply` to `desktop/WheelDeck.Core/Output/KeyCode.cs` and to **both** backend key tables, per CON-002 of `plan/feature-driving-dashboard-v2-1.md`. Satisfies REQ-013. (Plus `cameraSimpleLeft/Right` identifiers mobile/desktop/schema per ADR-0006; recenter reuses `cameraPadRecenter`.) | ✅ | 2026-09-22 |
+| TASK-043 | Implement the `analog` branch's protocol addition before its UI: add an interior-camera axis to the state message and to `InputMapper.ApplyState` in `desktop/WheelDeck.Core/Input/InputMapper.cs`, following the existing steering axis path. This is CON-004's gated protocol work. Satisfies REQ-016 and CON-004. (cameraX/cameraY state fields both sides + schema; `AxisType.CameraX/Y`; right-stick output Windows, ABS_RX/RY Linux.) | ✅ | 2026-09-22 |
+| TASK-044 | Implement the `analog` branch's UI in `camera_pad.dart`: a movable sphere inside a circular container reporting continuous x and y, visually modelled on a controller analog stick, with no recenter key. Satisfies REQ-016. (Unit-circle clamp, release springs to center, reports via state stream.) | ✅ | 2026-09-22 |
+| TASK-045 | DELETED per TASK-005 (2026-09-22) — REQ-015 removed, no `semiAnalog` branch. | — | 2026-09-22 |
+| TASK-046 | Create `mobile/test/ui/features/driving/camera_control_type_test.dart` asserting: each type renders its documented shape; the type persists across a reload; `resetToDefaults` restores `dpad`; and the Simple type emits `NumpadDivide`, `Numpad5`, and `NumpadMultiply`. Satisfies REQ-012, REQ-013, and REQ-014. (Covered across `camera_control_type_test.dart` in #73/#74/#75.) | ✅ | 2026-09-22 |
 
 ## 3. Alternatives
 
@@ -356,24 +362,22 @@ instead of replacing one.
   profiles. Mitigation: profiles are small and the list is read on screen entry,
   not per frame. If it becomes measurable, cache the merged list and invalidate
   on write.
-- **RISK-005**: REQ-015's Semi-Analog type is undefined, so its Phase 7 task
-  may be skipped and leave an enum value with no implementation. Mitigation:
-  TASK-045 explicitly maps `semiAnalog` to the `dpad` branch when unspecified, so
-  selecting it is never broken, only indistinguishable from D-pad.
-- **ASSUMPTION-001**: The phone owns the layout. Desktop-authored arrangement is
-  out of scope for this plan. Settled or overridden by TASK-001.
-- **ASSUMPTION-002**: There is no transport between the phone and the desktop for
-  layout data in this plan. Settled or overridden by TASK-002.
-- **ASSUMPTION-003**: An overlapping drop is refused rather than pushing
-  neighbours or allowing overlap. Predictable and trivially undoable, since the
-  layout is unchanged. Settled or overridden by TASK-003.
+- **RISK-005**: Closed 2026-09-22 — REQ-015 deleted and TASK-045 removed per
+  TASK-005, so no unspecified enum value remains.
+- **ASSUMPTION-001**: SETTLED 2026-09-22 (TASK-001) — confirmed: the phone owns
+  the layout; desktop-authored arrangement stays out of scope.
+- **ASSUMPTION-002**: SETTLED 2026-09-22 (TASK-002) — confirmed: no transport
+  between phone and desktop for layout data in this plan.
+- **ASSUMPTION-003**: SETTLED 2026-09-22 (TASK-003) — confirmed: an overlapping
+  drop is refused rather than pushing neighbours or allowing overlap.
+  Predictable and trivially undoable, since the layout is unchanged.
 - **ASSUMPTION-004**: A profile captures layout only; bindings, pedal sides, and
   visibility remain global. Not gated by a Phase 1 task: no requirement in this
   plan depends on it except REQ-008, which states it directly. Revisit if a user
   expects a profile to carry their bindings too.
-- **ASSUMPTION-005**: One layout applies per device, not per aspect class. The
-  cell model is proportional, so a layout authored at one aspect reflows
-  acceptably at another. Settled or overridden by TASK-004.
+- **ASSUMPTION-005**: SETTLED 2026-09-22 (TASK-004) — confirmed: one layout
+  applies per device, not per aspect class. The cell model is proportional, so a
+  layout authored at one aspect reflows acceptably at another.
 - **ASSUMPTION-006**: The H-Shifter module's slot contents are not yet specified.
   TASK-029 emits holes and records the gap rather than guessing.
 
@@ -389,5 +393,5 @@ instead of replacing one.
 - `plan/references/steering-wheel-button-research.md` — button-layout research
   that informs the H-Shifter module's contents, which ASSUMPTION-006 leaves open.
 - `docs/adr/0006-camera-pad-wire-identifiers.md` — camera control types
-  (REQ-013, REQ-015, REQ-016) add their own wire identifier sets under the same
+  (REQ-013, REQ-016) add their own wire identifier sets under the same
   pattern.

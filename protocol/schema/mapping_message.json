@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://wheeldeck.dev/schema/mapping_message.json",
   "title": "WheelDeck mapping message",
-  "description": "Mapping-mode switch sent by the phone. The desktop applies it to InputMapper.Mode for the session; the desktop restarts in keyboard mode.",
+  "description": "Mapping-mode switch sent by the phone. The desktop applies it to InputMapper.Mode for the session; the desktop restarts in keyboard mode. The optional preset scopes the binding tables per layout preset (REQ-018).",
   "type": "object",
   "required": [
     "type",
@@ -19,6 +19,10 @@
         "gamepad"
       ],
       "description": "keyboard: simulated key presses. gamepad: virtual-controller buttons with keyboard fallback for controls the button table leaves None."
+    },
+    "preset": {
+      "type": "string",
+      "description": "Active layout preset name (e.g. Sequential). Omitted or empty keeps the current preset."
     }
   },
   "additionalProperties": false

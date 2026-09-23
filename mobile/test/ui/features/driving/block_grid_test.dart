@@ -252,4 +252,65 @@ void main() {
     // Release always reports the spring-back to zero.
     expect(steering.last, 0.0);
   });
+
+  Future<void> pumpEditGrid(
+    WidgetTester tester, {
+    bool editing = true,
+    void Function(CellRect rect)? onEditIntent,
+  }) async {
+    const layout = DrivingLayout(
+      name: 'Edit fixture',
+      slots: [
+        LayoutSlot(
+          rect: CellRect(rowStart: 1, colStart: 1, rowSpan: 1, colSpan: 1),
+          kind: SlotKind.button,
+          control: ControlId.horn,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BlockGrid(
+            layout: layout,
+            input: input,
+            bindingFor: (control) => bindings[control] ?? '-',
+            pedalInput: PedalInput(),
+            shownPedals: const {},
+            degrees: 270,
+            onSteering: steering.add,
+            onCameraPadModeSwitch: () {},
+            editing: editing,
+            onEditIntent: onEditIntent,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+
+  testWidgets('editing taps select instead of sending events', (tester) async {
+    final intents = <CellRect>[];
+    await pumpEditGrid(tester, onEditIntent: intents.add);
+
+    await tester.tap(find.byKey(const ValueKey('dashboard-horn')));
+    await tester.pump();
+
+    expect(events, isEmpty);
+    expect(intents, [
+      const CellRect(rowStart: 1, colStart: 1, rowSpan: 1, colSpan: 1),
+    ]);
+  });
+
+  testWidgets('outside edit mode taps still send control events', (
+    tester,
+  ) async {
+    await pumpEditGrid(tester, editing: false);
+
+    await tester.tap(find.byKey(const ValueKey('dashboard-horn')));
+    await tester.pump();
+
+    expect(events, isNotEmpty);
+    expect(events.first.$1, ControlId.horn);
+  });
 }

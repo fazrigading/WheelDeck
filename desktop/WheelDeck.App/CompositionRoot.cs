@@ -128,6 +128,10 @@ public sealed class CompositionRoot
         InputMapper.Mode = mapping.Mode.Equals("gamepad", StringComparison.OrdinalIgnoreCase)
             ? MappingMode.ControllerButton
             : MappingMode.SimulatedKeyPress;
+        if (!string.IsNullOrEmpty(mapping.Preset))
+        {
+            InputMapper.ActivePreset = mapping.Preset;
+        }
     }
 
     /// <summary>Tells a phone with a stale token to re-pair. Fire-and-forget:
