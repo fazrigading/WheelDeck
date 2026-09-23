@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
@@ -34,6 +35,11 @@ class BlockGrid extends StatelessWidget {
     this.cameraPadMode = CameraPadMode.fallback,
     required this.onCameraPadModeSwitch,
     this.onBindRequested,
+    this.cameraControlType = CameraControlType.dpad,
+    this.onAnalog,
+    this.editing = false,
+    this.onEditIntent,
+    this.editSlotWrapper,
   });
 
   final DrivingLayout layout;
@@ -63,6 +69,28 @@ class BlockGrid extends StatelessWidget {
   final VoidCallback onCameraPadModeSwitch;
   final ValueChanged<ControlId>? onBindRequested;
 
+  /// Which camera control shape the pad slot renders.
+  final CameraControlType cameraControlType;
+
+  /// Reports analog stick positions to the state stream.
+  final ValueChanged<Offset>? onAnalog;
+
+  /// When true, slot gestures select instead of activating: every slot is
+  /// absorbed and a tap reports its rect through [onEditIntent].
+  final bool editing;
+
+  /// Fires with the tapped slot's rect while [editing]; null otherwise.
+  final ValueChanged<CellRect>? onEditIntent;
+
+  /// Wraps the tap-to-select tile of each slot while [editing], so the
+  /// editor can add drag handling around it. Null keeps the plain tile.
+  final Widget Function(
+    BuildContext context,
+    LayoutSlot slot,
+    Widget child,
+  )?
+  editSlotWrapper;
+
   /// The global grid the layout slots address.
   static const int gridRows = 8;
   static const int gridCols = 15;
@@ -81,12 +109,29 @@ class BlockGrid extends StatelessWidget {
                 top: (slot.rect.rowStart - 1) * cellH,
                 width: slot.rect.colSpan * cellW,
                 height: slot.rect.rowSpan * cellH,
-                child: _buildSlot(slot, cellW, cellH),
+                child:
+                    editing
+                        ? _editingTile(context, slot, cellW, cellH)
+                        : _buildSlot(slot, cellW, cellH),
               ),
           ],
         );
       },
     );
+  }
+
+  Widget _editingTile(
+    BuildContext context,
+    LayoutSlot slot,
+    double cellW,
+    double cellH,
+  ) {
+    final tile = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onEditIntent?.call(slot.rect),
+      child: AbsorbPointer(child: _buildSlot(slot, cellW, cellH)),
+    );
+    return editSlotWrapper?.call(context, slot, tile) ?? tile;
   }
 
   Widget _buildSlot(LayoutSlot slot, double cellW, double cellH) {
@@ -134,6 +179,8 @@ class BlockGrid extends StatelessWidget {
           bindingFor: bindingFor,
           onModeSwitch: onCameraPadModeSwitch,
           onBindRequested: onBindRequested,
+          controlType: cameraControlType,
+          onAnalog: onAnalog,
         );
       case SlotKind.hole:
         return DashboardControl(

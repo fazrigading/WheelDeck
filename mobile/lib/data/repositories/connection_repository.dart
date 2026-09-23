@@ -42,12 +42,16 @@ class ConnectionRepository {
     required double accelerator,
     required double brake,
     required double clutch,
+    double cameraX = 0.0,
+    double cameraY = 0.0,
   }) =>
       _client.sendState(
         steering: steering,
         accelerator: accelerator,
         brake: brake,
         clutch: clutch,
+        cameraX: cameraX,
+        cameraY: cameraY,
       );
 
   /// Sends a `button` frame for a dashboard control event.
@@ -55,6 +59,6 @@ class ConnectionRepository {
       _client.sendButtonEvent(control, action);
 
   /// Sends the desired dashboard input mapping (`keyboard` or `gamepad`).
-  void sendMappingMode(InputMapping mapping) =>
-      _client.sendMappingMode(mapping);
+  void sendMappingMode(InputMapping mapping, {String? preset}) =>
+      _client.sendMappingMode(mapping, preset: preset);
 }

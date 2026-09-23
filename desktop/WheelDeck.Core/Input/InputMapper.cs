@@ -7,10 +7,30 @@ namespace WheelDeck.Core.Input;
 /// Translates incoming state and button messages into virtual output calls. Axes always
 /// map to SetAxis; dashboard controls route through the hybrid priority described on
 /// <see cref="ApplyButton"/>. Default mode is simulated key presses, matching ETS2's
-/// default keybindings.
+/// default keybindings. Binding tables are preset-scoped (REQ-018): each layout
+/// preset may overlay its own defaults, falling back to the Sequential tables.
 /// </summary>
 public sealed class InputMapper
 {
+    /// <summary>Default preset scope: the global tables below are its own.</summary>
+    public const string SequentialPreset = "Sequential";
+
+    /// <summary>Active layout preset, set from the mapping frame's preset
+    /// field. Unknown names fall back to the Sequential tables.</summary>
+    public string ActivePreset { get; set; } = SequentialPreset;
+
+    /// <summary>Per-preset key overlays. Empty today: every preset shares the
+    /// Sequential defaults (PRND intentionally stays unbound per the
+    /// user-set-able convention), so lookups fall through to the globals.
+    /// Add a preset entry here the day its defaults diverge.</summary>
+    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<ControlId, KeyCode>> PresetKeyOverlays =
+        new Dictionary<string, IReadOnlyDictionary<ControlId, KeyCode>>();
+
+    /// <summary>Per-preset button overlays, same fall-through rule as
+    /// <see cref="PresetKeyOverlays"/>.</summary>
+    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<ControlId, ButtonId>> PresetButtonOverlays =
+        new Dictionary<string, IReadOnlyDictionary<ControlId, ButtonId>>();
+
     private static readonly IReadOnlyDictionary<ControlId, KeyCode> DefaultKeyBindings =
         new Dictionary<ControlId, KeyCode>
         {
@@ -111,7 +131,9 @@ public sealed class InputMapper
             [ControlId.CameraPadArrowUp] = KeyCode.ArrowUp,
             [ControlId.CameraPadArrowDown] = KeyCode.ArrowDown,
             [ControlId.CameraPadArrowLeft] = KeyCode.ArrowLeft,
-            [ControlId.CameraPadArrowRight] = KeyCode.ArrowRight
+            [ControlId.CameraPadArrowRight] = KeyCode.ArrowRight,
+            [ControlId.CameraSimpleLeft] = KeyCode.NumpadDivide,
+            [ControlId.CameraSimpleRight] = KeyCode.NumpadMultiply
         };
 
     private static readonly IReadOnlyDictionary<ControlId, ButtonId> DefaultButtonBindings =
@@ -210,7 +232,9 @@ public sealed class InputMapper
             [ControlId.CameraPadArrowUp] = ButtonId.None,
             [ControlId.CameraPadArrowDown] = ButtonId.None,
             [ControlId.CameraPadArrowLeft] = ButtonId.None,
-            [ControlId.CameraPadArrowRight] = ButtonId.None
+            [ControlId.CameraPadArrowRight] = ButtonId.None,
+            [ControlId.CameraSimpleLeft] = ButtonId.None,
+            [ControlId.CameraSimpleRight] = ButtonId.None
         };
 
     private readonly VirtualOutputBackend _backend;
@@ -230,6 +254,8 @@ public sealed class InputMapper
         _backend.SetAxis(AxisType.Accelerator, (float)Clamp(state.Accelerator, 0.0, 1.0));
         _backend.SetAxis(AxisType.Brake, (float)Clamp(state.Brake, 0.0, 1.0));
         _backend.SetAxis(AxisType.Clutch, (float)Clamp(state.Clutch, 0.0, 1.0));
+        _backend.SetAxis(AxisType.CameraX, (float)Clamp(state.CameraX, -1.0, 1.0));
+        _backend.SetAxis(AxisType.CameraY, (float)Clamp(state.CameraY, -1.0, 1.0));
     }
 
     /// <summary>Routes a discrete button event according to the current mapping mode.</summary>
@@ -261,7 +287,7 @@ public sealed class InputMapper
 
     private bool TryRouteButton(ButtonMessage button)
     {
-        if (!DefaultButtonBindings.TryGetValue(button.Control, out var buttonId) ||
+        if (!TryGetButtonBinding(button.Control, out var buttonId) ||
             buttonId == ButtonId.None)
         {
             return false;
@@ -287,7 +313,7 @@ public sealed class InputMapper
 
     private bool TryRouteKey(ButtonMessage button)
     {
-        if (!DefaultKeyBindings.TryGetValue(button.Control, out var keyCode) ||
+        if (!TryGetKeyBinding(button.Control, out var keyCode) ||
             keyCode == KeyCode.None)
         {
             return false;
@@ -309,6 +335,33 @@ public sealed class InputMapper
         }
 
         return true;
+    }
+
+    /// <summary>Preset-scoped key lookup: the active preset's overlay wins,
+    /// unknown presets and missing entries fall back to the Sequential
+    /// globals, keeping the hybrid priority intact.</summary>
+    private bool TryGetKeyBinding(ControlId control, out KeyCode keyCode)
+    {
+        if (PresetKeyOverlays.TryGetValue(ActivePreset, out var overlay) &&
+            overlay.TryGetValue(control, out keyCode))
+        {
+            return true;
+        }
+
+        return DefaultKeyBindings.TryGetValue(control, out keyCode);
+    }
+
+    /// <summary>Preset-scoped button lookup, same fall-through rule as
+    /// <see cref="TryGetKeyBinding"/>.</summary>
+    private bool TryGetButtonBinding(ControlId control, out ButtonId buttonId)
+    {
+        if (PresetButtonOverlays.TryGetValue(ActivePreset, out var overlay) &&
+            overlay.TryGetValue(control, out buttonId))
+        {
+            return true;
+        }
+
+        return DefaultButtonBindings.TryGetValue(control, out buttonId);
     }
 
     private static double Clamp(double value, double min, double max)

@@ -6,10 +6,13 @@ import '../../../../data/services/controller_preset.dart';
 import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/driving_layout.dart';
 import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
+import '../../../../data/services/layout_profile.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/spring_back.dart';
 import '../../../../data/services/wheel_mode.dart';
@@ -40,6 +43,10 @@ class SettingsViewModel extends ChangeNotifier {
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
   final Map<String, String> _bindingOverrides = {};
   bool _loaded = false;
+  List<LayoutProfile> _layoutProfiles = const [];
+  String _activeLayoutProfile = LayoutProfileStore.defaultProfileName;
+  CameraControlType _cameraControlType = CameraControlType.fallback;
+  bool _hasCameraPad = true;
 
   InputMapping get mapping => _mapping;
   ControllerVisibility get visibility => _visibility;
@@ -54,6 +61,45 @@ class SettingsViewModel extends ChangeNotifier {
   EngineStartMode get engineStartMode => _engineStartMode;
   Set<ControlId> get visibleExtras => Set.unmodifiable(_visibleExtras);
   bool get loaded => _loaded;
+
+  /// Every profile from the store: developer presets first, then user
+  /// profiles.
+  List<LayoutProfile> get layoutProfiles =>
+      List.unmodifiable(_layoutProfiles);
+
+  /// Active layout profile name; the driving view resolves the layout.
+  String get activeLayoutProfile => _activeLayoutProfile;
+
+  /// Selected camera control type for the camera pad slot.
+  CameraControlType get cameraControlType => _cameraControlType;
+
+  /// Whether the active layout contains a camera pad slot; the camera
+  /// section hides otherwise.
+  bool get hasCameraPad => _hasCameraPad;
+
+  /// Best-effort profile load. Never throws.
+  Future<void> loadLayoutProfiles() async {
+    try {
+      _layoutProfiles = await LayoutProfileStore.loadAll();
+      _activeLayoutProfile = await LayoutProfileStore.loadActiveName();
+      _hasCameraPad = (await LayoutProfileStore.layoutFor(
+        _activeLayoutProfile,
+      )).slots.any((slot) => slot.kind == SlotKind.cameraPad);
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// Selects a profile and persists it as active. The driving view applies
+  /// the layout on return through its settings refresh; the preset name
+  /// rides the mapping frame so the desktop scopes its tables (REQ-018).
+  Future<void> selectLayoutProfile(String name) async {
+    try {
+      _activeLayoutProfile = name;
+      notifyListeners();
+      await LayoutProfileStore.saveActiveName(name);
+      _connectionRepository.sendMappingMode(_mapping, preset: name);
+    } catch (_) {}
+  }
 
   Future<void> init() async {
     try {
@@ -82,6 +128,9 @@ class SettingsViewModel extends ChangeNotifier {
       _cameraPadMode = await _settingsRepository.getCameraPadMode();
     } catch (_) {}
     try {
+      _cameraControlType = await CameraControlType.load();
+    } catch (_) {}
+    try {
       _engineStartMode = await _settingsRepository.getEngineStartMode();
     } catch (_) {}
     try {
@@ -99,6 +148,7 @@ class SettingsViewModel extends ChangeNotifier {
     }
     _loaded = true;
     notifyListeners();
+    await loadLayoutProfiles();
   }
 
   String bindingFor(ControlId c) {
@@ -152,6 +202,14 @@ class SettingsViewModel extends ChangeNotifier {
     await _settingsRepository.setCameraPadMode(mode);
   }
 
+  Future<void> selectCameraControlType(CameraControlType type) async {
+    _cameraControlType = type;
+    notifyListeners();
+    try {
+      await type.save();
+    } catch (_) {}
+  }
+
   Future<void> selectEngineStartMode(EngineStartMode mode) async {
     _engineStartMode = mode;
     notifyListeners();
@@ -202,6 +260,12 @@ class SettingsViewModel extends ChangeNotifier {
     _engineStartMode = EngineStartMode.fallback;
     _visibleExtras = DashboardVisibility.defaults;
     _bindingOverrides.clear();
+    _activeLayoutProfile = LayoutProfileStore.defaultProfileName;
+    await LayoutProfileStore.saveActiveName(_activeLayoutProfile);
+    _cameraControlType = CameraControlType.fallback;
+    try {
+      await _cameraControlType.save();
+    } catch (_) {}
     notifyListeners();
     await _settingsRepository.resetAll();
     _connectionRepository.sendMappingMode(_mapping);

@@ -14,4 +14,10 @@ public sealed record MappingMessage
     /// <summary>Either <c>"keyboard"</c> or <c>"gamepad"</c>. Unknown values keep the current mode.</summary>
     [JsonPropertyName("mode")]
     public string Mode { get; init; } = "keyboard";
+
+    /// <summary>Active layout preset name (e.g. <c>"Sequential"</c>), scoping
+    /// the input mapper's binding tables per preset (REQ-018). Null or empty
+    /// keeps the current preset.</summary>
+    [JsonPropertyName("preset")]
+    public string? Preset { get; init; }
 }

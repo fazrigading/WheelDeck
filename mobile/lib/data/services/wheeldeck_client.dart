@@ -127,6 +127,8 @@ class WheelDeckClient {
     required double accelerator,
     required double brake,
     required double clutch,
+    double cameraX = 0.0,
+    double cameraY = 0.0,
   }) {
     _send({
       'type': 'state',
@@ -135,6 +137,8 @@ class WheelDeckClient {
       'accelerator': accelerator,
       'brake': brake,
       'clutch': clutch,
+      'cameraX': cameraX,
+      'cameraY': cameraY,
     });
   }
 
@@ -157,10 +161,13 @@ class WheelDeckClient {
   }
 
   /// Sends the desired dashboard input mapping (`keyboard` or `gamepad`).
-  void sendMappingMode(InputMapping mapping) {
+  /// The optional active layout preset name lets the desktop scope its
+  /// binding tables per preset (REQ-018); omitted keeps the current one.
+  void sendMappingMode(InputMapping mapping, {String? preset}) {
     _send({
       'type': 'mapping',
       'mode': mapping.wireValue,
+      if (preset != null && preset.isNotEmpty) 'preset': preset,
     });
   }
 

@@ -95,7 +95,14 @@ void main() {
     sent.clear(); // Drop the immediate heartbeat.
 
     client.sendState(steering: 0.42, accelerator: 0.85, brake: 0.0, clutch: 1.0);
-    client.sendState(steering: -0.1, accelerator: 0.2, brake: 0.3, clutch: 0.4);
+    client.sendState(
+      steering: -0.1,
+      accelerator: 0.2,
+      brake: 0.3,
+      clutch: 0.4,
+      cameraX: 0.5,
+      cameraY: -0.5,
+    );
 
     expect(sent, hasLength(2));
 
@@ -106,9 +113,13 @@ void main() {
     expect(first['accelerator'], 0.85);
     expect(first['brake'], 0.0);
     expect(first['clutch'], 1.0);
+    expect(first['cameraX'], 0.0);
+    expect(first['cameraY'], 0.0);
 
     final second = jsonDecode(sent[1] as String) as Map<String, dynamic>;
     expect(second['seq'], 2);
+    expect(second['cameraX'], 0.5);
+    expect(second['cameraY'], -0.5);
   });
 
   test('sendButtonEvent frames a button message using wire values', () async {
