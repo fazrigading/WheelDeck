@@ -13,10 +13,13 @@ import '../../../../data/services/controller_visibility.dart';
 import '../../../../data/services/dashboard_input.dart';
 import '../../../../data/services/dashboard_send_gate.dart';
 import '../../../../data/services/dashboard_visibility.dart';
+import '../../../../data/services/driving_layout.dart';
 import '../../../../data/services/engine_start_mode.dart';
 import '../../../../data/services/input_mapping.dart';
+import '../../../../data/services/layout_profile.dart';
 import '../../../../data/services/pedal_input.dart';
 import '../../../../data/services/pedal_side.dart';
+import '../../../../data/services/camera_control_type.dart';
 import '../../../../data/services/camera_pad_mode.dart';
 import '../../../../data/services/spring_back.dart';
 import '../../../../data/services/wheel_mode.dart';
@@ -68,8 +71,17 @@ class DrivingViewModel extends ChangeNotifier {
   int _rotationDegree = RotationDegree.fallback;
   bool _springBack = SpringBack.fallback;
   CameraPadMode _cameraPadMode = CameraPadMode.fallback;
+  CameraControlType _cameraControlType = CameraControlType.fallback;
   EngineStartMode _engineStartMode = EngineStartMode.fallback;
   Set<ControlId> _visibleExtras = DashboardVisibility.defaults;
+  String _activeProfile = LayoutProfileStore.defaultProfileName;
+  DrivingLayout _storedLayout = DrivingLayout.sequential();
+  double _cameraX = 0.0;
+  double _cameraY = 0.0;
+
+  /// Unsaved editor result for this session; cleared on profile switches
+  /// and settings refreshes.
+  DrivingLayout? _sessionLayout;
 
   /// Normalized steering angle snapshot (-1.0..1.0).
   SteeringState get steering => _steering;
@@ -96,6 +108,32 @@ class DrivingViewModel extends ChangeNotifier {
   /// Current mapping mode, for the binder dialog label.
   InputMapping get mapping => _mapping;
 
+  /// Active layout profile name. Layout only; bindings and the rest stay
+  /// global (REQ-008).
+  String get activeProfile => _activeProfile;
+
+  /// Layout the grid renders: the session edit when one is applied, else
+  /// the stored profile layout.
+  DrivingLayout get activeLayout => _sessionLayout ?? _storedLayout;
+
+  /// Applies an editor result for this session. Not persisted.
+  void applySessionLayout(DrivingLayout layout) {
+    _sessionLayout = layout;
+    notifyListeners();
+  }
+
+  /// Switches to the named profile, clearing any session edit. Best-effort:
+  /// never throws; unknown names fall back to the Sequential preset.
+  Future<void> selectProfile(String name) async {
+    try {
+      _storedLayout = await LayoutProfileStore.layoutFor(name);
+      _activeProfile = name;
+      _sessionLayout = null;
+      notifyListeners();
+      await LayoutProfileStore.saveActiveName(name);
+    } catch (_) {}
+  }
+
   /// Persists a per-mode binding override (empty means unbound) and refreshes
   /// the gate resolution. Best-effort: never throws.
   Future<void> setBinding(ControlId control, String value) async {
@@ -112,7 +150,16 @@ class DrivingViewModel extends ChangeNotifier {
   /// Resolves the per-mode binding for [control]: user override first, then
   /// the preset default. Empty means unbound; the gate sends nothing.
   String _bindingFor(ControlId control) {
-    final isGamepad = _mapping == InputMapping.gamepad;
+    return bindingForMode(
+      control,
+      _mapping == InputMapping.gamepad,
+    );
+  }
+
+  /// Resolves [control]'s binding for an explicit input mode, with the same
+  /// override-then-preset rule as [bindingFor]. The editor uses it to offer
+  /// every control bound in either mode.
+  String bindingForMode(ControlId control, bool isGamepad) {
     final override =
         _bindingOverrides[SettingsRepository.bindingKey(control, isGamepad)];
     // A stored override wins verbatim: empty means unbound (send nothing).
@@ -138,6 +185,9 @@ class DrivingViewModel extends ChangeNotifier {
   bool get springBack => _springBack;
   CameraPadMode get cameraPadMode => _cameraPadMode;
 
+  /// Which camera control the pad renders; the pad widget dispatches on it.
+  CameraControlType get cameraControlType => _cameraControlType;
+
   /// Engine-start interaction mode (hold-confirm vs single press).
   EngineStartMode get engineStartMode => _engineStartMode;
 
@@ -161,6 +211,10 @@ class DrivingViewModel extends ChangeNotifier {
     await _loadWheelState();
     await _loadBindings();
     await _loadDashboardState();
+    await _loadProfile();
+    try {
+      _connectionRepository.sendMappingMode(_mapping, preset: _activeProfile);
+    } catch (_) {}
     if (isRotatable) _awaitingCalibration = false;
     notifyListeners();
   }
@@ -197,6 +251,17 @@ class DrivingViewModel extends ChangeNotifier {
     try {
       _cameraPadMode = await CameraPadMode.load();
     } catch (_) {}
+    try {
+      _cameraControlType = await CameraControlType.load();
+    } catch (_) {}
+  }
+
+  /// Best-effort load of the active profile name and its layout.
+  Future<void> _loadProfile() async {
+    try {
+      _activeProfile = await LayoutProfileStore.loadActiveName();
+      _storedLayout = await LayoutProfileStore.layoutFor(_activeProfile);
+    } catch (_) {}
   }
 
   Future<void> refreshWheel() async {
@@ -223,6 +288,8 @@ class DrivingViewModel extends ChangeNotifier {
     } catch (_) {}
     await _loadBindings();
     await _loadDashboardState();
+    _sessionLayout = null;
+    await _loadProfile();
   }
 
   /// Best-effort load of engine-start mode and visible dashboard extras.
@@ -299,6 +366,14 @@ class DrivingViewModel extends ChangeNotifier {
     _sendState();
   }
 
+  /// Reports analog camera look. Forwards through the state stream without
+  /// notifying — nothing renders the values — mirroring setRotatableSteering.
+  void setAnalogCamera(double x, double y) {
+    _cameraX = x.clamp(-1.0, 1.0).toDouble();
+    _cameraY = y.clamp(-1.0, 1.0).toDouble();
+    _sendState();
+  }
+
   /// Re-centers the sensor and re-opens input. The caller reconnects via
   /// [lastTarget] when non-null.
   void confirmCalibration() {
@@ -348,6 +423,8 @@ class DrivingViewModel extends ChangeNotifier {
       accelerator: pedals.accelerator,
       brake: pedals.brake,
       clutch: pedals.clutch,
+      cameraX: _cameraX,
+      cameraY: _cameraY,
     );
   }
 }

@@ -90,7 +90,10 @@ enum ControlId {
   cameraPadArrowUp('camera_pad_arrow_up'),
   cameraPadArrowDown('camera_pad_arrow_down'),
   cameraPadArrowLeft('camera_pad_arrow_left'),
-  cameraPadArrowRight('camera_pad_arrow_right');
+  cameraPadArrowRight('camera_pad_arrow_right'),
+  // Simple camera type (REQ-013); recenter reuses cameraPadRecenter.
+  cameraSimpleLeft('camera_simple_left'),
+  cameraSimpleRight('camera_simple_right');
 
   const ControlId(this.wireValue);
 
