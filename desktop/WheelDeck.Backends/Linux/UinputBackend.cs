@@ -42,7 +42,9 @@ public sealed class UinputBackend : VirtualOutputBackend
             [AxisType.Steering] = 0x00,    // ABS_X
             [AxisType.Accelerator] = 0x01, // ABS_Y
             [AxisType.Brake] = 0x02,       // ABS_Z
-            [AxisType.Clutch] = 0x05       // ABS_RZ
+            [AxisType.Clutch] = 0x05,      // ABS_RZ
+            [AxisType.CameraX] = 0x03,     // ABS_RX
+            [AxisType.CameraY] = 0x04      // ABS_RY
         };
 
     private static readonly IReadOnlyDictionary<ButtonId, ushort> ButtonCodes =
@@ -102,6 +104,7 @@ public sealed class UinputBackend : VirtualOutputBackend
             [KeyCode.Numpad1] = 79, [KeyCode.Numpad2] = 80, [KeyCode.Numpad3] = 81,
             [KeyCode.Numpad4] = 75, [KeyCode.Numpad5] = 76, [KeyCode.Numpad6] = 77,
             [KeyCode.Numpad7] = 71, [KeyCode.Numpad8] = 72, [KeyCode.Numpad9] = 73,
+            [KeyCode.NumpadDivide] = 98, [KeyCode.NumpadMultiply] = 55,
             [KeyCode.ArrowUp] = 103, [KeyCode.ArrowDown] = 108,
             [KeyCode.ArrowLeft] = 105, [KeyCode.ArrowRight] = 106, // KEY_KP1..KEY_KP9, KEY_UP/DOWN/LEFT/RIGHT
             [KeyCode.ScrollLock] = 70,       // KEY_SCROLLLOCK
@@ -321,7 +324,9 @@ public sealed class UinputBackend : VirtualOutputBackend
 
     private static int NormalizeAxis(AxisType axis, float value)
     {
-        if (axis == AxisType.Steering)
+        if (axis == AxisType.Steering ||
+            axis == AxisType.CameraX ||
+            axis == AxisType.CameraY)
         {
             return (int)MathF.Round(Math.Clamp(value, -1f, 1f) * AxisMaximum);
         }

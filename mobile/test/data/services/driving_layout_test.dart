@@ -268,4 +268,97 @@ void main() {
       );
     });
   });
+
+  group('TASK-038 automatic and h-shifter presets', () {
+    final presets = {
+      'Simple Automatic': DrivingLayout.simpleAutomatic(),
+      'Real Automatic': DrivingLayout.realAutomatic(),
+      'H-Shifter': DrivingLayout.hShifter(),
+    };
+
+    test('each preset tiles the 8x15 grid without overlap', () {
+      for (final entry in presets.entries) {
+        expectTiles(
+          entry.value.slots.map((slot) => slot.rect),
+        );
+      }
+    });
+
+    test('every non-null slot control exists in ControlId', () {
+      for (final preset in presets.values) {
+        for (final slot in preset.slots) {
+          if (slot.control != null) {
+            expect(ControlId.values, contains(slot.control));
+          }
+          if (slot.kind == SlotKind.button) {
+            expect(slot.control, isNotNull);
+          }
+        }
+      }
+    });
+
+    test('simple automatic holes the gear cells', () {
+      final simple = presets['Simple Automatic']!;
+      for (final cell in const [
+        CellRect(rowStart: 1, colStart: 11, rowSpan: 1, colSpan: 1),
+        CellRect(rowStart: 3, colStart: 12, rowSpan: 1, colSpan: 1),
+      ]) {
+        final slot = simple.slots.firstWhere(
+          (s) => s.rect.contains(cell.rowStart, cell.colStart),
+        );
+        expect(slot.kind, SlotKind.hole);
+      }
+    });
+
+    test('real automatic carries drive and reverse buttons', () {
+      final real = presets['Real Automatic']!;
+      final drive = real.slots.firstWhere(
+        (s) => s.control == ControlId.shiftToDrive,
+      );
+      expect(
+        drive.rect,
+        const CellRect(rowStart: 1, colStart: 11, rowSpan: 2, colSpan: 2),
+      );
+      final reverse = real.slots.firstWhere(
+        (s) => s.control == ControlId.shiftToReverse,
+      );
+      expect(
+        reverse.rect,
+        const CellRect(rowStart: 3, colStart: 11, rowSpan: 2, colSpan: 2),
+      );
+      expect(
+        real.slots.where(
+          (s) =>
+              s.control == ControlId.gearUp ||
+              s.control == ControlId.gearDown,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('h-shifter places the hole module and keeps the camera pad', () {
+      final hshifter = presets['H-Shifter']!;
+      for (var row = 1; row <= 4; row++) {
+        for (var col = 1; col <= 4; col++) {
+          final slot = hshifter.slots.firstWhere(
+            (s) => s.rect.contains(row, col),
+          );
+          expect(slot.kind, SlotKind.hole, reason: 'hole at $row:$col');
+        }
+      }
+      expect(
+        hshifter.slots.where(
+          (s) => s.kind == SlotKind.pedal && s.pedal == PedalType.clutch,
+        ),
+        isEmpty,
+      );
+      final pad = hshifter.slots.firstWhere(
+        (s) => s.kind == SlotKind.cameraPad,
+      );
+      expect(
+        pad.rect,
+        const CellRect(rowStart: 1, colStart: 13, rowSpan: 3, colSpan: 3),
+      );
+    });
+  });
 }

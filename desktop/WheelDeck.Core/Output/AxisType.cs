@@ -13,5 +13,11 @@ public enum AxisType
     Brake,
 
     /// <summary>Clutch pedal pressure, 0.0..1.0.</summary>
-    Clutch
+    Clutch,
+
+    /// <summary>Interior-camera horizontal look, normalized -1.0..1.0.</summary>
+    CameraX,
+
+    /// <summary>Interior-camera vertical look, normalized -1.0..1.0.</summary>
+    CameraY
 }

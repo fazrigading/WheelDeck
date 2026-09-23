@@ -142,4 +142,52 @@ void main() {
       expect(find.byType(ConnectionScreen), findsNothing);
     },
   );
+
+  testWidgets('edit entry opens edit mode; cancel restores driving input', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'wheeldeck.wheel_mode': 'rotatable',
+    });
+    final rotCoordinator = ConnectionCoordinator(deviceId: 'test');
+    addTearDown(rotCoordinator.dispose);
+    final rotViewModel = _SpyViewModel(
+      connectionRepository: ConnectionRepository(
+        client: WheelDeckClient(deviceId: 'test'),
+      ),
+      sensorRepository: SensorRepository(
+        sensor: SteeringSensor(rawAngleStream: const Stream.empty()),
+      ),
+      pedalRepository: PedalRepository(input: PedalInput()),
+      dashboardInput: DashboardInput(),
+    );
+    await rotViewModel.init();
+    addTearDown(rotViewModel.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DrivingView(
+          coordinator: rotCoordinator,
+          viewModel: rotViewModel,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('edit-layout-fab')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('edit-layout-fab')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('edit-done-fab')), findsOneWidget);
+    expect(find.byKey(const Key('edit-cancel-fab')), findsOneWidget);
+    // Entering edit mode never touches the connection.
+    expect(rotViewModel.disconnectCount, 0);
+
+    await tester.tap(find.byKey(const Key('edit-cancel-fab')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('edit-layout-fab')), findsOneWidget);
+    expect(find.byKey(const Key('edit-done-fab')), findsNothing);
+    expect(find.byType(DrivingView), findsOneWidget);
+    expect(rotViewModel.disconnectCount, 0);
+  });
 }
