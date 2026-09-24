@@ -1,7 +1,7 @@
 name: wheeldeck
 description: A mobile app that turns a phone into a steering wheel and dashboard panel for PC simulators.
 publish_to: 'none'
-version: 0.1.0
+version: 0.1.0-alpha.1+1
 
 environment:
   sdk: ^3.13.2

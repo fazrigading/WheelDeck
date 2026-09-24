@@ -173,7 +173,7 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           const SizedBox(height: 24),
           Center(
-            child: Text('MIT Licensed • v0.1.0',
+            child: Text('MIT Licensed • v0.1.0-alpha.1',
                 style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant.withValues(alpha: 0.6))),
           ),
         ],
