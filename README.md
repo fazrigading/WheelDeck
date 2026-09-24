@@ -1,6 +1,6 @@
 # WheelDeck
 
-Project Status: **Work-in-Progress**
+Project Status: **Alpha** — `v0.1.0-alpha.1` prereleased from `main`.
 
 Turn an Android or iOS phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively.
 
@@ -21,9 +21,21 @@ Primary target: Euro Truck Simulator 2.
 
 | Directory | Stack | Description |
 |-----------|-------|-------------|
-| `mobile/` | Flutter (Dart) | Phone app — sensor capture, WebSocket client, on-screen controls |
+| `mobile/` | Flutter (Dart) | Phone app — sensor capture, WebSocket client, on-screen controls (current alpha; Kotlin rewrite in progress, see Migration plan) |
 | `desktop/` | C#/.NET 10 + Avalonia UI | Desktop server — WebSocket listener, virtual controller backend, pairing |
 | `protocol/schema/` | JSON Schema | Shared message formats and control enums (single source of truth) |
+
+## Release status
+
+- Current: `v0.1.0-alpha.1` (tag on `main`). GitHub Release is a **prerelease** with generated notes.
+- Tag push matching `v*` triggers `.github/workflows/release.yml`: Android APK + web bundle, Windows x64 zip, Linux x64 tarball. PWA deploy to GitHub Pages is skipped for `alpha`/`beta` tags — web ships only as a release asset.
+- Android alpha is signed with debug keys (`mobile/android/app/build.gradle.kts`); real signing lands before stable.
+
+## Migration plan: mobile Flutter → Kotlin
+
+- Branch: `migrate/flutter-to-kotlin`. Native Android app (Kotlin + Jetpack Compose, Material 3, single `:app` module) in `android/`; built slice by slice while Flutter stays the runnable reference. Plan + checklist live on that branch: `tasks/plan.md`, `tasks/todo.md`, `docs/migration-kotlin.md`.
+- Status: Foundation + connection core done, Checkpoint A passed (real-device pairing, reconnect, heartbeat). In progress: driving core (Tasks 7–10), then dashboard completeness (Tasks 11–13), polish + cutover (Tasks 14–15).
+- Freeze rule: no new features or fixes in `mobile/` during migration — the seven `TODO.md` Mobile items land as acceptance criteria in the Kotlin build. Cutover deletes `mobile/`, swaps CI from Flutter to Android, and rewrites the mobile docs.
 
 ## Project structure
 
