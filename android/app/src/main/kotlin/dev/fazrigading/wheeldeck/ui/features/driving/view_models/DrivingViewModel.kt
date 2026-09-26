@@ -120,11 +120,12 @@ class DrivingViewModel(
     }
 
     /// The camera pad's center hold switches the key set; the pad is the
-    /// switch surface (REQ-017).
-    suspend fun toggleCameraPadMode() {
+    /// switch surface (REQ-017). Persists in the view model scope, so a
+    /// Composable can call it straight from the gesture.
+    fun toggleCameraPadMode() {
         val next = _uiState.value.cameraPadMode.other
         _uiState.update { it.copy(cameraPadMode = next) }
-        load { settingsRepository.setCameraPadMode(next) }
+        viewModelScope.launch { load { settingsRepository.setCameraPadMode(next) } }
     }
 
     /// Syncs the calibration gate. Rotatable steering cannot drift, so the gate

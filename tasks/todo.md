@@ -27,7 +27,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 - [x] Task 7: Gyro steering (SensorManager, calibration + reconfirm gate, rotation mapper)
 - [x] Task 8: Pedal input (touch-drag analog, spring-back release)
 - [x] Task 9: Driving VM + send gate + visibility + wheel mode
-- [ ] Task 10: Driving screen (RotatableWheel, tilt readout, pedals, camera pad; **constant-speed rotate-back-to-zero**)
+- [x] Task 10: Driving screen (RotatableWheel, tilt readout, pedals, camera pad; **constant-speed rotate-back-to-zero**)
 
 ## Checkpoint B: Drivable
 
