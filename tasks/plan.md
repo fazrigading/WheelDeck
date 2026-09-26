@@ -139,15 +139,20 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Deferred to later tasks, on purpose:** `GamePreset`'s default binding tables and the per-mode overrides (Task 12), pedal sides and camera-control type (Task 12/13), layout, profiles, and the profile-aware `sendMappingMode(preset)` on init (Task 11). Settings persistence lands here rather than in Task 13: one `SettingsStore` behind `SettingsRepository` replaces the per-setting store interfaces, and `SpringBack` folds into it.
   - **Reference:** same names under `mobile/lib/`.
 
-- [ ] **Task 10: Driving screen** (L)
+- [x] **Task 10: Driving screen** (L)
   - Compose driving surface: canvas `RotatableWheel` (finger rotation → 180/270/900/1080/1800/2520 degrees, rotation indicator arc), `TiltReadout`, pedal panels, `CameraPad` (numpad/arrow modes, center recenter/mode-switch, tap-or-hold). **Includes the TODO.md fix: rotate-back-to-zero runs at a constant slow rate at every degree value** (constant-rate return in the mapper; tested at 180 and 2520).
   - **Acceptance criteria:**
-    - [ ] `rotatable_wheel_test`, `tilt_readout_test`, `camera_pad_test`, `wheel_view_test`, `pedal_panel_test` ports pass
-    - [ ] Rotate-back-to-zero speed is constant (deg/s) regardless of selected rotation degree; verified at 180 and 2520
-    - [ ] Full steering + pedal + camera-pad session works on a real device against ETS2
-  - **Verification:** `./gradlew test`; manual ETS2 drive session.
+    - [x] `rotatable_wheel_test` port passes — 10 tests on `RotatableWheelModel` (5 of the 7 Flutter cases; the arc's pixel scan is pinned as arc geometry in `RotationMapperTest` instead, and the multi-touch case is one pointer model)
+    - [x] `tilt_readout_test` port passes — marker fraction
+    - [x] `wheel_view_test` port passes — 3 tests, turns mapping
+    - [x] `pedal_panel_test` port passes — pressure mapping, clamping, hues, and the drag→`PedalInput` wiring (the rendered-bar cases need a device)
+    - [x] `camera_pad_test` port passes — 14 tests across the cell mapping, labels, enabled state, and `ControlPress` (10 tests) which owns the tap/hold timing the pad cells use
+    - [x] Rotate-back-to-zero speed is constant (deg/s) regardless of selected rotation degree; verified at 180 and 2520
+    - [ ] Full steering + pedal + camera-pad session works on a real device against ETS2 — needs a device; Checkpoint B
+  - **Verification:** `./gradlew test`. Widget-level gesture and pixel tests are Compose UI tests (`androidTest`), and this repo has no emulator job, so the gesture/timing logic is extracted into `RotatableWheelModel` and `ControlPress` and unit-tested instead; the Composables forward pointers and render state. The screen is not wired into `MainActivity` yet — that happens with the dashboard grid (Task 11).
   - **Dependencies:** Task 9.
-  - **Files likely touched:** `.../ui/features/driving/views/{driving_view,rotatable_wheel,wheel_view,tilt_readout,pedal_panel,camera_pad}.kt`.
+  - **Files touched:** `.../ui/features/driving/views/{driving_screen,rotatable_wheel_model,rotatable_wheel,wheel_view,tilt_readout,pedal_panel,camera_pad}.kt`, `.../ui/core/control_press.kt`, `.../data/services/rotation_mapper.kt` (constant-rate return + arc geometry).
+  - **Deferred, on purpose:** the camera pad's simple and analog shapes (they need `CameraControlType`, which lands with the camera-type settings in Task 12), the dashboard grid and its control cells (Task 11/12), pedal-side layout order, and the hold haptic (Android's `LocalHapticFeedback` needs a composable, so it lands with the grid's control visuals).
   - **Reference:** `mobile/lib/ui/features/driving/views/*`, `TODO.md` Controls item.
 
 ### Checkpoint B: Drivable (make-or-break)
