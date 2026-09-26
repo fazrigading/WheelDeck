@@ -161,18 +161,21 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 
 ### Phase 4: Dashboard completeness
 
-- [ ] **Task 11: Rotatable grid layout engine** (M)
+- [x] **Task 11: Rotatable grid layout engine** (M)
   - Port `driving_layout.dart` (546 lines, biggest single port): rotatable grid, blocks, cells, slots, holes, layout presets (Sequential), slot geometry. **Includes three TODO.md fixes, built in while porting:**
     1. Gear button → 2 rows × 1 col (was 2×2)
     2. ACC+BRK pedals → one grouped slot, 4 rows × 3 cols total (was 4×2 each)
     3. Padding between blocks, except along screen edges
   - **Acceptance criteria:**
-    - [ ] `driving_layout_test` and `block_grid_test` ports pass, with slot geometry updated to the three fixes
-    - [ ] `dashboard_panel_test` port passes; grid renders holes, wheel, pedals, camera pad per Sequential preset
-    - [ ] Visual: gaps between blocks, none along screen edges
-  - **Verification:** `./gradlew test`; manual device inspection vs `plan/references/` mockups.
+    - [x] `driving_layout_test` port passes — 20 tests, with the slot geometry updated to the three fixes
+    - [x] `block_grid_test` port passes — 9 geometry tests; the grid renders holes, wheel, pedals, and camera pad per the Sequential preset through `BlockGrid` (the widget-tree assertions need a device, as in Task 10)
+    - [x] `dashboard_panel_test` port passes — 5 presentation tests; the tap, hold, and gate events it drives were already covered by `ControlPressTest` and `DashboardSendGateTest`
+    - [x] Gaps between blocks, none along the screen edges — `toPaddedPixels` insets each non-edge side by half the padding, so neighbours are exactly one gap apart and the outer blocks stay flush
+  - **Verification:** `./gradlew test`. Visual inspection against `plan/references/` needs a device; Checkpoint B.
   - **Dependencies:** Task 10.
-  - **Files likely touched:** `.../data/services/driving_layout.kt`, `.../ui/features/driving/views/{dashboard_panel,block_grid}.kt`.
+  - **Files touched:** `.../data/services/driving_layout.kt`, `.../ui/features/driving/views/{block_grid,block_geometry}.kt`.
+  - **The three TODO.md fixes:** the gear cells are 2x1 (was 2x2); the accelerator and brake are one `SlotKind.PedalGroup` 4x3 (was two 4x2); blocks are padded apart but flush with the screen edges. The cells the first two free became explicit holes, so the grid still tiles all 120 cells.
+  - **Deferred, on purpose:** the grid's short cell labels (`DashboardPanel.gridLabel`, e.g. `GEAR+`) — cells print their wire value until the control visuals land in Task 12; the layout *edit* API (`applyMove`, `addControl`, `removeSlot`, `freeSpans`, modules) and `LayoutProfileStore` — they arrived with the custom-layout work in #76 and belong with the layout editor and profile settings (Task 12/13). `DrivingUiState.layout` therefore always holds the Sequential preset until profile selection lands.
   - **Reference:** `mobile/lib/data/services/driving_layout.dart`, `TODO.md` Dashboard items 1–3.
 
 - [ ] **Task 12: Dashboard controls** (M)

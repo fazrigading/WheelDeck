@@ -9,6 +9,7 @@ import dev.fazrigading.wheeldeck.data.services.ControllerVisibility
 import dev.fazrigading.wheeldeck.data.services.DashboardInput
 import dev.fazrigading.wheeldeck.data.services.DashboardSendGate
 import dev.fazrigading.wheeldeck.data.services.DashboardVisibility
+import dev.fazrigading.wheeldeck.data.services.DrivingLayout
 import dev.fazrigading.wheeldeck.data.services.EngineStartMode
 import dev.fazrigading.wheeldeck.data.services.GamePreset
 import dev.fazrigading.wheeldeck.data.services.PedalInput
@@ -44,6 +45,9 @@ data class DrivingUiState(
     val engineStartMode: EngineStartMode = EngineStartMode.fallback,
     val visibleExtras: Set<ControlId> = DashboardVisibility.defaults,
     val visibility: ControllerVisibility = ControllerVisibility.fallback,
+    /// The dashboard the grid renders. Preset selection lands with the profile
+    /// editor (Task 12), so this is the Sequential preset for now.
+    val layout: DrivingLayout = DrivingLayout.sequential,
 )
 
 /// Presentation state for the driving view.

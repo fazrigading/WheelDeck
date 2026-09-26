@@ -2,6 +2,7 @@ package dev.fazrigading.wheeldeck.ui.features.driving.views
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +54,7 @@ fun RotatableWheel(
 
     Box(
         modifier = modifier
-            .size(diameter)
+            .then(if (diameter == Dp.Unspecified) Modifier else Modifier.size(diameter))
             .pointerInput(model) {
                 val sidePx = size.width.toDouble()
                 detectDragGestures(
@@ -78,11 +79,8 @@ fun RotatableWheel(
         // Rotation is 1:1 with the finger while dragging; the return drives the
         // same state per frame, so the visual and the reported steering stay
         // coherent.
-        WheelGraphic(
-            turns = wheel.accumulatedDegrees * PI / 180,
-            modifier = Modifier.size(diameter),
-        )
-        RotationArc(steering = wheel.steering, modifier = Modifier.size(diameter))
+        WheelGraphic(turns = wheel.accumulatedDegrees * PI / 180, modifier = Modifier.fillMaxSize())
+        RotationArc(steering = wheel.steering, modifier = Modifier.fillMaxSize())
         Text(
             text = wheel.readout,
             modifier = Modifier.align(Alignment.BottomCenter),
