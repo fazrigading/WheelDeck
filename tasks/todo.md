@@ -35,7 +35,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 
 ## Phase 4: Dashboard completeness
 
-- [ ] Task 11: Rotatable grid layout engine (**gear 2×1, ACC+BRK group 4×3, inter-block padding**)
+- [x] Task 11: Rotatable grid layout engine (**gear 2×1, ACC+BRK group 4×3, inter-block padding**)
 - [ ] Task 12: Dashboard controls (signals/hazard/lights/engine; **camera pad keybinds default `auto`**)
 - [ ] Task 13: Onboarding + permissions + settings (**Keybind Configuration page; keyboard afloat, dashboard doesn't resize**)
 

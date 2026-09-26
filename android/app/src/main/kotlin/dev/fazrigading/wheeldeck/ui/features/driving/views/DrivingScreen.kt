@@ -23,24 +23,27 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.fazrigading.wheeldeck.data.services.DashboardInput
 import dev.fazrigading.wheeldeck.data.services.PedalInput
+import dev.fazrigading.wheeldeck.domain.models.ControlId
 import dev.fazrigading.wheeldeck.domain.models.SteeringState
-import dev.fazrigading.wheeldeck.ui.features.driving.view_models.DrivingUiState
 import dev.fazrigading.wheeldeck.ui.features.driving.view_models.DrivingViewModel
 
-/// The driving surface: a steering surface, the pedal bars, the camera pad, and
+/// The driving surface: the rotatable dashboard grid, the gyro tilt readout, and
 /// the calibration gate.
 ///
-/// Gyro mode shows the tilting wheel and a tilt readout; rotatable mode shows
-/// the finger-drag wheel. The dashboard grid lands with the layout engine
-/// (Task 11), so the controls reachable here are the camera pad's.
+/// The grid carries the wheel, the pedals, and the camera pad, so the screen
+/// only adds what the layout cannot place. The tilt readout rides on top in
+/// gyro mode only, where there is no wheel rotation to read from.
 @Composable
 fun DrivingScreen(
     viewModel: DrivingViewModel,
     pedals: PedalInput,
     dashboardInput: DashboardInput,
+    bindingFor: (ControlId) -> String = { "" },
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val pedalState by pedals.state.collectAsStateWithLifecycle()
+    val gateState by viewModel.sendGate.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) { viewModel.init() }
 
@@ -49,77 +52,31 @@ fun DrivingScreen(
         // the driver re-confirms the center before input flows again (ADR-0002).
         if (state.awaitingCalibration) {
             CalibrationGate(steering = state.steering, onConfirmed = viewModel::confirmCalibration)
-        } else {
-            DrivingControls(
-                state = state,
-                viewModel = viewModel,
-                pedals = pedals,
-                dashboardInput = dashboardInput,
-            )
+            return@Box
         }
-    }
-}
 
-@Composable
-private fun DrivingControls(
-    state: DrivingUiState,
-    viewModel: DrivingViewModel,
-    pedals: PedalInput,
-    dashboardInput: DashboardInput,
-) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(12.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        if (state.isRotatable) {
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                RotatableWheel(
-                    degrees = state.rotationDegree,
-                    springBack = state.springBack,
-                    onChanged = viewModel::setRotatableSteering,
-                    diameter = 240.dp,
-                )
-            }
-        } else {
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                // Horizontal drag is the fallback when the gyro is unavailable or
-                // unwanted; ending the drag re-centers the sensor on the angle
-                // the finger left it at.
-                WheelView(
-                    angle = state.steering.angle,
-                    size = 240.dp,
-                    modifier = Modifier.pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragStart = { viewModel.onWheelDragStart() },
-                            onHorizontalDrag = { change, dx ->
-                                change.consume()
-                                viewModel.onWheelDragUpdate(dx.toDouble())
-                            },
-                            onDragEnd = { viewModel.onWheelDragEnd() },
-                            onDragCancel = { viewModel.onWheelDragEnd() },
-                        )
-                    },
-                )
-            }
+        BlockGrid(
+            layout = state.layout,
+            env = GridEnv(
+                input = dashboardInput,
+                bindingFor = bindingFor,
+                pedals = pedals,
+                pedalState = pedalState,
+                gate = viewModel.sendGate,
+                gateState = gateState,
+                degrees = state.rotationDegree,
+                springBack = state.springBack,
+                onSteering = viewModel::setRotatableSteering,
+                onCameraPadModeSwitch = viewModel::toggleCameraPadMode,
+                cameraPadMode = state.cameraPadMode,
+                engineStartMode = state.engineStartMode,
+            ),
+        )
+
+        if (!state.isRotatable) {
             TiltReadout(
                 angle = state.steering.angle,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().height(200.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            PedalPanel(input = pedals, modifier = Modifier.weight(1f).fillMaxSize())
-            CameraPad(
-                mode = state.cameraPadMode,
-                input = dashboardInput,
-                // The preset tables land with Task 12; unbound cells send
-                // nothing, which is the safe side until then.
-                bindingFor = { "" },
-                onModeSwitch = viewModel::toggleCameraPadMode,
-                modifier = Modifier.weight(1f).fillMaxSize(),
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp),
             )
         }
     }
