@@ -136,9 +136,10 @@ class WheelDeckClientTest {
 
         client!!.sendState(steering = 0.42, accelerator = 0.85, brake = 0.0, clutch = 1.0)
         client!!.sendState(steering = -0.1, accelerator = 0.2, brake = 0.3, clutch = 0.4)
-        await { frames().size >= 2 }
+        // Heartbeats share the socket, so wait for the state frames themselves.
+        await { framesOfType("state").size >= 2 }
 
-        val first = frames()[0]
+        val first = framesOfType("state")[0]
         assertEquals("state", first["type"]!!.jsonPrimitive.content)
         assertEquals("1", first["seq"]!!.jsonPrimitive.content)
         assertEquals("0.42", first["steering"]!!.jsonPrimitive.content)
@@ -146,7 +147,7 @@ class WheelDeckClientTest {
         assertEquals("0.0", first["brake"]!!.jsonPrimitive.content)
         assertEquals("1.0", first["clutch"]!!.jsonPrimitive.content)
 
-        val second = frames()[1]
+        val second = framesOfType("state")[1]
         assertEquals("2", second["seq"]!!.jsonPrimitive.content)
     }
 

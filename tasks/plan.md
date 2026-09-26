@@ -126,13 +126,17 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Files touched:** `.../data/services/pedal_input.kt`, `.../data/services/spring_back.kt`, `.../domain/models/pedal_state.kt`. No `pedal_repository.kt`: its only job was handing out immutable snapshots, and `PedalInput.state` (StateFlow) does that while also being the raw handle Task 10's pedal panel binds to, so the repository would add a hop and nothing else.
   - **Reference:** `mobile/lib/data/services/{pedal_input,spring_back}.dart`, `mobile/lib/domain/models/pedal_state.dart`.
 
-- [ ] **Task 9: Driving view model + send gate + visibility + wheel mode** (M)
+- [x] **Task 9: Driving view model + send gate + visibility + wheel mode** (M)
   - Port `driving_view_model.dart`, `dashboard_send_gate.dart` (state-send rate gating), `dashboard_visibility.dart`, `controller_visibility.dart`, `wheel_mode.dart`, `camera_pad_mode.dart`, `engine_start_mode.dart`.
   - **Acceptance criteria:**
-    - [ ] `dashboard_send_gate_test`, `dashboard_visibility_test`, `wheel_mode_test`, `driving_view_model_test` ports pass
+    - [x] `dashboard_send_gate_test` port passes — 14 tests (12 ported + blink-timer and phase-drop cases)
+    - [x] `dashboard_visibility_test` port passes — 13 tests (EngineStartMode + visibility, incl. the legacy controller-visibility migration and its half-written branch)
+    - [x] `wheel_mode_test` port passes — 7 tests (WheelMode + RotationDegree per game preset)
+    - [x] `driving_view_model_test` port passes — 19 tests (15 ported, 4 new for the gyro-only paths the Dart suite leaves implicit). Two groups are deliberately not ported yet: layout profiles (Task 11) and binding resolution (Task 12) both assert on code that has not landed. The gate's `bindingFor` is unbound until Task 12 adds the preset tables, so the send path is inert until then.
   - **Verification:** `./gradlew test`.
   - **Dependencies:** Tasks 6, 7, 8.
-  - **Files likely touched:** `.../ui/features/driving/view_models/driving_view_model.kt`, `.../data/services/{dashboard_send_gate,dashboard_visibility,controller_visibility,wheel_mode,camera_pad_mode,engine_start_mode}.kt`.
+  - **Files touched:** `.../ui/features/driving/view_models/driving_view_model.kt`, `.../data/services/{settings_store,dashboard_send_gate,dashboard_visibility,controller_visibility,wheel_mode,camera_pad_mode,engine_start_mode,controller_preset,dashboard_input}.kt`, `.../data/repositories/{settings_repository,connection_repository}.kt`, `.../domain/models/wire_messages.kt` (optional `cameraX`/`cameraY` on the state frame), plus `spring_back.kt` folded into the shared store.
+  - **Deferred to later tasks, on purpose:** `GamePreset`'s default binding tables and the per-mode overrides (Task 12), pedal sides and camera-control type (Task 12/13), layout, profiles, and the profile-aware `sendMappingMode(preset)` on init (Task 11). Settings persistence lands here rather than in Task 13: one `SettingsStore` behind `SettingsRepository` replaces the per-setting store interfaces, and `SpringBack` folds into it.
   - **Reference:** same names under `mobile/lib/`.
 
 - [ ] **Task 10: Driving screen** (L)
