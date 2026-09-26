@@ -116,14 +116,14 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Files likely touched:** `.../data/services/gyroscope_service.kt`, `.../data/services/steering_sensor.kt`, `.../data/services/rotation_mapper.kt`, `.../domain/models/steering_state.kt`.
   - **Reference:** `mobile/lib/data/services/{gyroscope_service,steering_sensor,rotation_mapper}.dart`, `mobile/lib/domain/models/steering_state.dart`.
 
-- [ ] **Task 8: Pedal input** (M)
+- [x] **Task 8: Pedal input** (M)
   - Touch-drag analog 0.0–1.0 with spring-back release, per `pedal_input.dart` + `spring_back.dart`; pedal state model.
   - **Acceptance criteria:**
-    - [ ] `spring_back_test` port passes
-    - [ ] Release springs back with the same curve as Flutter
-  - **Verification:** `./gradlew test`.
+    - [x] `spring_back_test` port passes
+    - [x] Release springs back with the same curve as Flutter — linear/easeOut/easeInOut match the ported formulas frame by frame, and the ported 300ms/16ms defaults are pinned
+  - **Verification:** `./gradlew test`. Devices and the UI land with the driving screen (Task 10).
   - **Dependencies:** Task 2.
-  - **Files likely touched:** `.../data/services/pedal_input.kt`, `.../data/services/spring_back.kt`, `.../data/repositories/pedal_repository.kt`, `.../domain/models/pedal_state.kt`.
+  - **Files touched:** `.../data/services/pedal_input.kt`, `.../data/services/spring_back.kt`, `.../domain/models/pedal_state.kt`. No `pedal_repository.kt`: its only job was handing out immutable snapshots, and `PedalInput.state` (StateFlow) does that while also being the raw handle Task 10's pedal panel binds to, so the repository would add a hop and nothing else.
   - **Reference:** `mobile/lib/data/services/{pedal_input,spring_back}.dart`, `mobile/lib/domain/models/pedal_state.dart`.
 
 - [ ] **Task 9: Driving view model + send gate + visibility + wheel mode** (M)
