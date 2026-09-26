@@ -106,12 +106,12 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 
 ### Phase 3: Input capture + driving core
 
-- [ ] **Task 7: Gyro steering** (M)
+- [x] **Task 7: Gyro steering** (M)
   - `SensorManager` capture ported from `gyroscope_service.dart` + `steering_sensor.dart`; calibration capture and reconfirm-on-resume (always prompts, per CONTEXT.md); rotation mapper (degrees → −1..1). Sensor stream behind a seam for fake-driven tests.
   - **Acceptance criteria:**
-    - [ ] `gyroscope_service_test` and `rotation_mapper_test` ports pass
-    - [ ] Calibration reconfirm prompt fires on every resume from background
-  - **Verification:** `./gradlew test`; manual device check with real desktop receiving state messages.
+    - [x] `gyroscope_service_test` and `rotation_mapper_test` ports pass — 8 tests
+    - [ ] Calibration reconfirm prompt fires on every resume from background — the rule lives in `ConnectionViewModel.resume()`/`confirmCalibration()` and is tested (4 tests: always re-arms on resume, confirm and disconnect clear it); the prompt UI and gyro re-center land with the driving screen in Task 9/10
+  - **Verification:** `./gradlew test`. Manual device check with real desktop receiving state messages deferred to Checkpoint B (needs the driving screen, Task 10).
   - **Dependencies:** Task 2.
   - **Files likely touched:** `.../data/services/gyroscope_service.kt`, `.../data/services/steering_sensor.kt`, `.../data/services/rotation_mapper.kt`, `.../domain/models/steering_state.kt`.
   - **Reference:** `mobile/lib/data/services/{gyroscope_service,steering_sensor,rotation_mapper}.dart`, `mobile/lib/domain/models/steering_state.dart`.

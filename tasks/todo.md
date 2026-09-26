@@ -9,7 +9,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 
 ## Checkpoint: Foundation
 
-- [ ] Android builds + tests run in CI; wire contract pinned
+- [x] Android builds + tests run in CI; wire contract pinned
 
 ## Phase 2: Connection core
 
@@ -24,7 +24,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 
 ## Phase 3: Input capture + driving core
 
-- [ ] Task 7: Gyro steering (SensorManager, calibration + reconfirm, rotation mapper)
+- [x] Task 7: Gyro steering (SensorManager, calibration + reconfirm gate, rotation mapper)
 - [ ] Task 8: Pedal input (touch-drag analog, spring-back)
 - [ ] Task 9: Driving VM + send gate + visibility + wheel mode
 - [ ] Task 10: Driving screen (RotatableWheel, tilt readout, pedals, camera pad; **constant-speed rotate-back-to-zero**)

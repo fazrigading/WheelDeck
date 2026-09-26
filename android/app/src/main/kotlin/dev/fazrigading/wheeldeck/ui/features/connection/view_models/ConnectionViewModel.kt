@@ -25,6 +25,11 @@ data class ConnectionUiState(
     val pairingChallenge: PairingChallenge? = null,
     val pairingError: Boolean = false,
     val isPaused: Boolean = false,
+    /// True after a lifecycle resume until the user re-confirms the steering
+    /// center. Always set, regardless of detected drift (CONTEXT.md:
+    /// Calibration reconfirm). The driving view gates input on it; it also
+    /// re-centers the sensor, which only the driving screen can reach.
+    val awaitingCalibration: Boolean = false,
     val pairedIds: Set<String> = emptySet(),
 ) {
     /// Previously paired (host:port seen in successful connection).
@@ -102,8 +107,12 @@ class ConnectionViewModel(
         }
     }
 
-    /// Closes the socket and returns to `disconnected`.
-    fun disconnect() = connectionRepository.disconnect()
+    /// Closes the socket and returns to `disconnected`. Leaving driving drops
+    /// the calibration prompt with it.
+    fun disconnect() {
+        _uiState.update { it.copy(awaitingCalibration = false) }
+        connectionRepository.disconnect()
+    }
 
     /// Pauses the session on lifecycle interruption. Keeps the WebSocket open
     /// for fast reconnect — the driving view stops sending input instead.
@@ -112,9 +121,17 @@ class ConnectionViewModel(
         _uiState.update { it.copy(isPaused = true) }
     }
 
-    /// Clears the pause flag so the UI can re-confirm calibration.
+    /// Clears the pause flag so the UI can re-confirm calibration, and arms
+    /// the reconfirm prompt. Every resume prompts, even one that follows a
+    /// confirmation moments earlier.
     fun resume() {
-        _uiState.update { it.copy(isPaused = false) }
+        _uiState.update { it.copy(isPaused = false, awaitingCalibration = true) }
+    }
+
+    /// The user accepted the current orientation as straight ahead. The
+    /// driving screen also re-centers the sensor when it handles this.
+    fun confirmCalibration() {
+        _uiState.update { it.copy(awaitingCalibration = false) }
     }
 
     /// Sends the pairing code entered by the user.
