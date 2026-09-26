@@ -3,7 +3,6 @@ package dev.fazrigading.wheeldeck.data.services
 import dev.fazrigading.wheeldeck.domain.models.MappingMode
 
 /// How dashboard buttons are interpreted by the desktop.
-/// Persistence lands with the settings store (plan Task 13).
 enum class InputMapping(val wireValue: String) {
     /** Dashboard controls become simulated keyboard presses (ETS2 defaults). */
     Keyboard("keyboard"),
@@ -12,6 +11,7 @@ enum class InputMapping(val wireValue: String) {
     Gamepad("gamepad");
 
     companion object {
+        const val KEY = "wheeldeck.input_mapping"
         val fallback = Gamepad
 
         fun fromWireValue(value: String?): InputMapping =

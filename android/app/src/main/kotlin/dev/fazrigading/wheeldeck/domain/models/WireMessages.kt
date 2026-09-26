@@ -24,6 +24,9 @@ data class State(
     val accelerator: Double,
     val brake: Double,
     val clutch: Double,
+    // Interior-camera look; the schema treats both as optional, 0.0 = centered.
+    val cameraX: Double = 0.0,
+    val cameraY: Double = 0.0,
 ) : WireMessage
 
 /// Discrete dashboard control event (button_message.json).

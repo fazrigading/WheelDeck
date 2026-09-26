@@ -118,6 +118,8 @@ class WheelDeckClient(
         accelerator: Double,
         brake: Double,
         clutch: Double,
+        cameraX: Double = 0.0,
+        cameraY: Double = 0.0,
     ) {
         val message = State(
             seq = seq.incrementAndGet(),
@@ -125,6 +127,8 @@ class WheelDeckClient(
             accelerator = accelerator,
             brake = brake,
             clutch = clutch,
+            cameraX = cameraX,
+            cameraY = cameraY,
         )
         sendMessage(message)
     }
