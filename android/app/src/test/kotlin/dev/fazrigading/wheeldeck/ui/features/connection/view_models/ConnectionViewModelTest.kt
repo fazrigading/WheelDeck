@@ -144,6 +144,51 @@ class ConnectionViewModelTest {
     }
 
     @Test
+    fun `resume requires a calibration reconfirm`() = runTest(dispatcher) {
+        val f = Fixture()
+        assertFalse(f.vm.uiState.value.awaitingCalibration)
+
+        f.vm.pause()
+        f.vm.resume()
+
+        assertTrue(f.vm.uiState.value.awaitingCalibration)
+    }
+
+    @Test
+    fun `calibration reconfirm prompts on every resume`() = runTest(dispatcher) {
+        val f = Fixture()
+
+        // Always prompts, regardless of detected drift (CONTEXT.md).
+        f.vm.resume()
+        f.vm.confirmCalibration()
+        assertFalse(f.vm.uiState.value.awaitingCalibration)
+
+        f.vm.resume()
+        assertTrue(f.vm.uiState.value.awaitingCalibration)
+    }
+
+    @Test
+    fun `confirmCalibration clears the prompt`() = runTest(dispatcher) {
+        val f = Fixture()
+        f.vm.resume()
+
+        f.vm.confirmCalibration()
+
+        assertFalse(f.vm.uiState.value.awaitingCalibration)
+    }
+
+    @Test
+    fun `disconnect clears the calibration prompt`() = runTest(dispatcher) {
+        val f = Fixture()
+        f.vm.resume()
+
+        f.vm.disconnect()
+        advanceUntilIdle()
+
+        assertFalse(f.vm.uiState.value.awaitingCalibration)
+    }
+
+    @Test
     fun `disconnect returns to Disconnected`() = runTest(dispatcher) {
         val f = Fixture()
         f.vm.disconnect()

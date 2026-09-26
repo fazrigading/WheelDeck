@@ -99,6 +99,9 @@ enum class ControlId(val wireValue: String) {
     @SerialName("camera_pad_arrow_down") CameraPadArrowDown("camera_pad_arrow_down"),
     @SerialName("camera_pad_arrow_left") CameraPadArrowLeft("camera_pad_arrow_left"),
     @SerialName("camera_pad_arrow_right") CameraPadArrowRight("camera_pad_arrow_right"),
+    // Simple camera type; recenter reuses CameraPadRecenter.
+    @SerialName("camera_simple_left") CameraSimpleLeft("camera_simple_left"),
+    @SerialName("camera_simple_right") CameraSimpleRight("camera_simple_right"),
 }
 
 @Serializable
