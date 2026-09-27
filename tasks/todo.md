@@ -47,7 +47,7 @@ Deferred and known-gap notes: [`tasks/task-12-leftovers.md`](task-12-leftovers.m
 
 ## Phase 5: Polish + cutover
 
-- [ ] Task 14: Menu / about / donate screens
+- [x] Task 14: Menu / about / donate screens
 - [ ] Task 15: Cutover (docs rewrite, CI update, delete `mobile/`, archive plan, check off TODO.md items)
 
 ## Checkpoint: Complete

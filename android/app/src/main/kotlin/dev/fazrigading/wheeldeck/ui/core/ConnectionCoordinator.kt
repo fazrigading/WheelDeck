@@ -9,7 +9,11 @@ import dev.fazrigading.wheeldeck.data.repositories.SessionRepository
 import dev.fazrigading.wheeldeck.data.repositories.SettingsRepository
 import dev.fazrigading.wheeldeck.data.services.DashboardInput
 import dev.fazrigading.wheeldeck.data.services.DataStoreSettingsStore
+import dev.fazrigading.wheeldeck.data.services.AndroidLinkOpener
+import dev.fazrigading.wheeldeck.data.services.GitHubStarsSource
 import dev.fazrigading.wheeldeck.data.services.GyroscopeService
+import dev.fazrigading.wheeldeck.data.services.LinkOpener
+import dev.fazrigading.wheeldeck.data.services.OkHttpGitHubStars
 import dev.fazrigading.wheeldeck.data.services.PairingController
 import dev.fazrigading.wheeldeck.data.services.PedalInput
 import dev.fazrigading.wheeldeck.data.services.PermissionPrompts
@@ -48,6 +52,12 @@ class ConnectionCoordinator(container: ConnectionContainer) {
     private val gyro = GyroscopeService(gyroscopeEvents(container.appContext))
 
     val dashboardInput = DashboardInput()
+
+    /// Outbound-link seam for the About and Donate screens.
+    val linkOpener: LinkOpener = AndroidLinkOpener(container.appContext)
+
+    /// The About screen's star count. A failure is not an error the driver sees.
+    val gitHubStars: GitHubStarsSource = OkHttpGitHubStars()
 
     val pedals = PedalInput()
 

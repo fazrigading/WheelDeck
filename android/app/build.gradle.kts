@@ -32,6 +32,9 @@ android {
 
     buildFeatures {
         compose = true
+        // BuildConfig.VERSION_NAME, so the menu footer and the About screen
+        // cannot drift from the version in the manifest.
+        buildConfig = true
     }
 
     testOptions {
