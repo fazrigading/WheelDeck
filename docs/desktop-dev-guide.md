@@ -49,7 +49,7 @@ dotnet test --filter "FullyQualifiedName~PairingManager"
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-Test coverage targets (see [`plan/feature-wheeldeck-v1-1.md`](../plan/feature-wheeldeck-v1-1.md), TEST-001 through TEST-004):
+Test coverage targets (see [`plan/feature-wheeldeck-v1-1.md`](../plan/finished/feature-wheeldeck-v1-1.md), TEST-001 through TEST-004):
 - Protocol models serialize/deserialize matching schema constraints
 - `PairingManager` expires devices after 30 days and revokes on demand
 - `InputMapper` routes axes and buttons per mapping mode
@@ -171,14 +171,16 @@ Located in `scripts/`:
 
 ## CI
 
-`desktop/` has its own workflow at `../.github/workflows/desktop-ci.yml`. It builds on a .NET runner and includes platform-specific dependencies for backend tests. A mobile-only change does not trigger a full desktop build.
+`desktop/` has its own workflow at `../.github/workflows/desktop-ci.yml`. It builds on a .NET runner and includes platform-specific dependencies for backend tests. An Android-only change does not trigger a full desktop build.
 
 ## Adding a new control or action
 
 1. Add the enum value to `protocol/schema/controls.json`
 2. Add the same value to `ControlId` in `WheelDeck.Core/Protocol/ControlId.cs`
-3. Add the same value to the `ControlId` enum in `mobile/lib/data/services/dashboard_input.dart`
+3. Add the same value to `ControlId` in `android/app/src/main/kotlin/dev/fazrigading/wheeldeck/domain/models/Controls.kt`
 4. Map the control in `InputMapper.cs` (which `setButton` or `sendKey` line to use)
+
+`ControlIdContractTest` in the Android test suite pins the two enums against the schema, so a value added to one side and forgotten on the other fails the Android build.
 
 > The protocol schema is the single source of truth. Do not add control enums to code without adding them to the schema first.
 

@@ -82,6 +82,19 @@
         }
       },
       "additionalProperties": false
+    },
+    "unpair": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "unpair",
+          "description": "Sent by either side to revoke the pairing for the sending device: the phone when removing a paired receiver, the desktop when revoking from its device list. The device is identified by the socket, not by a field."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "oneOf": [
@@ -96,6 +109,9 @@
     },
     {
       "$ref": "#/definitions/device_switch"
+    },
+    {
+      "$ref": "#/definitions/unpair"
     }
   ]
 }

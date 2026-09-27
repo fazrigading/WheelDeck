@@ -46,6 +46,14 @@ public sealed class MainWindow : Window
             });
         };
 
+        // A device revoked from this UI must clear from the list immediately.
+        _root.PairingManager.DeviceRevoked += _ =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                RefreshConnection();
+                pairingView.ViewModel?.RefreshDevices();
+            });
+
         var settingsViewModel = new SettingsViewModel(
             getCurrent: () => Application.Current?.RequestedThemeVariant,
             apply: ApplyTheme,

@@ -63,11 +63,38 @@ public sealed class CompositionRoot
         Listener.MappingReceived += (mapping, socket) => _gate.OnMapping(mapping, socket);
         Listener.PairRequestReceived += (request, socket) => PairingService.Handle(request, socket);
         Listener.HeartbeatReceived += (heartbeat, socket) => _gate.OnHeartbeat(heartbeat, socket);
+        Listener.UnpairReceived += _gate.OnUnpair;
         Listener.ConnectionClosed += _gate.OnConnectionClosed;
 
         PairingService.PairingCompleted += (socket, deviceId, _) => _gate.OnPairingCompleted(socket, deviceId, _);
         _gate.HeartbeatAccepted += HeartbeatMonitor.OnHeartbeat;
         _gate.UnknownSessionToken += RejectStaleSession;
+
+        // Desktop-side revoke: notify the phone's live sockets so it re-pairs.
+        PairingManager.DeviceRevoked += deviceId =>
+        {
+            foreach (var socket in _gate.SocketsForDevice(deviceId).ToList())
+            {
+                _ = NotifyRevokedAsync(socket);
+            }
+        };
+    }
+
+    /// <summary>Tells a phone its pairing was revoked, then drops the socket.
+    /// Fire-and-forget: a dropped socket just means the phone already left.</summary>
+    private static async Task NotifyRevokedAsync(WebSocket socket)
+    {
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes("""{"type":"unpair"}""");
+            await socket.SendAsync(
+                new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "unpaired", CancellationToken.None);
+        }
+        catch (Exception)
+        {
+            // Socket already gone; nothing to notify.
+        }
     }
 
     public void Start(CancellationToken ct = default)

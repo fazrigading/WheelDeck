@@ -56,3 +56,12 @@ public sealed record DeviceSwitch
     [JsonPropertyName("device_id")]
     public string? DeviceId { get; init; }
 }
+
+/// <summary>Sent by either side to revoke the pairing for the sending device:
+/// the phone when removing a paired receiver, the desktop when revoking from
+/// its device list. The device is identified by the socket, not by a field.</summary>
+public sealed record UnpairMessage
+{
+    [JsonPropertyName("type")]
+    public string Type => "unpair";
+}

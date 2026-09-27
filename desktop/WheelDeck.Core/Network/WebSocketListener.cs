@@ -24,6 +24,7 @@ public sealed class WebSocketListener : IAsyncDisposable
     public event Action<MappingMessage, WebSocket>? MappingReceived;
     public event Action<PairRequest, WebSocket>? PairRequestReceived;
     public event Action<Heartbeat, WebSocket>? HeartbeatReceived;
+    public event Action<WebSocket>? UnpairReceived;
     public event Action<WebSocket>? ConnectionClosed;
 
     public WebSocketListener(int port = DefaultPort)
@@ -191,6 +192,10 @@ public sealed class WebSocketListener : IAsyncDisposable
                         HeartbeatReceived?.Invoke(heartbeat, socket);
                     }
 
+                    break;
+
+                case "unpair":
+                    UnpairReceived?.Invoke(socket);
                     break;
             }
         }
