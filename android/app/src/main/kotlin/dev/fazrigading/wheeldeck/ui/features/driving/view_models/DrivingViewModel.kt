@@ -126,17 +126,6 @@ class DrivingViewModel(
         if (_uiState.value.isRotatable) setAwaitingCalibration(false)
     }
 
-    /// Re-reads everything the settings screen can change. Rotatable steering
-    /// cannot drift, so switching into it clears the gate.
-    suspend fun refreshSettings() {
-        loadWheelState()
-        loadDashboardState()
-        load { settingsRepository.getVisibility() }?.let { visibility ->
-            _uiState.update { it.copy(visibility = visibility) }
-        }
-        loadBindings()
-        if (_uiState.value.isRotatable) setAwaitingCalibration(false)
-    }
 
     /// Stores a binding override for [control] in the active mapping mode and
     /// re-resolves the table. A blank [value] drops the override, so the control

@@ -59,6 +59,10 @@ data class GridEnv(
     val springBack: Boolean,
     val onSteering: (Double) -> Unit,
     val onCameraPadModeSwitch: () -> Unit,
+    /// Called when a driver taps a cell that has no binding, so the app can offer
+    /// the binder instead of a dead button. The default ignores the tap, which
+    /// leaves those cells dead.
+    val onBindRequested: (ControlId) -> Unit = {},
     val cameraPadMode: CameraPadMode = CameraPadMode.fallback,
     val engineStartMode: EngineStartMode = EngineStartMode.fallback,
     val shownPedals: Set<PedalType> = setOf(PedalType.Clutch, PedalType.Brake, PedalType.Accelerator),
@@ -150,6 +154,7 @@ private fun SlotContent(slot: LayoutSlot, box: PixelRect, env: GridEnv) {
             input = env.input,
             bindingFor = env.bindingFor,
             onModeSwitch = env.onCameraPadModeSwitch,
+            onBindRequested = env.onBindRequested,
             modifier = Modifier.fillMaxSize(),
         )
         // A hidden pedal renders nothing, as in the Dart grid.
@@ -206,6 +211,7 @@ private fun SlotContent(slot: LayoutSlot, box: PixelRect, env: GridEnv) {
                 mode = modeFor(control, env.engineStartMode),
                 input = env.input,
                 bindingFor = env.bindingFor,
+                onBindRequested = env.onBindRequested,
                 gate = env.gate,
                 gateState = env.gateState,
                 modifier = Modifier.fillMaxSize(),
@@ -247,6 +253,7 @@ fun DashboardControl(
     modifier: Modifier = Modifier,
     gate: DashboardSendGate? = null,
     gateState: DashboardGateState = DashboardGateState(),
+    onBindRequested: (ControlId) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val press = remember(control, mode) {
@@ -290,7 +297,9 @@ fun DashboardControl(
                         press.onPressDown()
                         if (tryAwaitRelease()) press.onPressUp() else press.onPressCancel()
                     },
-                    onTap = { if (live) press.onTap() },
+                    // A dead cell is the driver's cue to bind it, so tapping one
+                    // opens the binder rather than doing nothing at all.
+                    onTap = { if (live) press.onTap() else onBindRequested(control) },
                 )
             },
         contentAlignment = Alignment.Center,
