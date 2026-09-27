@@ -211,13 +211,23 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 
 ### Phase 5: Polish + cutover
 
-- [ ] **Task 14: Menu / about / donate screens** (S)
+- [x] **Task 14: Menu / about / donate screens** (S)
   - Port menu screen, about screen, donate screen (URL launcher → `Intent.ACTION_VIEW`).
   - **Acceptance criteria:**
-    - [ ] All three screens render and their external links open
-  - **Verification:** `./gradlew test`; manual check.
+    - [x] All three screens render and their external links open. The link logic is unit-tested: `ExternalLinksTest` pins the URLs (absolute https, no duplicates, repo and API agree) and `GitHubStarsTest` pins the fetch and its failure path. `AppShellRoutingTest` pins the routing against the same `resolvePage` the composable calls. The rendering and the actual `startActivity` need a device
+    - [x] The menu is the app's resting state, matching `main.dart`'s `_Routing` — the Kotlin `AppShell` had been showing the connection screen directly, so the hub never existed
+  - **Verification:** `./gradlew test` (292 tests), `assembleDebug` and `lintDebug` clean. Manual link-tapping needs a device.
   - **Dependencies:** Task 13.
-  - **Files likely touched:** `.../ui/features/{menu,about,donate}/**`.
+  - **Files touched:** `.../data/services/external_links.kt` (the URLs, the `LinkOpener` seam, the stars source), `.../ui/features/{menu,about,donate}/views/*.kt`, `.../ui/core/app_shell.kt` (the menu hub and its pages), `.../ui/core/link_launcher.kt`, `.../ui/core/connection_coordinator.kt`, `app/build.gradle.kts` (`buildConfig` for the version).
+  - **What the reviews caught, because none of it showed up in a test:**
+    - `AndroidLinkOpener` called `startActivity` from the *application* context, which throws without `FLAG_ACTIVITY_NEW_TASK` — every one of the five links would have crashed. The catch was also narrowed to `ActivityNotFoundException`, so nothing else could reach the failure message
+    - The driving screen's settings control had become dead: the `when` tested `Connected` before the destination, so the assignment was stored and never rendered
+    - `Page` was never reset when a session ended, so a driver whose desktop quit landed back on the Connect screen instead of the menu
+    - No `BackHandler`, so system back finished the Activity instead of returning to the menu — and the Connect screen had no back affordance at all
+    - `isPaused` was dropped from the routing gate, so a heartbeat timeout *while backgrounded* would strand the driver on the menu
+    - `resolvePage` had no test: the first `AppShellRoutingTest` re-implemented the rule privately and passed with `AppShell` deleted
+  - **Unrequested change, recorded:** the connection screen's settings gear was removed. The menu now owns that route, and a gear on a screen the menu already sits behind was a duplicate. Settings is reachable from the hub and mid-session.
+  - **Deferred, on purpose:** the Dart's two-step URL fallback (`externalApplication` then `platformDefault`) is not worth porting — on Android `externalApplication` is a plain `ACTION_VIEW`, which is what this does, and every browser registers an https handler.
   - **Reference:** `mobile/lib/ui/features/{menu,about,donate}/**`.
 
 - [ ] **Task 15: Cutover** (M)

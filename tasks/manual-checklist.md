@@ -145,7 +145,39 @@ Task 13. The section-visibility rules are unit-tested; the rendering is not.
 > mapping. The `auto` alias fixes the prompt, not the routing. Details in
 > [`task-12-leftovers.md`](task-12-leftovers.md).
 
-## 9. Regression guard
+## 9. Menu, About, and Donate
+
+- [ ] After onboarding, the app rests on the **menu hub** (logo, title, four
+      buttons) — not on the connection screen
+- [ ] **Connect** → connection screen; system Back returns to the menu
+- [ ] **Settings** → settings; Back returns to the menu, and the dashboard
+      re-reads what changed
+- [ ] **About** → developer, source code, star badge
+  - [ ] Star badge shows a number when online, and `—` when offline or
+        rate-limited — it must never show a wrong number, and the screen must not
+        hang on the loader
+  - [ ] **Open** and **Star** both open `github.com/fazrigading/WheelDeck` in a
+        browser
+  - [ ] The app does **not** crash when a link is tapped — this is the one that
+        was broken: `startActivity` from the application context needs
+        `FLAG_ACTIVITY_NEW_TASK`
+- [ ] **Donate** → all three routes; each Open button and each card opens
+      `buymeacoffee.com`, `paypal.me`, and `ko-fi.com` in a browser
+  - [ ] Each route shows its own glyph, not three of the same
+  - [ ] Tapping with no browser installed shows "Could not open …" rather than
+        failing silently
+- [ ] Menu footer and About both read `v0.1.0` — the version comes from the
+      build, so the two cannot drift
+- [ ] The menu logo is not the same glyph as the Connect button
+- [ ] Nothing sits under the status bar or the navigation bar
+- [ ] **Disconnect mid-session** → back on the menu, not the Connect screen
+- [ ] Open Settings from the dashboard's corner control mid-session → settings
+      overlays the still-mounted dashboard, Back returns to the dashboard, and
+      the dashboard still receives input afterwards
+- [ ] Background the app mid-session, then let the heartbeat lapse → still on the
+      driving screen with the reconfirm prompt, **not** bounced to the menu
+
+## 10. Regression guard
 
 - [ ] `flutter test` still passes in `mobile/` — no Dart file should have changed
 - [ ] `./gradlew test` — 275 unit tests
