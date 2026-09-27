@@ -12,6 +12,14 @@ tags: [feature, mobile, layout, editor, backlog]
 
 ![Status: Complete](https://img.shields.io/badge/status-Complete-green)
 
+> **2026-09-27 — not ported to Kotlin.** This plan was implemented in the Flutter
+> app. The `android/` rewrite shipped only the Sequential layout preset and no
+> layout editor, so the features below — `LayoutProfileStore`, the layout *edit*
+> API, and the `Simple Automatic` / `Real Automatic` / `H-Shifter` presets —
+> exist **only** on the `backup/flutter-port` branch. Every `mobile/lib/…` path in
+> this document refers to that branch. Porting them is outstanding work, tracked in
+> [`../tasks/task-12-leftovers.md`](../tasks/task-12-leftovers.md).
+
 > **2026-09-22:** All phases complete — issues #64–#75 closed on
 > `feature/custom-button-layout`. Remaining: none; Semi-Analog stays deleted
 > until a real design exists.

@@ -1,6 +1,33 @@
-# Implementation Plan: Flutter → Kotlin (Android-native) Migration
+---
+goal: Rebuild the phone app as Android-native Kotlin + Jetpack Compose, reaching parity with the Flutter app plus the seven TODO.md fixes, then delete mobile/
+version: 1.0
+date_created: 2026-09-22
+last_updated: 2026-09-27
+owner: fazrigading
+status: Finished
+tags:
+  - migration
+  - mobile
+  - android
+  - kotlin
+  - compose
+---
 
-Status: **ongoing** — Tasks 1–5 complete (2026-09-22).
+# Introduction
+
+![Status: Finished](https://img.shields.io/badge/status-Finished-green)
+
+> **2026-09-27:** Cutover complete. `mobile/` is deleted; the Dart source is
+> preserved on the `backup/flutter-port` branch. Checkpoints B and C remain open
+> because no device session has been run — see
+> [`../../tasks/manual-checklist.md`](../../tasks/manual-checklist.md) for the
+> outstanding verification and
+> [`../../tasks/task-12-leftovers.md`](../../tasks/task-12-leftovers.md) for what
+> the cutover cost. What did **not** come across from Flutter: the layout editor,
+> three layout presets, the camera pad's simple/analog shapes, the PWA (and with
+> it the iOS client), and the gyro-mode layout.
+
+# Implementation Plan: Flutter → Kotlin (Android-native) Migration
 
 Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose app in `android/`, slice by slice, against the same `protocol/schema/` contract. Flutter stays runnable as the working reference until Kotlin reaches functional parity **plus the seven known fixes from `TODO.md`**, then `mobile/` is deleted. Desktop (.NET) is untouched. Local data starts fresh — no SharedPreferences migration.
 
@@ -11,7 +38,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 - **No DI framework.** Manual `AppContainer` with constructor injection, matching the Dart codebase's style.
 - **Coroutines + Flow** replace Dart Streams and ChangeNotifiers; **ViewModel + StateFlow** replace `provider`; **data classes** replace `freezed`.
 - **Version catalog** (`gradle/libs.versions.toml`); Kotlin 2.x + Compose compiler plugin; minSdk 26, targetSdk 36, compileSdk 37 (Compose BOM 2026.09.00 / compose-ui 1.12.1 requires 37), package `dev.fazrigading.wheeldeck` (already the Flutter applicationId).
-- **Tests:** JUnit + `kotlinx-coroutines-test` + OkHttp `MockWebServer` + Robolectric (sensor/permission seams); Compose UI tests only where gestures need them. The 27 Dart test files are ported 1:1 as the parity gate.
+- **Tests:** JUnit + `kotlinx-coroutines-test` + OkHttp `MockWebServer`, with hand-written fakes at the sensor/permission/link seams; Compose UI tests only where gestures need them. The 27 Dart test files are ported 1:1 as the parity gate.
 - **Protocol contract:** `protocol/schema/*.json` stays the single source of truth. Kotlin message models must encode/decode compatible with the desktop; contract tests pin this.
 - **Freeze rule:** Flutter gets no new features and no bug fixes during migration. The seven `TODO.md` Mobile items are built right the first time in Kotlin as acceptance criteria — no bug-for-bug parity, no double work.
 
@@ -97,7 +124,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
     - [x] Lifecycle (background/foreground) triggers reconnect per ADR-0002 semantics
   - **Verification:** `./gradlew test`; manual device walkthrough.
   - **Dependencies:** Tasks 3, 5.
-  - **Files likely touched:** `.../ui/features/connection/**`, `.../ui/core/connection_coordinator.kt`, `.../ui/core/lifecycle_observer.kt`, `.../data/repositories/connection_repository.kt`.
+  - **Files likely touched:** `.../ui/features/connection/**`, `.../ui/core/ConnectionCoordinator.kt`, `.../ui/core/lifecycle_observer.kt`, `.../data/repositories/connection_repository.kt`.
   - **Reference:** `mobile/lib/ui/features/connection/**`, `mobile/lib/ui/core/**`.
 
 ### Checkpoint A: Connection works end-to-end
@@ -132,7 +159,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
     - [x] `dashboard_send_gate_test` port passes — 14 tests (12 ported + blink-timer and phase-drop cases)
     - [x] `dashboard_visibility_test` port passes — 13 tests (EngineStartMode + visibility, incl. the legacy controller-visibility migration and its half-written branch)
     - [x] `wheel_mode_test` port passes — 7 tests (WheelMode + RotationDegree per game preset)
-    - [x] `driving_view_model_test` port passes — 19 tests (15 ported, 4 new for the gyro-only paths the Dart suite leaves implicit). Two groups are deliberately not ported yet: layout profiles (Task 11) and binding resolution (Task 12) both assert on code that has not landed. The gate's `bindingFor` was unbound until Task 12 added the preset tables, so the send path was inert until then.
+    - [x] `driving_view_model_test` port passes — 19 tests (15 ported, 4 new for the gyro-only paths the Dart suite leaves implicit). Two groups are deliberately not ported yet: layout presets (Task 11) and binding resolution (Task 12) both assert on code that has not landed. The gate's `bindingFor` was unbound until Task 12 added the preset tables, so the send path was inert until then.
   - **Verification:** `./gradlew test`.
   - **Dependencies:** Tasks 6, 7, 8.
   - **Files touched:** `.../ui/features/driving/view_models/driving_view_model.kt`, `.../data/services/{settings_store,dashboard_send_gate,dashboard_visibility,controller_visibility,wheel_mode,camera_pad_mode,engine_start_mode,controller_preset,dashboard_input}.kt`, `.../data/repositories/{settings_repository,connection_repository}.kt`, `.../domain/models/wire_messages.kt` (optional `cameraX`/`cameraY` on the state frame), plus `spring_back.kt` folded into the shared store.
@@ -155,9 +182,9 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Deferred, on purpose:** the camera pad's simple and analog shapes (they need `CameraControlType`, which lands with the camera-type settings in Task 12), the dashboard grid and its control cells (Task 11/12), pedal-side layout order, and the hold haptic (Android's `LocalHapticFeedback` needs a composable, so it lands with the grid's control visuals).
   - **Reference:** `mobile/lib/ui/features/driving/views/*`, `TODO.md` Controls item.
 
-### Checkpoint B: Drivable (make-or-break)
+### Checkpoint B: Drivable (make-or-break) — **open**
 - [ ] Real-device ETS2 session: gyro steering, rotatable steering, pedals, camera pad all functional
-- [ ] `flutter test` still passes
+- [ ] `flutter test` still passes — moot at cutover; the Kotlin suite is green (292) and the Dart source is on `backup/flutter-port`
 
 ### Phase 4: Dashboard completeness
 
@@ -205,9 +232,13 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Deferred, on purpose:** the layout-profile settings section and `LayoutProfileStore` (Task 11's #76 work) — which also defers the camera section's "hide when the layout has no camera pad slot" half, so that rule is currently rotatable-only; the camera pad's simple and analog shapes, which need `CameraControlType` to actually render; the menu/about/donate screens the settings gear will eventually sit beside (Task 14); and the driving screen's landscape lock, which the Flutter app sets and clears around the driving view rather than in the manifest.
   - **Reference:** `mobile/lib/ui/features/{onboarding,settings}/**`, `TODO.md` Dashboard item 5 + Settings item.
 
-### Checkpoint C: Parity + fixes
+### Checkpoint C: Parity + fixes — **open**
 - [ ] Side-by-side feature walkthrough vs Flutter app: every feature matches, plus the seven TODO.md fixes verified
-- [ ] `./gradlew test` green and `flutter test` green (last regression check)
+- [ ] `./gradlew test` green — **done**, 292 tests
+- [ ] Side-by-side walkthrough — **not done**, and it cannot pass as written. The
+      cutover dropped the layout editor, three layout presets, the camera pad's
+      simple/analog shapes, the PWA, and the gyro-mode layout, so parity is short
+      by those. See [`../../tasks/task-12-leftovers.md`](../../tasks/task-12-leftovers.md)
 
 ### Phase 5: Polish + cutover
 
@@ -218,7 +249,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
     - [x] The menu is the app's resting state, matching `main.dart`'s `_Routing` — the Kotlin `AppShell` had been showing the connection screen directly, so the hub never existed
   - **Verification:** `./gradlew test` (292 tests), `assembleDebug` and `lintDebug` clean. Manual link-tapping needs a device.
   - **Dependencies:** Task 13.
-  - **Files touched:** `.../data/services/external_links.kt` (the URLs, the `LinkOpener` seam, the stars source), `.../ui/features/{menu,about,donate}/views/*.kt`, `.../ui/core/app_shell.kt` (the menu hub and its pages), `.../ui/core/link_launcher.kt`, `.../ui/core/connection_coordinator.kt`, `app/build.gradle.kts` (`buildConfig` for the version).
+  - **Files touched:** `.../data/services/ExternalLinks.kt` (the URLs, the `LinkOpener` seam, the stars source), `.../ui/features/{menu,about,donate}/views/*.kt`, `.../ui/core/AppShell.kt` (the menu hub and its pages), `.../ui/core/LinkLauncher.kt`, `.../ui/core/ConnectionCoordinator.kt`, `app/build.gradle.kts` (`buildConfig` for the version).
   - **What the reviews caught, because none of it showed up in a test:**
     - `AndroidLinkOpener` called `startActivity` from the *application* context, which throws without `FLAG_ACTIVITY_NEW_TASK` — every one of the five links would have crashed. The catch was also narrowed to `ActivityNotFoundException`, so nothing else could reach the failure message
     - The driving screen's settings control had become dead: the `when` tested `Connected` before the destination, so the assignment was stored and never rendered
@@ -230,23 +261,27 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Deferred, on purpose:** the Dart's two-step URL fallback (`externalApplication` then `platformDefault`) is not worth porting — on Android `externalApplication` is a plain `ACTION_VIEW`, which is what this does, and every browser registers an https handler.
   - **Reference:** `mobile/lib/ui/features/{menu,about,donate}/**`.
 
-- [ ] **Task 15: Cutover** (M)
+- [x] **Task 15: Cutover** (M)
   - Rewrite `docs/mobile-dev-guide.md` for Kotlin, update `README.md` components table and `docs/project-structure.md`, update CI (remove Flutter job), delete `mobile/`, move this plan to `plan/finished/migration-kotlin-1.md` (per repo convention), check off the seven resolved Mobile items in `TODO.md`.
   - **Acceptance criteria:**
-    - [ ] `mobile/` deleted; repo builds with only `android/` + `desktop/`
-    - [ ] Docs and CI reflect the Kotlin app
-    - [ ] Mobile TODO items marked resolved in `TODO.md`
-  - **Verification:** full build + test both components; docs review.
+    - [x] `mobile/` deleted; repo builds with only `android/` + `desktop/`
+    - [x] Docs and CI reflect the Kotlin app
+    - [x] Mobile TODO items marked resolved in `TODO.md`, each annotated with whether it is device-verified
+  - **Verification:** both components green at cutover — `./gradlew test` 292, `assembleDebug`, `lintDebug`, `dotnet test` 70. Every relative markdown link in the repo resolves. What the cutover *cost* — the layout editor, three layout presets, the camera pad's simple/analog shapes, the PWA and the iOS client, the gyro-mode layout — is recorded in [`../../tasks/task-12-leftovers.md`](../../tasks/task-12-leftovers.md) and as new entries in `TODO.md`.
   - **Dependencies:** Checkpoint C + Task 14.
   - **Files likely touched:** `mobile/` (delete), `docs/`, `README.md`, `.github/`, `TODO.md`, `plan/`.
 
-### Checkpoint: Complete
-- [ ] All acceptance criteria met across Tasks 1–15
-- [ ] Ready for review
+### Checkpoint: Complete — **partially met**
+- [x] All fifteen tasks implemented, each with its ported tests green
+- [x] `mobile/` deleted; the repo builds and tests with only `android/` + `desktop/`
+- [ ] Every acceptance criterion verified — the on-hardware ones are not. Two
+      acceptance criteria in Tasks 3, 6, 7, and 10 are device checks that have
+      never been run, and Task 13's Dashboard 5 fix is implemented but unverified
+- [ ] Parity with the Flutter app — short by the unported features listed above
 
 ## Manual Verification
 
-On-device steps live in [`tasks/manual-checklist.md`](manual-checklist.md). Checkpoint B is open: no task past Task 6 has been exercised on hardware.
+On-device steps live in [`tasks/manual-checklist.md`](../../tasks/manual-checklist.md). Checkpoint B is open: no task past Task 6 has been exercised on hardware.
 
 ## Risks and Mitigations
 

@@ -139,11 +139,12 @@ _Avoid_: Control message, event frame
 **Heartbeat**: Standalone keep-alive message sent every ~2s. Does not carry or resend state. Two missed beats triggers neutralize on the desktop.
 _Avoid_: Keep-alive, ping, alive
 
-**Auto-reconnect**: On unexpected connection drops (Wi-Fi fade, PWA suspend), the client automatically retries the last target. Manual disconnect clears the target and stops retries.
+**Auto-reconnect**: On unexpected connection drops (Wi-Fi fade, app backgrounded), the client automatically retries the last target. Manual disconnect clears the target and stops retries.
 _Avoid_: Reconnect, retry, recovery
 
-**PWA reconnect**: When the iOS PWA returns from background, it fires a reconnect to the last-known IP and mDNS discovery in parallel. Whichever succeeds first wins.
+**Resume reconnect**: When the app returns from background, it reconnects to the last-known desktop and re-runs mDNS discovery in parallel. Whichever succeeds first wins.
 _Avoid_: Foreground reconnect, PWA recovery
+> The iOS PWA this described is gone: the Flutter app built the web bundle, and the Kotlin app has no web target. iOS has no client.
 
 **Calibration reconfirm**: On resume from background/call/lock, the app prompts the user to confirm the gyro center hasn't drifted. Always prompts regardless of detected drift.
 _Avoid_: Recalibration, drift check

@@ -3,9 +3,8 @@
 ```mermaid
 flowchart TD
 
-subgraph group_mobile["Mobile Experience"]
+subgraph group_mobile["Phone App"]
   node_android_client["Android Client<br/>[MainActivity.kt]"]
-  node_ios_client["iOS Client"]
 end
 
 subgraph group_desktop["Desktop Shell"]
@@ -38,9 +37,7 @@ node_simulator(("Racing Simulator"))
 
 node_desktop_user -->|"configures"| node_desktop_ui
 node_mdns -->|"advertises"| node_android_client
-node_mdns -.->|"advertises"| node_ios_client
 node_android_client -->|"streams messages"| node_websocket
-node_ios_client -.->|"streams messages"| node_websocket
 node_websocket -->|"decodes messages"| node_protocol
 node_websocket -->|"dispatches pairing"| node_pairing_service
 node_websocket -->|"dispatches input"| node_session_gate
@@ -57,8 +54,7 @@ node_linux_backend -->|"emits joystick"| node_simulator
 node_desktop_app -->|"starts server"| node_websocket
 node_desktop_app -->|"starts discovery"| node_mdns
 
-click node_android_client "https://github.com/fazrigading/wheeldeck/blob/main/mobile/android/app/src/main/kotlin/dev/fazrigading/wheeldeck/MainActivity.kt"
-click node_ios_client "https://github.com/fazrigading/wheeldeck/tree/main/mobile"
+click node_android_client "https://github.com/fazrigading/wheeldeck/blob/main/android/app/src/main/kotlin/dev/fazrigading/wheeldeck/MainActivity.kt"
 click node_desktop_app "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.App/CompositionRoot.cs"
 click node_desktop_ui "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.App/MainWindow.cs"
 click node_mdns "https://github.com/fazrigading/wheeldeck/blob/main/desktop/WheelDeck.Core/Network/MdnsAdvertiser.cs"
@@ -80,7 +76,7 @@ classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
 classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
 classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
 classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
-class node_android_client,node_ios_client,node_desktop_user toneBlue
+class node_android_client,node_desktop_user toneBlue
 class node_desktop_app,node_desktop_ui toneAmber
 class node_mdns,node_websocket,node_pairing_service,node_session_gate,node_heartbeat toneMint
 class node_protocol,node_pairing_manager,node_pairing_store toneRose
@@ -89,7 +85,7 @@ class node_input_mapper,node_windows_backend,node_linux_backend,node_simulator t
 
 ## Repository layout
 
-Single monorepo covering the mobile app, the desktop server, and the shared protocol definitions.
+Single monorepo covering the Android phone app, the desktop server, and the shared protocol definitions.
 
 ```
 WheelDeck/
@@ -109,28 +105,33 @@ WheelDeck/
 │       ├── session_messages.json
 │       └── controls.json
 │
-├── mobile/
-│   ├── lib/
-│   │   ├── main.dart                      # Entry point, Provider + Material 3 theme (AppTheme), routing (Onboarding → Menu → Driving)
-│   │   ├── data/
-│   │   │   ├── repositories/              # Connection, discovery, session, paired devices, settings, pedal/sensor/onboarding
-│   │   │   └── services/                  # WheelDeckClient, discovery, pairing, gyroscope, steering/pedal/dashboard input, controller presets & layouts, permissions
-│   │   ├── domain/
-│   │   │   └── models/                    # ConnectionStatus/Target, DiscoveredServer, PairingChallenge, Steering/Pedal state (freezed)
-│   │   └── ui/
-│   │       ├── core/                      # connection_coordinator.dart, lifecycle_observer.dart, theme/app_theme.dart (ColorScheme.fromSeed)
-│   │       └── features/
-│   │           ├── menu/                  # MenuScreen — M3 hub (logo, title, Connect/Settings/About/Donate) post-onboarding
-│   │           ├── connection/            # ConnectionScreen + ManualAddSheet (FAB modal), view_models/connection_view_model.dart + PairedDeviceRepository split
-│   │           ├── driving/               # DrivingView (wheel + PedalPanel + Dashboard, recalibrate FAB), calibration_overlay/view, view_models/driving_view_model.dart
-│   │           ├── onboarding/            # OnboardingScreen + permissions
-│   │           ├── settings/              # SettingsScreen (mapping, controller type, pedal layout, presets, reset) + view_models/settings_view_model.dart
-│   │           ├── about/                 # AboutScreen — developer, source, GitHub stars badge (http)
-│   │           └── donate/                # DonateScreen — BuyMeACoffee/PayPal/Ko-fi via url_launcher
-│   ├── android/
-│   ├── ios/
-│   ├── test/                              # mirrors lib/ui/features + data/ with widget/unit tests
-│   └── pubspec.yaml                       # url_launcher, http, provider, shared_preferences, etc.
+├── android/                               # The phone app: Kotlin 2.x + Jetpack Compose, one :app module
+│   ├── gradle/libs.versions.toml          # Version catalog — the single place a dependency version is named
+│   ├── gradlew                            # Wrapper; no local Gradle install needed
+│   └── app/
+│       ├── build.gradle.kts               # minSdk 26, targetSdk 36, compileSdk 37, BuildConfig
+│       └── src/
+│           ├── main/
+│           │   ├── AndroidManifest.xml    # INTERNET, CHANGE_WIFI_MULTICAST_STATE
+│           │   └── kotlin/dev/fazrigading/wheeldeck/
+│           │       ├── MainActivity.kt
+│           │       ├── WheelDeckApplication.kt
+│           │       ├── AppContainer.kt    # Manual DI: services + repositories
+│           │       ├── domain/models/     # ControlId, ActionType, wire messages, ConnectionStatus
+│           │       ├── data/
+│           │       │   ├── services/      # WheelDeckClient, discovery, pairing, gyro, steering/pedal/dashboard input, layout, presets, settings store, permissions, external links
+│           │       │   └── repositories/  # Connection, discovery, session, paired devices, settings, onboarding
+│           │       └── ui/
+│           │           ├── core/          # AppShell (routing), ConnectionCoordinator, ControlPress, LifecycleObserver, theme
+│           │           └── features/
+│           │               ├── menu/      # MenuScreen — M3 hub (logo, title, Connect/Settings/About/Donate)
+│           │               ├── connection/# ConnectionScreen + ManualAddSheet, ConnectionViewModel
+│           │               ├── driving/    # DrivingScreen, BlockGrid, RotatableWheel, PedalPanel, CameraPad, DrivingViewModel
+│           │               ├── onboarding/ # OnboardingScreen + OnboardingViewModel
+│           │               ├── settings/   # SettingsScreen, KeybindConfigurationScreen, BindingEditDialog, SettingsViewModel
+│           │               ├── about/      # AboutScreen — developer, source, GitHub stars badge
+│           │               └── donate/     # DonateScreen — BuyMeACoffee/PayPal/Ko-fi via LinkOpener
+│           └── test/                       # JVM unit tests, mirroring the main tree
 │
 ├── desktop/
 │   ├── WheelDeck.sln
@@ -158,8 +159,9 @@ WheelDeck/
 │
 ├── .github/
 │   └── workflows/
-│       ├── mobile-ci.yml
-│       └── desktop-ci.yml
+│       ├── android-ci.yml
+│       ├── desktop-ci.yml
+│       └── release.yml
 │
 ├── LICENSE
 └── README.md
@@ -169,7 +171,7 @@ WheelDeck/
 
 ### protocol/
 
-Both backend-interface.md and mobile-interface.md describe the same message formats and control enums independently. That is fine for docs, but two hand-maintained copies of the same enum will drift in code. protocol/schema/ is the single source of truth. Both mobile/ and desktop/ generate or reference their language-specific types from these files instead of defining them twice. This prevents the exact bug where a new dashboard control gets added on one side and forgotten on the other.
+Both backend-interface.md and mobile-interface.md describe the same message formats and control enums independently. That is fine for docs, but two hand-maintained copies of the same enum will drift in code. protocol/schema/ is the single source of truth. Both android/ and desktop/ define their language-specific types against these files rather than inventing them, and the phone side pins the contract with `ControlIdContractTest` and `WireMessagesTest`. This prevents the exact bug where a new dashboard control gets added on one side and forgotten on the other.
 
 ### desktop/WheelDeck.Backends/
 
@@ -179,13 +181,15 @@ Kept as separate projects per platform (Windows/, Linux/) rather than one projec
 
 First-run setup friction is called out as a non-functional requirement in the PRD: verify HIDMaestro or uinput permissions instead of failing silently. These scripts are what the WheelDeck.App first-run check runs automatically or points the user to. They are also useful to run manually during development on Fedora.
 
-### mobile/lib/ internal layout
+### android/ internal layout
 
-Current layout is `data/` (repositories + services) / `domain/` (freezed models) / `ui/` (core + features), which refines the original three-layer model from mobile-interface.md: `data/services` = Input Capture + Network Client layers, `ui/features` = UI layer. `ConnectionCoordinator` + `LifecycleObserver` live in `ui/core`; theming in `ui/core/theme`. The previous `input/`/`network/`/`state/` sketch is superseded — see tree above for authoritative layout.
+`data/` (repositories + services) / `domain/` (data classes) / `ui/` (core + features), which refines the original three-layer model from mobile-interface.md: `data/services` = Input Capture + Network Client layers, `ui/features` = UI layer. `AppShell` + `ConnectionCoordinator` + `ControlPress` live in `ui/core`; theming in `ui/core/theme`.
+
+This layout was carried over from the Flutter app unchanged, so the layer model in mobile-interface.md still describes it. Two Kotlin-specific departures: no codegen (`data class` replaces `freezed`), and `AppShell` now owns routing where `main.dart` used to.
 
 ### CI split
 
-Separate mobile-ci.yml and desktop-ci.yml rather than one combined workflow. They build on different runners: Flutter tooling vs. .NET plus platform-specific driver dependencies for backend tests. A mobile-only change should not wait on a full desktop build matrix, or the reverse.
+Separate android-ci.yml and desktop-ci.yml rather than one combined workflow. They build on different toolchains: JDK and the Gradle Android plugin vs. .NET plus platform-specific driver dependencies for backend tests. An Android-only change should not wait on a full desktop build matrix, or the reverse.
 
 ## Not included yet
 

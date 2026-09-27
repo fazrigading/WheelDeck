@@ -2,9 +2,9 @@
 
 Project Status: **Work-in-Progress**
 
-Turn an Android or iOS phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively.
+Turn an Android phone into a steering wheel and dashboard control panel for PC racing and trucking simulators. A desktop companion app translates the phone's input into a virtual game controller the simulator reads natively.
 
-Runs on Linux and Windows desktops paired with an Android or iOS phone; macOS planned.
+Runs on Linux and Windows desktops paired with an Android phone.
 
 Primary target: Euro Truck Simulator 2.
 
@@ -21,7 +21,7 @@ Primary target: Euro Truck Simulator 2.
 
 | Directory | Stack | Description |
 |-----------|-------|-------------|
-| `mobile/` | Flutter (Dart) | Phone app — sensor capture, WebSocket client, on-screen controls |
+| `android/` | Kotlin 2.x + Jetpack Compose | Phone app — sensor capture, WebSocket client, on-screen dashboard |
 | `desktop/` | C#/.NET 10 + Avalonia UI | Desktop server — WebSocket listener, virtual controller backend, pairing |
 | `protocol/schema/` | JSON Schema | Shared message formats and control enums (single source of truth) |
 
@@ -33,10 +33,11 @@ See [`docs/project-structure.md`](docs/project-structure.md) for the full reposi
 
 ### Phone app
 
+Needs JDK 21 and an Android SDK with platform 37.
+
 ```bash
-cd mobile
-flutter pub get
-flutter run
+cd android
+./gradlew installDebug
 ```
 
 ### Desktop server
@@ -56,10 +57,11 @@ See `docs/mobile-dev-guide.md` and `docs/desktop-dev-guide.md` for full setup in
 | Platform | Status | Driver | Virtual controller |
 |----------|--------|--------|--------------------|
 | Android  | P0 | Native     | Fully functional    |
-| iOS      | P2 | PWA        | Gyro may not work   |
 | Windows  | P1 | HIDMaestro | XBOX 360 Controller |
 | Linux    | P0 | uinput     | Virtual Joystick    |
 
 ## Docs
 
 Full specs, guides, and architecture decisions: [`docs/`](docs/)
+
+On-device verification steps for the phone app: [`tasks/manual-checklist.md`](tasks/manual-checklist.md).

@@ -1,159 +1,157 @@
 # Mobile developer guide
 
-This guide gets you set up, building, testing, and contributing to the WheelDeck mobile app. It's a Flutter application that captures steering (gyroscope), pedals (touch), and dashboard controls, then streams them over WebSocket to the desktop server.
+Gets you set up, building, testing, and contributing to the WheelDeck phone app. It is an Android-native Kotlin + Jetpack Compose application: it captures steering (rotatable wheel or gyroscope), pedals (touch), and dashboard controls, then streams them over WebSocket to the desktop server.
+
+> Replaces the Flutter guide. The app was migrated from Flutter in the `migrate/flutter-to-kotlin` plan; the archived plan and the Dart layer map are in [`../plan/finished/migration-kotlin-1.md`](../plan/finished/migration-kotlin-1.md).
 
 ## Prerequisites
 
-| Tool | Minimum |
+| Tool | Version |
 |---|---|
-| Flutter SDK | 3.13+ |
-| Android SDK | API 21+ |
-| Chrome (optional) | For PWA/iOS testing |
+| JDK | 21 (the build targets JVM 17) |
+| Android SDK | compileSdk 37, minSdk 26, targetSdk 36 |
 
-Run `flutter doctor` once and fix every item it flags before proceeding.
+The Gradle wrapper pins everything else, so there is no separate SDK install beyond pointing `ANDROID_HOME` at one. `android/local.properties` (`sdk.dir`) is generated per machine and gitignored.
 
 ## Get started
 
 ```bash
-cd mobile
-flutter pub get
-flutter run        # picks a connected device or emulator
+cd android
+./gradlew assembleDebug          # build
+./gradlew installDebug           # install on a connected device or emulator
 ```
 
-To build the PWA for iOS testing:
-
-```bash
-flutter build web
-# serve with: python3 -m http.server 8000 --directory build/web
-```
-
-## Project structure
-
-See [`project-structure.md`](./project-structure.md) for the full repository layout.
+`compileSdk = 37` is not negotiable: Compose BOM 2026.09.00 (`compose-ui` 1.12.1) requires it.
 
 ## Build & run
 
 | Goal | Command |
 |---|---|
-| Run on a device/emulator | `flutter run` |
-| Run on a specific device | `flutter run -d <device-id>` |
-| Build APK (debug) | `flutter build apk --debug` |
-| Build appbundle (release) | `flutter build appbundle` |
-| Build web (PWA for iOS) | `flutter build web` |
-| Hot reload | `r` (in `flutter run` session) |
-| Hot restart | `R` (in `flutter run` session) |
+| Build the debug APK | `./gradlew assembleDebug` |
+| Install on a device | `./gradlew installDebug` |
+| Build the release APK | `./gradlew assembleRelease` (debug-signed until a release keystore exists) |
+| Run every test | `./gradlew test` |
+| One test class | `./gradlew testDebugUnitTest --tests '*WheelDeckClientTest*'` |
+| Static analysis | `./gradlew lintDebug` |
 
 ## Testing
 
-```bash
-# Unit and widget tests (97 passed on feature/revamp-mobile-ui)
-flutter test
-
-# Run a specific test file
-flutter test test/ui/features/connection/connection_screen_test.dart
-
-# Run with coverage
-flutter test --coverage
-
-# Static analysis (0 issues)
-dart analyze --fatal-infos
-```
-
-Test files mirror the `lib/` structure under `test/`:
+292 unit tests, all on the JVM — no emulator required. They replace a 32-file Dart suite; the two layout-editor files had no Kotlin counterpart (see the cutover note). The suite is fast enough to run on every save; the Android CI job does exactly that.
 
 ```
-test/
+app/src/test/kotlin/dev/fazrigading/wheeldeck/
+├── SmokeTest.kt
 ├── data/
-│   ├── repositories/
-│   └── services/
+│   ├── repositories/   SettingsRepository bindings, onboarding, discovery
+│   └── services/       client, pairing, gate, layout, preset, permissions, links
+├── domain/models/      wire contract
 └── ui/
-    ├── core/
+    ├── core/           ControlPress, AppShell routing
     └── features/
-        ├── connection/   # discovery, FAB ManualAddSheet flow, pairing
-        ├── driving/      # PedalPanel drag, WheelView, calibration
-        ├── onboarding/
-        └── settings/
+        ├── connection/ # connection view model
+        ├── driving/    driving view model, control cells, grid, wheel, signals
+        ├── onboarding/ # onboarding view model
+        └── settings/   settings view model
 ```
 
-Key test updates in revamp: `connection_screen_test.dart` now taps `manual-add-fab` before asserting `manual-ip`/`manual-port`; `pedal_panel_test.dart` checks `ValueKey('pedal-*')` stable keys. Widget tests use `fake_async` for spring-back and reconnect intervals.
+The three newest features — menu, about, donate — carry no test file of their own; their testable logic is `ExternalLinks`/`GitHubStars` under `data/services` and `resolvePage` under `ui/core`.
+
+Three rules keep the suite device-free, and they are the reason several classes exist as pure data:
+
+1. **Hide platform APIs behind an interface.** `NsdManager` (`Discovery`), `SensorManager` (`gyroscopeEvents`), permissions (`PermissionService`), and outbound links (`AndroidLinkOpener`) all have a thin platform adapter and a fake. The logic is unit-tested; **the adapters themselves are not** — they need a device, and none of this has run on one.
+2. **Extract gesture and render logic from the composable.** A Composable cannot be unit tested here — there is no emulator CI job — so timing and layout decisions live in plain classes: `RotatableWheelModel`, `ControlPress`, `DrivingLayout`, `cellLabel`, `settingsSections`, `resolvePage`. The Composable forwards pointers and reads state.
+3. **The network client runs against `MockWebServer`.** `WheelDeckClientTest` covers framing, heartbeat, and reconnect without a desktop.
+
+## Project structure
+
+`dev.fazrigading.wheeldeck`, one `:app` module, no DI framework:
+
+```
+android/app/src/main/kotlin/dev/fazrigading/wheeldeck/
+├── data/
+│   ├── services/       the layer's leaves: sensors, WebSocket, layout, settings
+│   └── repositories/   persistence + the settings façade
+├── domain/models/      ControlId, ActionType, wire messages, status
+└── ui/
+    ├── core/           AppShell, ConnectionCoordinator, ControlPress, theme
+    └── features/<f>/   views/ (Compose) + view_models/ (ViewModel + StateFlow)
+```
+
+Wiring is manual: `WheelDeckApplication` holds a `ConnectionCoordinator`, which builds the repositories, the client, and the four view models. Screens take their view model as a parameter.
+
+Domain terms follow [`../CONTEXT.md`](../CONTEXT.md) exactly — Phone, Desktop, WheelDeckClient, Pairing, Session, Slot, Hole.
 
 ## Key concepts
 
-### Input Capture Layer (`lib/data/services/`)
+### Input capture (`data/services/`)
 
-- **`SteeringSensor`**: Samples the gyroscope, normalizes to `-1.0..1.0` (0 = straight ahead), and applies user-adjustable sensitivity. Call `setCenter()` for calibration. The UI layer and network layer both consume the already-calibrated value. Linked to `DrivingViewModel.recalibrate()` for manual drift correction.
-- **`PedalInput`**: Each pedal bar owns its drag-to-pressure mapping (`0.0` at rest, `1.0` at full drag) and its own spring-back release animation. `setReleaseCurve()` makes the curve tunable later. Order/visibility driven by `PedalLayout` (a-d) via `PedalPanel(layout:)`.
-- **`DashboardInput`**: Exposes `ControlId` and `ActionType` enums matching `protocol/schema/controls.json`. Actions: `Toggle`, `Press`, `Release`, `HoldConfirm` (used for engine start).
-- **`ControllerType` / `PedalLayout` / `GamePreset`**: Settings-only services. `ControllerType` (5 modes: steeringOnly → full), `PedalLayout` (a: AccR BrakeR ClutchL → d: AccR BrakeL no clutch), `GamePreset.ets2` mirrors `desktop/WheelDeck.Core/Input/InputMapper.cs` key/button maps.
+- **`GyroscopeService` / `SteeringSensor`**: `gyroscopeEvents(context)` wraps `SensorManager`; `GyroscopeService` integrates the Z axis into a raw angle, and `SteeringSensor` centres and normalizes it to `-1.0..1.0`. The negative sign is deliberate: a clockwise turn must read as positive steering. `setCenter()` is the calibration primitive.
+- **`PedalInput`**: each bar owns its drag-to-pressure mapping (`0.0` at rest, `1.0` at full drag) and its own spring-back release. `SpringBack` holds the curve — the ported 300ms/16ms defaults are pinned by tests.
+- **`RotationMapper`**: finger rotation in degrees to `-1.0..1.0`. **Return-to-zero runs at a constant rate** at every degree value, not a constant fraction of the range; that was a `TODO.md` fix and it is tested at 180 and 2520.
+- **`ControlPress`**: pointer state for one control cell, with no Compose in it. Owns the tap / momentary / hold-confirm / tap-or-hold timing that the grid and the camera pad share.
+- **`DashboardSendGate`**: the phone-held state machine on the send path. Drops unbound controls, holds the headlight cycle OFF → Parking → Low, and holds turn/hazard state with a ~1.5Hz blink phase. Left and right are mutually exclusive; hazard is independent of both.
 
-### Network Client Layer (`lib/data/services/` + `lib/data/repositories/`)
+### Network (`data/services/` + `data/repositories/`)
 
-- **`WheelDeckClient`**: The single entry point for all network communication. Manages the WebSocket connection, sends `state` and `button` messages, and handles pairing. Exposes `ConnectionStatus` (`Disconnected`, `Discovering`, `Connecting`, `PairingRequired`, `Connected`, `Reconnecting`).
-- **`Discovery` / `ServerDiscoveryRepository`**: Auto-discovers desktop servers via mDNS broadcast. Falls back to manual IP via `ManualAddSheet` FAB modal when broadcast is blocked.
-- **`Pairing` / `SessionRepository`**: Handles the PIN/QR pairing flow and stores the session token locally so future connections skip re-pairing. The token persists until the desktop's 30-day inactivity expiry. PIN field is now `obscureText:false`.
-- **`PairedDeviceRepository`**: Persists `host:port` of successfully connected desktops (`SharedPreferences` `wheeldeck.paired_devices`) to split **Paired vs Available** on `ConnectionScreen`.
+- **`WheelDeckClient`**: the single entry point for the network. WebSocket framing of state, button, mapping, and session messages; a standalone ~2s heartbeat (ADR-0003 — the two-missed-beats neutralize lives desktop-side, the phone does not track misses); fixed-interval auto-reconnect (ADR-0002). Exposes `ConnectionStatus`.
+- **`Discovery` / `ServerDiscoveryRepository`**: mDNS via `NsdManager` for `_wheeldeck._tcp.`. Note the trailing dot — Android wants it, Dart did not. Falls back to a manual IP.
+- **`PairingController` / `SessionRepository` / `PairedDeviceRepository`**: PIN pairing and the session token in DataStore, so a restart goes straight to Connected until the desktop's 30-day expiry.
 
-**Message send rate**: `sendState()` fires on every sensor/touch update tick, not batched or debounced. The desktop uses the `seq` field for ordering.
+**Message send rate**: `sendState()` fires on every sensor/touch tick, not batched. The desktop orders on `seq`.
 
-**Heartbeat**: Sent every ~2s internally by `WheelDeckClient`. Two missed beats make the desktop neutralize output. The client auto-reconnects and transitions to `Reconnecting` status.
+### State coordination (`ui/core/`)
 
-### State coordination (`lib/ui/core/` + theming)
+- **`AppShell`**: the only routing decision is `resolvePage(onboarded, connected, paused, requested)`, a pure function. Onboarding runs once; the menu is the resting state with its pages stacked on it; a live session (connected *or* paused) takes the whole screen.
+- **`ConnectionCoordinator`**: builds the stack and owns the view models, so their state survives navigating between screens.
+- **`WheelDeckTheme`**: Material 3 from a blue seed, light and dark, 60/30/10, rounded-16 cards.
 
-- **`ConnectionCoordinator`**: Facade over the layered stack (services, repositories, `ConnectionViewModel` + `PairedDeviceRepository`) that preserves the app-level API: discovery, connect, pairing, connected, reconnect. Forwards state to the UI via `provider`; new code binds to `coordinator.viewModel` with `ListenableBuilder`. Also exposes `pairedServers`/`unpairedServers`.
-- **`AppTheme`**: `lib/ui/core/theme/app_theme.dart` — `ColorScheme.fromSeed(blue)` light/dark, `useMaterial3:true`, `ThemeMode.system` (60/30/10, 8pt grid, rounded-16 cards, tinted shadows, 44×44 targets).
+### App lifecycle
 
-### App lifecycle handling
-
-The network client responds to OS lifecycle events automatically via `LifecycleObserver` (`lib/ui/core/lifecycle_observer.dart`), so the UI layer does not need to manage this:
+`LifecycleObserver` drives the coordinator, so no screen manages it:
 
 | Event | Behavior |
 |---|---|
-| Incoming call / `paused`/`detached` | `coordinator.pause()` — disconnect, hold last-known state |
-| Notification shade / `inactive` (transient) | No-op — stay connected (fix for Android pane bug) |
-| Screen lock / backgrounded | Disconnect gracefully |
-| Foregrounded / `resumed` | `coordinator.resume()` — require calibration re-confirm, `lastTarget` auto-reconnect |
-| Manual recalibrate | `DrivingView` FAB/AppBar `center_focus_strong` → `recalibrate()` + haptic + SnackBar |
-| iOS PWA backgrounded | Reconnect to last-known IP + mDNS discovery in parallel on foreground |
+| `inactive` (notification shade) | No-op — stay connected |
+| `onPause` / backgrounded | `coordinator.pause()` — the socket stays open, the session is marked paused |
+| `onResume` | `coordinator.resume()` — re-arm the calibration gate, auto-reconnect to the last target |
+| Desktop revokes the device | Drop the token and the paired entry; the next connect re-pairs |
 
-> See [`mobile-interface.md`](./mobile-interface.md#3-app-lifecycle-handling) for the full lifecycle spec and orientation lock requirements.
+The calibration reconfirm is deliberate and unconditional: returning from background always asks, because the gyro may have drifted while the phone was in a pocket.
 
 ## Protocol awareness
 
-The mobile app sends two message types over WebSocket (see `protocol/schema/`):
+Two message types go out over the WebSocket (see `protocol/schema/`):
 
-1. **State message** (`state`): Sent continuously with `seq`, `steering`, `accelerator`, `brake`, `clutch`. Latest value wins, no acknowledgment required.
-2. **Button message** (`button`): Sent for discrete controls like turn signals, lights, wipers. Uses `ControlId` and `ActionType` from `controls.json`.
+1. **State** (`state`): `seq`, `steering`, `accelerator`, `brake`, `clutch`, plus optional analog camera `cameraX`/`cameraY`. Latest value wins.
+2. **Button** (`button`): discrete controls, using `ControlId` and `ActionType` from `controls.json`.
 
-Pairing/session messages (`pair_request`, `pair_response`, `heartbeat`, `device_switch`) are handled internally by the `WheelDeckClient` network layer.
+Pairing, heartbeat, and session messages are handled inside `WheelDeckClient`.
+
+`protocol/schema/*.json` is the single source of truth. `ControlIdContractTest` and `WireMessagesTest` pin the Kotlin side against it; if you add a control and forget the schema, those fail.
 
 ## Adding a new dashboard control
 
-1. Add the enum value to `protocol/schema/controls.json`
-2. Add the same value to `ControlId` in `mobile/lib/data/services/dashboard_input.dart`
-3. Add the same value to `ControlId` in `desktop/WheelDeck.Core/Protocol/ControlId.cs`
-4. Add the UI widget in `lib/ui/features/driving/views/`
-5. Map the control to a key press or virtual button in the desktop `InputMapper`
+1. Add the value to `protocol/schema/controls.json`.
+2. Add it to `ControlId` in `android/.../domain/models/Controls.kt`.
+3. Add the same value to `ControlId.cs` in `desktop/WheelDeck.Core/Protocol/`.
+4. Give it a keyboard (and gamepad) entry in `GamePreset` if it should be bound by default — an unbound control renders disabled and the send gate drops it.
+5. Give it a cell in `DrivingLayout.sequential` and a short label in `cellLabel`.
+6. Pick its interaction in `ControlPress.modeFor` — toggle, momentary, hold-confirm, or tap-or-hold.
+7. Map it to a key or virtual button in the desktop `InputMapper`.
 
-> The protocol schema is the single source of truth. Do not add control enums to code without adding them to the schema first.
+Steps 1 and 2 are the contract; the rest is phone-side. A control with no `modeFor` case defaults to momentary, and a control with no label falls back to its wire value.
 
-## Onboarding & permissions
+## Permissions
 
-The `lib/ui/features/onboarding/views/onboarding_screen.dart` screen must request:
-- **Motion sensors**: needed for gyroscope steering input
-- **Local network**: needed for mDNS discovery and WebSocket communication
+On Android neither permission the app asks about is a runtime permission, so `AndroidPermissionService` grants both without a dialog:
 
-Both are explained with a clear rationale before the request is made.
+- the gyroscope needs no permission at all — it is not a protected sensor, and the app does not request `HIGH_SAMPLING_RATE_SENSORS` (it samples at `SENSOR_DELAY_GAME`, not the 200Hz+ that feature gates);
+- local network access is gated by Wi-Fi state and the `CHANGE_WIFI_MULTICAST_STATE` manifest entry, not by a prompt.
 
-## UI shell (M3 revamp v0.1.0)
+The `PermissionService` seam stays so the onboarding screen has a real outcome to render, and so a platform that does prompt only has to replace one class. The manifest declares exactly two permissions: `INTERNET` and `CHANGE_WIFI_MULTICAST_STATE`.
 
-- **Menu hub**: `MenuScreen` — logo + title, 4 M3 CTAs (Connect `Filled`, Settings `FilledTonal`, About/Donate `Outlined`), 8pt grid, thumb-zone, post-onboarding route (`_Routing` → `MenuScreen` when not driving)
-- **Connection**: `ConnectionStatusCard` (bounce + sparkle on connected), paired/unpaired split, `ManualAddSheet` bottom sheet with IP/port filtering, PIN visible
-- **Driving**: landscape `WheelView` + `PedalPanel` (layout-aware) + `DashboardPanel`, manual recalibrate FAB + AppBar action
-- **Settings**: `SegmentedButton` for mapping/preset, `RadioGroup` for controller type & pedal layout, per-control `Chip` list with edit dialog, reset with confirm
-- **About/Donate**: GitHub stars badge via `http` + 3 `url_launcher` links
+## Dependencies
 
-## Dependencies added in revamp
+Deliberately short. `OkHttp` covers the WebSocket, the GitHub stars fetch, and `MockWebServer` in tests. `kotlinx-serialization` covers the wire models. DataStore covers preferences. Compose BOM covers the UI. There is no DI framework, no image loader, and no date library.
 
-- `url_launcher ^6.3.2` — external links (About source, Donate)
-- `http ^1.6.0` — GitHub stars fetch in About
-- `FilteringTextInputFormatter` (flutter/services) — IP/port input filtering, no new dep
+`material-icons-extended` is included for the menu, about, and donate screens; it is the one dependency that would be worth revisiting if the icon set grew.
