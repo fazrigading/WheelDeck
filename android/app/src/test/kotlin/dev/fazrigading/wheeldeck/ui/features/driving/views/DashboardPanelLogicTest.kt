@@ -49,7 +49,54 @@ class DashboardPanelLogicTest {
     }
 
     @Test
-    fun `the headlight cell shows the gate's cycle stage`() {
+    fun `cells print their short label, not their wire value`() {
+        val expected = mapOf(
+            ControlId.HighBeamToggle to "BEAM",
+            ControlId.CruiseToggle to "CRUISE",
+            ControlId.CruiseSetResume to "RESUME",
+            ControlId.ParkingBrake to "PARK",
+            ControlId.Wipers to "WIPE",
+            ControlId.EngineStart to "START",
+            ControlId.HazardLights to "HAZARD",
+            ControlId.BeaconLights to "BEACON",
+            ControlId.Flasher to "FLASH",
+            ControlId.Horn to "HORN",
+            ControlId.Trailer to "TRAILER",
+            ControlId.LiftDropAxle to "AXLE",
+            ControlId.CameraView to "CAM",
+            ControlId.GearUp to "GEAR+",
+            ControlId.GearDown to "GEAR-",
+            ControlId.EngineBrake to "E-BRK",
+            ControlId.AirHorn to "AIR",
+            ControlId.DifferentialLock to "DIFF",
+            ControlId.RetarderIncrease to "RET+",
+            ControlId.RetarderDecrease to "RET-",
+            ControlId.QuickInfo to "INFO",
+            ControlId.MirrorToggle to "MIRROR",
+            ControlId.HudWidgets to "HUD",
+            ControlId.VehicleAdjustment to "VEH",
+            ControlId.NavigationZoomOut to "NAV",
+            ControlId.WidgetOptions to "WIDGET",
+            ControlId.Services to "SVC",
+            ControlId.QuickSave to "SAVE",
+            ControlId.QuickLoad to "LOAD",
+            ControlId.Screenshot to "SHOT",
+            ControlId.GarageManager to "GARAGE",
+            ControlId.AudioPlayer to "AUDIO",
+        )
+        for ((control, label) in expected) {
+            assertEquals(control.wireValue, label, cellLabel(control, DashboardGateState()))
+        }
+    }
+
+    @Test
+    fun `a control with no short label falls back to its wire value`() {
+        assertEquals("lane_assistant", cellLabel(ControlId.LaneAssistant, DashboardGateState()))
+        assertEquals("camera_pad_up", cellLabel(ControlId.CameraPadUp, DashboardGateState()))
+    }
+
+    @Test
+    fun `the headlight cell's label is the cycle stage, not LIGHT`() {
         assertEquals("OFF", cellLabel(ControlId.HeadlightToggle, DashboardGateState()))
         assertEquals(
             "PARK",
@@ -59,11 +106,5 @@ class DashboardPanelLogicTest {
             "LOW",
             cellLabel(ControlId.HeadlightToggle, DashboardGateState(lightStage = LightStage.Low)),
         )
-    }
-
-    @Test
-    fun `other cells label themselves with their wire value`() {
-        assertEquals("wipers", cellLabel(ControlId.Wipers, DashboardGateState()))
-        assertEquals("hazard_lights", cellLabel(ControlId.HazardLights, DashboardGateState()))
     }
 }

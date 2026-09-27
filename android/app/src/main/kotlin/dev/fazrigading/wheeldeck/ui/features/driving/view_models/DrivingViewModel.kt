@@ -12,6 +12,7 @@ import dev.fazrigading.wheeldeck.data.services.DashboardVisibility
 import dev.fazrigading.wheeldeck.data.services.DrivingLayout
 import dev.fazrigading.wheeldeck.data.services.EngineStartMode
 import dev.fazrigading.wheeldeck.data.services.GamePreset
+import dev.fazrigading.wheeldeck.data.services.InputMapping
 import dev.fazrigading.wheeldeck.data.services.PedalInput
 import dev.fazrigading.wheeldeck.data.services.RotationDegree
 import dev.fazrigading.wheeldeck.data.services.SteeringSensor
@@ -45,6 +46,11 @@ data class DrivingUiState(
     val engineStartMode: EngineStartMode = EngineStartMode.fallback,
     val visibleExtras: Set<ControlId> = DashboardVisibility.defaults,
     val visibility: ControllerVisibility = ControllerVisibility.fallback,
+    /// How the desktop reads the buttons: keyboard or gamepad. Decides which
+    /// default binding table [DrivingViewModel.bindingFor] starts from.
+    val mapping: InputMapping = InputMapping.fallback,
+    /// The game preset supplying the default binding tables.
+    val preset: GamePreset = GamePreset.fallback,
     /// The dashboard the grid renders. Preset selection lands with the profile
     /// editor (Task 12), so this is the Sequential preset for now.
     val layout: DrivingLayout = DrivingLayout.sequential,
@@ -67,15 +73,22 @@ class DrivingViewModel(
     private val _uiState = MutableStateFlow(DrivingUiState())
     val uiState: StateFlow<DrivingUiState> = _uiState.asStateFlow()
 
+    /// The resolved per-control bindings. Cached because the grid reads one per
+    /// cell on every recomposition and the send gate reads one per event; the
+    /// repository is the only place that touches storage.
+    private val _bindings = MutableStateFlow<Map<ControlId, String>>(emptyMap())
+    val bindings: StateFlow<Map<ControlId, String>> = _bindings.asStateFlow()
+
+    /// The binding label for [control] in the active mapping mode. Empty or `-`
+    /// means unbound: the cell renders disabled and the gate sends nothing.
+    fun bindingFor(control: ControlId): String = _bindings.value[control] ?: GamePreset.UNBOUND
+
     /// Phone-held send gate on the control path.
     val sendGate = DashboardSendGate(
         send = { control, action ->
             connectionRepository.sendButtonEvent(control.wireValue, action.wireValue)
         },
-        // Unbound until Task 12 resolves the preset defaults and the stored
-        // per-mode overrides; unbound controls send nothing, which is the safe
-        // side of that gap.
-        bindingFor = { "" },
+        bindingFor = ::bindingFor,
         scope = viewModelScope,
     )
 
@@ -109,6 +122,7 @@ class DrivingViewModel(
         load { settingsRepository.getVisibility() }?.let { visibility ->
             _uiState.update { it.copy(visibility = visibility) }
         }
+        loadBindings()
         if (_uiState.value.isRotatable) setAwaitingCalibration(false)
     }
 
@@ -120,7 +134,18 @@ class DrivingViewModel(
         load { settingsRepository.getVisibility() }?.let { visibility ->
             _uiState.update { it.copy(visibility = visibility) }
         }
+        loadBindings()
         if (_uiState.value.isRotatable) setAwaitingCalibration(false)
+    }
+
+    /// Stores a binding override for [control] in the active mapping mode and
+    /// re-resolves the table. A blank [value] drops the override, so the control
+    /// falls back to the game preset's default.
+    fun setBinding(control: ControlId, value: String) {
+        viewModelScope.launch {
+            load { settingsRepository.setBindingOverride(control, _uiState.value.mapping == InputMapping.Gamepad, value) }
+            loadBindings()
+        }
     }
 
     /// The camera pad's center hold switches the key set; the pad is the
@@ -224,6 +249,7 @@ class DrivingViewModel(
                 rotationDegree = degree,
                 springBack = springBack,
                 cameraPadMode = cameraPadMode,
+                preset = preset,
             )
         }
     }
@@ -231,7 +257,23 @@ class DrivingViewModel(
     private suspend fun loadDashboardState() {
         val engineStart = load { settingsRepository.getEngineStartMode() } ?: EngineStartMode.fallback
         val visibility = load { settingsRepository.getDashboardVisibility() } ?: DashboardVisibility()
-        _uiState.update { it.copy(engineStartMode = engineStart, visibleExtras = visibility.visibleExtras) }
+        val mapping = load { settingsRepository.getMapping() } ?: InputMapping.fallback
+        _uiState.update {
+            it.copy(engineStartMode = engineStart, visibleExtras = visibility.visibleExtras, mapping = mapping)
+        }
+    }
+
+    /// Resolves every control's binding: the stored override for the active
+    /// mapping mode, else the game preset's default. A control that fails to
+    /// resolve falls out of the table and reads as unbound, so the gate drops
+    /// it and nothing else.
+    private suspend fun loadBindings() {
+        val mapping = _uiState.value.mapping
+        val preset = _uiState.value.preset
+        _bindings.value = ControlId.entries.mapNotNull { control ->
+            val binding = load { settingsRepository.resolveBinding(control, mapping, preset) }
+            binding?.let { control to it }
+        }.toMap()
     }
 
     private fun onSensorAngle(angle: Double) {

@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.Modifier
@@ -22,8 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.fazrigading.wheeldeck.data.services.DashboardInput
-import dev.fazrigading.wheeldeck.data.services.PedalInput
+import dev.fazrigading.wheeldeck.data.services.GamePreset
 import dev.fazrigading.wheeldeck.domain.models.ControlId
+import dev.fazrigading.wheeldeck.data.services.PedalInput
 import dev.fazrigading.wheeldeck.domain.models.SteeringState
 import dev.fazrigading.wheeldeck.ui.features.driving.view_models.DrivingViewModel
 
@@ -38,12 +40,15 @@ fun DrivingScreen(
     viewModel: DrivingViewModel,
     pedals: PedalInput,
     dashboardInput: DashboardInput,
-    bindingFor: (ControlId) -> String = { "" },
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val pedalState by pedals.state.collectAsStateWithLifecycle()
     val gateState by viewModel.sendGate.state.collectAsStateWithLifecycle()
+    val bindings by viewModel.bindings.collectAsStateWithLifecycle()
+    val bindingFor: (ControlId) -> String = remember(bindings) {
+        { control -> bindings[control] ?: GamePreset.UNBOUND }
+    }
 
     LaunchedEffect(Unit) { viewModel.init() }
 

@@ -7,6 +7,7 @@ import dev.fazrigading.wheeldeck.data.services.CameraPadMode
 import dev.fazrigading.wheeldeck.data.services.DashboardVisibility
 import dev.fazrigading.wheeldeck.data.services.GamePreset
 import dev.fazrigading.wheeldeck.data.services.InMemorySettingsStore
+import dev.fazrigading.wheeldeck.data.services.InputMapping
 import dev.fazrigading.wheeldeck.data.services.PedalInput
 import dev.fazrigading.wheeldeck.data.services.RotationDegree
 import dev.fazrigading.wheeldeck.data.services.SteeringSensor
@@ -333,5 +334,59 @@ class DrivingViewModelTest {
 
         assertEquals(0.5, f.viewModel.rotatableAngle, 1e-9)
         assertEquals(0.0, f.viewModel.uiState.value.steering.angle, 1e-9)
+    }
+
+    @Test
+    fun `bindings resolve through the mapping mode and the game preset`() = runTest(dispatcher) {
+        val f = fixture()
+        f.viewModel.init()
+        advanceUntilIdle()
+
+        // The stored mapping defaults to gamepad.
+        assertEquals(InputMapping.Gamepad, f.viewModel.uiState.value.mapping)
+        assertEquals("LeftThumb", f.viewModel.bindingFor(ControlId.Horn))
+        assertEquals(GamePreset.AUTO, f.viewModel.bindingFor(ControlId.CameraPadUp))
+    }
+
+    @Test
+    fun `the keyboard mapping mode reads the keyboard defaults`() = runTest(dispatcher) {
+        val f = fixture(
+            InMemorySettingsStore(strings = mapOf(InputMapping.KEY to InputMapping.Keyboard.wireValue)),
+        )
+        f.viewModel.init()
+        advanceUntilIdle()
+
+        assertEquals("H", f.viewModel.bindingFor(ControlId.Horn))
+    }
+
+    @Test
+    fun `setting a binding un-gates the control`() = runTest(dispatcher) {
+        val f = fixture()
+        f.viewModel.init()
+        advanceUntilIdle()
+
+        // AudioFavorite carries no default in either mode, so the gate drops it.
+        assertFalse(f.viewModel.sendGate.shouldSend(ControlId.AudioFavorite))
+
+        f.viewModel.setBinding(ControlId.AudioFavorite, "F12")
+        advanceUntilIdle()
+
+        assertEquals("F12", f.viewModel.bindingFor(ControlId.AudioFavorite))
+        assertTrue(f.viewModel.sendGate.shouldSend(ControlId.AudioFavorite))
+    }
+
+    @Test
+    fun `a blank binding falls back to the preset default`() = runTest(dispatcher) {
+        val f = fixture()
+        f.viewModel.init()
+        advanceUntilIdle()
+
+        f.viewModel.setBinding(ControlId.Horn, "F9")
+        advanceUntilIdle()
+        assertEquals("F9", f.viewModel.bindingFor(ControlId.Horn))
+
+        f.viewModel.setBinding(ControlId.Horn, "")
+        advanceUntilIdle()
+        assertEquals("LeftThumb", f.viewModel.bindingFor(ControlId.Horn))
     }
 }

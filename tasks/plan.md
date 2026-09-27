@@ -132,7 +132,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
     - [x] `dashboard_send_gate_test` port passes — 14 tests (12 ported + blink-timer and phase-drop cases)
     - [x] `dashboard_visibility_test` port passes — 13 tests (EngineStartMode + visibility, incl. the legacy controller-visibility migration and its half-written branch)
     - [x] `wheel_mode_test` port passes — 7 tests (WheelMode + RotationDegree per game preset)
-    - [x] `driving_view_model_test` port passes — 19 tests (15 ported, 4 new for the gyro-only paths the Dart suite leaves implicit). Two groups are deliberately not ported yet: layout profiles (Task 11) and binding resolution (Task 12) both assert on code that has not landed. The gate's `bindingFor` is unbound until Task 12 adds the preset tables, so the send path is inert until then.
+    - [x] `driving_view_model_test` port passes — 19 tests (15 ported, 4 new for the gyro-only paths the Dart suite leaves implicit). Two groups are deliberately not ported yet: layout profiles (Task 11) and binding resolution (Task 12) both assert on code that has not landed. The gate's `bindingFor` was unbound until Task 12 added the preset tables, so the send path was inert until then.
   - **Verification:** `./gradlew test`.
   - **Dependencies:** Tasks 6, 7, 8.
   - **Files touched:** `.../ui/features/driving/view_models/driving_view_model.kt`, `.../data/services/{settings_store,dashboard_send_gate,dashboard_visibility,controller_visibility,wheel_mode,camera_pad_mode,engine_start_mode,controller_preset,dashboard_input}.kt`, `.../data/repositories/{settings_repository,connection_repository}.kt`, `.../domain/models/wire_messages.kt` (optional `cameraX`/`cameraY` on the state frame), plus `spring_back.kt` folded into the shared store.
@@ -178,14 +178,17 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Deferred, on purpose:** the grid's short cell labels (`DashboardPanel.gridLabel`, e.g. `GEAR+`) — cells print their wire value until the control visuals land in Task 12; the layout *edit* API (`applyMove`, `addControl`, `removeSlot`, `freeSpans`, modules) and `LayoutProfileStore` — they arrived with the custom-layout work in #76 and belong with the layout editor and profile settings (Task 12/13). `DrivingUiState.layout` therefore always holds the Sequential preset until profile selection lands.
   - **Reference:** `mobile/lib/data/services/driving_layout.dart`, `TODO.md` Dashboard items 1–3.
 
-- [ ] **Task 12: Dashboard controls** (M)
+- [x] **Task 12: Dashboard controls** (M)
   - Port control semantics from `input_mapping.dart` + `controller_preset.dart`: turn signals mutually exclusive, hazard ~1.5 Hz independent of signals, light cycle OFF → Parking → Low Beam held on phone, high beam independent, engine start hold-confirm/press modes, unbound controls send nothing (desktop ignores unknowns as safety net). **Includes TODO.md fix: camera pad Up/Down/Left/Right keybinds default to `auto` — no manual keybind prompt on first press in Driving.**
   - **Acceptance criteria:**
-    - [ ] `control_mode_test`, `signal_row_test`, `controller_preset_test` ports pass
-    - [ ] Camera pad directional keybinds resolve to `auto` defaults with no prompt
-  - **Verification:** `./gradlew test`; manual device check of signals/hazard/lights/engine.
+    - [x] `controller_preset_test` port passes — 9 tests, with the camera-pad `auto` alias
+    - [x] `control_mode_test` port passes — 8 tests (the mode table, engine start's setting override, and the preset tables)
+    - [x] `signal_row_test` port passes — 6 tests. The suite's on-screen placement assertions (block A in rotatable mode, above the left pedal column in gyro mode) need a device; what is unit-tested is the behaviour they guard: one cell per signal, toggle mode, bound in both mapping modes so the cells never ask for a keybind, and the gate's mutual exclusion, hazard independence, light cycle, and high-beam independence. The gyro signal *row* is part of the gyro-mode layout, which has not landed yet
+    - [x] Camera pad directional keybinds resolve to `auto` defaults with no prompt — all 13 `camera_pad_*` controls, not just the four the TODO names: the diagonals, recenter, and the arrow set are equally unbound today and would prompt the same way. `GamePreset.bindingFor` falls back to `auto` for the whole prefix in **both** mapping modes, so the first press sends instead of asking. The alias is a separate fallback, not entries in the mirrored ETS2 tables, which stay byte-faithful to `controller_preset.dart`
+  - **Verification:** `./gradlew test` (236 tests). `assembleDebug` and `lintDebug` clean. Manual device check of signals/hazard/lights/engine deferred to Checkpoint B.
   - **Dependencies:** Task 11.
-  - **Files likely touched:** `.../data/services/{input_mapping,controller_preset}.kt`, `.../ui/features/driving/views/*.kt` (control slots).
+  - **Files touched:** `.../data/services/controller_preset.kt` (the ETS2 keyboard/gamepad tables + `bindingFor`), `.../data/repositories/settings_repository.kt` (per-mode binding overrides and `resolveBinding`), `.../ui/features/driving/view_models/driving_view_model.kt` (resolves the binding table and feeds the send gate), `.../ui/features/driving/views/block_grid.kt` (the short cell labels Task 11 deferred), `.../ui/features/driving/views/driving_screen.kt`.
+  - **Deferred, on purpose:** the binding-edit dialog and the `onBindRequested` tap-through — a cell that is unbound renders disabled and taps do nothing, and the settings page that opens the dialog is Task 13. Pedal sides and the full `resetAll` stay there too. The camera pad's simple and analog shapes still need `CameraControlType`.
   - **Reference:** `mobile/lib/data/services/{input_mapping,controller_preset}.dart`, `TODO.md` Dashboard item 4.
 
 - [ ] **Task 13: Onboarding + permissions + settings** (M)

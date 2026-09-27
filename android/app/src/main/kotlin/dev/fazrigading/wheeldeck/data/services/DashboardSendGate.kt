@@ -167,6 +167,6 @@ class DashboardSendGate(
         const val DEFAULT_BLINK_PHASE_MS = 333L
 
         /// Empty (`""`) or dash (`"-"`) means unbound: the phone sends nothing.
-        fun isUnbound(binding: String) = binding.isEmpty() || binding == "-"
+        fun isUnbound(binding: String) = binding.isEmpty() || binding == GamePreset.UNBOUND
     }
 }
