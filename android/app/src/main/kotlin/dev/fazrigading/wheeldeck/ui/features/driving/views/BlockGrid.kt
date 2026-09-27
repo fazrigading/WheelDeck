@@ -313,15 +313,55 @@ fun DashboardControl(
     }
 }
 
-/// What a cell prints: the headlight cycle shows its stage, the rest their wire
-/// value.
+/// What a cell prints: the headlight cycle shows its stage, the rest their short
+/// label, falling back to the wire value for a control with no label.
 fun cellLabel(control: ControlId, gateState: DashboardGateState): String =
-    if (control != ControlId.HeadlightToggle) {
-        control.wireValue
-    } else {
+    if (control == ControlId.HeadlightToggle) {
         when (gateState.lightStage) {
             LightStage.Off -> "OFF"
             LightStage.Parking -> "PARK"
             LightStage.Low -> "LOW"
         }
+    } else {
+        CELL_LABELS[control] ?: control.wireValue
     }
+
+/// Short labels for the cells a driver reads at a glance, ported from
+/// `DashboardPanel.labelFor`. The signal cells print an arrow, matching the
+/// icons the Dart grid drew for them: their wire values do not fit a 1x1 cell.
+private val CELL_LABELS: Map<ControlId, String> = buildMap {
+    put(ControlId.TurnSignalLeft, "◀")
+    put(ControlId.TurnSignalRight, "▶")
+    put(ControlId.HighBeamToggle, "BEAM")
+    put(ControlId.CruiseToggle, "CRUISE")
+    put(ControlId.CruiseSetResume, "RESUME")
+    put(ControlId.ParkingBrake, "PARK")
+    put(ControlId.Wipers, "WIPE")
+    put(ControlId.EngineStart, "START")
+    put(ControlId.HazardLights, "HAZARD")
+    put(ControlId.BeaconLights, "BEACON")
+    put(ControlId.Flasher, "FLASH")
+    put(ControlId.Horn, "HORN")
+    put(ControlId.Trailer, "TRAILER")
+    put(ControlId.LiftDropAxle, "AXLE")
+    put(ControlId.CameraView, "CAM")
+    put(ControlId.GearUp, "GEAR+")
+    put(ControlId.GearDown, "GEAR-")
+    put(ControlId.EngineBrake, "E-BRK")
+    put(ControlId.AirHorn, "AIR")
+    put(ControlId.DifferentialLock, "DIFF")
+    put(ControlId.RetarderIncrease, "RET+")
+    put(ControlId.RetarderDecrease, "RET-")
+    put(ControlId.QuickInfo, "INFO")
+    put(ControlId.MirrorToggle, "MIRROR")
+    put(ControlId.HudWidgets, "HUD")
+    put(ControlId.VehicleAdjustment, "VEH")
+    put(ControlId.NavigationZoomOut, "NAV")
+    put(ControlId.WidgetOptions, "WIDGET")
+    put(ControlId.Services, "SVC")
+    put(ControlId.QuickSave, "SAVE")
+    put(ControlId.QuickLoad, "LOAD")
+    put(ControlId.Screenshot, "SHOT")
+    put(ControlId.GarageManager, "GARAGE")
+    put(ControlId.AudioPlayer, "AUDIO")
+}
