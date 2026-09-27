@@ -1,6 +1,8 @@
 # Task List: Flutter → Kotlin Migration
 
 Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](plan.md).
+On-device verification steps: [`tasks/manual-checklist.md`](manual-checklist.md).
+Deferred and known-gap notes: [`tasks/task-12-leftovers.md`](task-12-leftovers.md).
 
 ## Phase 1: Foundation
 

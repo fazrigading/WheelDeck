@@ -234,6 +234,10 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 - [ ] All acceptance criteria met across Tasks 1–15
 - [ ] Ready for review
 
+## Manual Verification
+
+On-device steps live in [`tasks/manual-checklist.md`](manual-checklist.md). Checkpoint B is open: no task past Task 6 has been exercised on hardware.
+
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
