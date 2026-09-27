@@ -112,15 +112,26 @@ public sealed class PairingManager
         }
     }
 
+    /// <summary>Fires after a device is revoked, with the revoked device id, so
+    /// the shell can notify the phone's live sockets and refresh the UI.</summary>
+    public event Action<string>? DeviceRevoked;
+
     /// <summary>Revokes a device, removing it from the trusted set.</summary>
     public void RevokeDevice(string deviceId)
     {
+        var revoked = false;
         lock (_mutationLock)
         {
             if (_devices.TryRemove(deviceId, out _))
             {
                 Persist();
+                revoked = true;
             }
+        }
+
+        if (revoked)
+        {
+            DeviceRevoked?.Invoke(deviceId);
         }
     }
 

@@ -23,6 +23,13 @@ mobile/ios/Flutter/flutter_export_environment.sh
 mobile/ios/Runner/GeneratedPluginRegistrant.h
 mobile/ios/Runner/GeneratedPluginRegistrant.m
 
+# --- Android (Kotlin app) ---
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.kotlin/
+
 # --- IDE / editor ---
 .idea/
 *.iml
