@@ -1,9 +1,37 @@
-# Task 12 Leftovers
+# Cutover Leftovers
 
-Written at the close of Task 12 (`efe0e58`) so Task 13 inherits the context
-instead of rediscovering it. Everything here is *deferred, not done* — the two
-TODO.md fixes Task 12 claims to have made are only half-landed, and one
-acceptance criterion has no replacement test.
+Started at the close of Task 12 (`efe0e58`) and kept live through the cutover
+(`ed05111` → the Task 15 commit). Everything here is **not done**. The migration
+is finished and `mobile/` is deleted, so this is the list of what a returning
+driver has lost or never had, and what is still unverified.
+
+Where this said "deferred", read "shipped in Flutter and never ported" — the
+layout editor and its three presets were *finished work* on the Flutter side
+(`plan/feature-custom-button-layout-1.md`, status Completed), not a backlog item.
+The Dart source is on `backup/flutter-port`.
+
+## The layout editor, three presets, and `LayoutProfileStore` did not come across
+
+This is the largest gap and the only outright regression. Flutter shipped, in the
+`#76` custom-layout work:
+
+- `LayoutProfileStore` — named profiles with a persisted active name
+- the layout *edit* API — `applyMove`, `addControl`, `removeSlot`, `freeSpans`
+- the `Simple Automatic`, `Real Automatic`, and `H-Shifter` presets alongside
+  `Sequential`
+
+Kotlin has `DrivingLayout.sequential` and a read-only `BlockGrid`. So
+`DrivingUiState.layout` never varies, the settings screen has no Layout preset
+section, and **the camera section's "hide when the layout has no camera pad slot"
+rule is unreachable** — it was reduced to rotatable-only because every layout
+Kotlin knows about has a pad.
+
+Two Dart test files have no Kotlin counterpart for the same reason:
+`driving_layout_edit_test.dart` and `layout_profile_test.dart`. Neither is a port
+gap to close; both describe code that does not exist yet.
+
+**To port it:** the reference is `mobile/lib/data/services/layout_profile.dart`
+and the edit half of `driving_layout.dart`, both on `backup/flutter-port`.
 
 ## The camera-pad `auto` alias does not make the pad work in gamepad mode
 
@@ -58,24 +86,27 @@ Consequence: nothing catches a regression that moves a signal cell. It needs a
 device (or an emulator job this repo does not have), so it is Checkpoint B
 work.
 
-## Unbound controls are inert and there is no way to bind them yet
+## Resolved: unbound controls are now bindable
 
-Task 12 shipped the binding *resolution* (preset's table, stored overrides,
-`resolveBinding`) but not the binding *editor*. `onBindRequested` has no port, so
-a cell with no default renders disabled with a "—" badge and taps do nothing.
+Was true from Task 12 through Task 13. Tapping an unbound dashboard cell now
+opens [BindingEditDialog](../android/app/src/main/kotlin/dev/fazrigading/wheeldeck/ui/features/settings/views/BindingEditDialog.kt)
+and the Keybind Configuration page lists all 92 controls. Kept here because the
+note that prompted the change is worth not losing.
 
-The controls this actually affects are the user-set-able ones with no default in
-either table: `shift_to_drive`, `shift_to_reverse`, `shift_to_neutral`,
-`engine_electricity`, `adaptive_cruise`, `cruise_speed_increase`,
-`cruise_speed_decrease`, `lane_assistant`, `lane_keeping`, `emergency_brake`,
-`wipers_back`, `audio_favorite`. The Sequential preset places several of them
-(`adaptive_cruise`, `lane_keeping`, `lane_assistant` are block A cells), so
-those cells are visibly dead. The Flutter app is in the same state by default
-and its binder is a tap on the disabled cell.
+## The PWA, and with it the iOS client, are gone
 
-Task 13's settings page and `onBindRequested` close this. It is the one
-leftover that leaves the app worse to use than it could be, so it is the reason
-Task 13 is next.
+`release.yml` built a web bundle from the Flutter build and deployed it to GitHub
+Pages. There is no web target any more, so iOS has no client at all. It was P2 and
+never served natively, so nothing that demonstrably worked is lost — but the
+supported-platforms table in `README.md` no longer lists iOS, and that is a real
+reduction in stated reach, not a documentation tidy-up.
+
+## The camera pad's simple and analog shapes have no renderer
+
+`CameraControlType` (D-pad / Simple / Analog) persists and the settings screen
+offers it, but only the D-pad renders. Tapping Simple or Analog changes a stored
+value and nothing on screen. The D-pad's own shapes were also part of the
+unported `#76` work.
 
 ## `clearBindingOverrides` was deleted
 

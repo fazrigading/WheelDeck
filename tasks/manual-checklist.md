@@ -194,7 +194,7 @@ expectation is not filed as a new issue.
 - Gyro-mode signal row and the whole gyro layout (pedal columns, per-pedal sides)
 - `signal_row_test`'s four placement assertions — pixel assertions with no
   unit-test replacement, so nothing catches a regression that moves a signal cell
-- Layout profiles and the layout editor; `Sequential` is the only layout. This
+- Layout presets and the layout editor; `Sequential` is the only one. This
   also defers the settings camera section's "hide when the layout has no camera
   pad slot" half, so that rule is currently rotatable-only
 - Camera pad simple and analog shapes — `CameraControlType` persists but has no
@@ -204,4 +204,4 @@ expectation is not filed as a new issue.
 - Menu, about, and donate screens (Task 14)
 
 Detail on all of these: [`task-12-leftovers.md`](task-12-leftovers.md),
-[`plan.md`](plan.md).
+[`plan/finished/migration-kotlin-1.md`](../plan/finished/migration-kotlin-1.md).
