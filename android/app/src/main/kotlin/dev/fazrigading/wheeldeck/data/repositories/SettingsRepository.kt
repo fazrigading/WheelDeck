@@ -1,22 +1,27 @@
 package dev.fazrigading.wheeldeck.data.repositories
 
+import dev.fazrigading.wheeldeck.data.services.CameraControlType
 import dev.fazrigading.wheeldeck.data.services.CameraPadMode
 import dev.fazrigading.wheeldeck.data.services.ControllerVisibility
 import dev.fazrigading.wheeldeck.data.services.DashboardVisibility
 import dev.fazrigading.wheeldeck.data.services.EngineStartMode
 import dev.fazrigading.wheeldeck.data.services.GamePreset
 import dev.fazrigading.wheeldeck.data.services.InputMapping
+import dev.fazrigading.wheeldeck.data.services.PedalSide
+import dev.fazrigading.wheeldeck.data.services.PedalSides
 import dev.fazrigading.wheeldeck.data.services.RotationDegree
 import dev.fazrigading.wheeldeck.data.services.SettingsStore
 import dev.fazrigading.wheeldeck.data.services.SpringBack
 import dev.fazrigading.wheeldeck.data.services.WheelMode
 import dev.fazrigading.wheeldeck.domain.models.ControlId
+import dev.fazrigading.wheeldeck.domain.models.PedalType
 
 /// Single source of truth for driving settings: mapping, visibility, wheel
 /// mode, rotation degrees, and the rest of the persisted toggles.
 ///
 /// Every getter applies the ported default when the key was never written, so
-/// callers never see a null. Pedal sides and the full reset land with Task 13.
+/// callers never see a null. Layout profiles and the camera pad's simple and
+/// analog shapes land with the custom-layout work.
 class SettingsRepository(private val store: SettingsStore) {
 
     suspend fun getMapping(): InputMapping =
@@ -104,6 +109,40 @@ class SettingsRepository(private val store: SettingsStore) {
     }
 
 
+    /// The camera control type the rotatable pad renders.
+    suspend fun getCameraControlType(): CameraControlType =
+        CameraControlType.fromWireValue(store.loadString(CameraControlType.KEY))
+
+    suspend fun setCameraControlType(type: CameraControlType) =
+        store.saveString(CameraControlType.KEY, type.wireValue)
+
+    /// The per-pedal screen placement, migrating a legacy 4-way layout on the
+    /// way through and removing it.
+    suspend fun getPedalSides(): PedalSides {
+        val legacy = store.loadString(PedalSides.LEGACY_KEY)
+        if (legacy != null) {
+            val migrated = PedalSides.fromLegacy(legacy)
+            setPedalSides(migrated)
+            store.remove(PedalSides.LEGACY_KEY)
+            return migrated
+        }
+        val stored = PedalType.entries.mapNotNull { pedal ->
+            store.loadString(PedalSides.key(pedal))
+                ?.let { PedalSide.fromWireValue(it).let { side -> pedal to side } }
+        }.toMap()
+        return PedalSides(stored)
+    }
+
+    suspend fun setPedalSides(sides: PedalSides) {
+        for (pedal in PedalType.entries) {
+            store.saveString(PedalSides.key(pedal), sides.sideOf(pedal).wireValue)
+        }
+    }
+
+    /// Moves one pedal to [side], leaving the others where they are.
+    suspend fun setPedalSide(pedal: PedalType, side: PedalSide) =
+        setPedalSides(PedalSides(getPedalSides().sides + (pedal to side)))
+
     /// The effective binding for [control]: a stored override for the active
     /// mapping mode, else the game preset's default. Empty means unbound, and the
     /// send gate then drops the control.
@@ -114,6 +153,31 @@ class SettingsRepository(private val store: SettingsStore) {
     ): String {
         val isGamepad = mapping == InputMapping.Gamepad
         return getBindingOverride(control, isGamepad) ?: preset.bindingFor(control, isGamepad)
+    }
+
+    /// Drops every override in both mapping modes, restoring the preset defaults.
+    suspend fun clearBindingOverrides() {
+        for (control in ControlId.entries) {
+            store.remove(bindingKey(control, isGamepad = false))
+            store.remove(bindingKey(control, isGamepad = true))
+        }
+    }
+
+    /// Restores every setting to the ported default and drops the overrides.
+    /// Mapping returns to [InputMapping.fallback], which is gamepad.
+    suspend fun resetAll() {
+        setMapping(InputMapping.fallback)
+        setPreset(GamePreset.fallback)
+        setVisibility(ControllerVisibility.fallback)
+        setWheelMode(WheelMode.fallback)
+        setSpringBack(SpringBack.FALLBACK)
+        setCameraPadMode(CameraPadMode.fallback)
+        setEngineStartMode(EngineStartMode.fallback)
+        setCameraControlType(CameraControlType.fallback)
+        setDashboardVisibility(DashboardVisibility())
+        setPedalSides(PedalSides.defaults())
+        for (preset in GamePreset.entries) setRotationDegree(preset, RotationDegree.FALLBACK)
+        clearBindingOverrides()
     }
 
     companion object {

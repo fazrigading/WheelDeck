@@ -112,6 +112,7 @@ fun CameraPad(
     bindingFor: (ControlId) -> String,
     onModeSwitch: () -> Unit,
     modifier: Modifier = Modifier,
+    onBindRequested: (ControlId) -> Unit = {},
 ) {
     Column(modifier = modifier) {
         for (row in 0..2) {
@@ -124,6 +125,7 @@ fun CameraPad(
                         input = input,
                         bindingFor = bindingFor,
                         onModeSwitch = onModeSwitch,
+                        onBindRequested = onBindRequested,
                         modifier = Modifier.weight(1f).fillMaxSize(),
                     )
                 }
@@ -143,6 +145,7 @@ private fun CameraPadCell(
     input: DashboardInput,
     bindingFor: (ControlId) -> String,
     onModeSwitch: () -> Unit,
+    onBindRequested: (ControlId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -187,8 +190,13 @@ private fun CameraPadCell(
                     CameraPadCellKind.Inert -> "Camera pad disabled"
                 }
             }
-            .pointerInput(press) {
-                if (inactive) return@pointerInput
+            .pointerInput(press, inactive) {
+                if (inactive) {
+                    // The arrow-mode diagonals carry no control; an unbound
+                    // direction cell does, and tapping it opens the binder.
+                    if (control != null) detectTapGestures { onBindRequested(control) }
+                    return@pointerInput
+                }
                 // A press gesture, not a drag: it reports down immediately and
                 // distinguishes a real release from a cancelled one, which is
                 // what the hold timing needs.

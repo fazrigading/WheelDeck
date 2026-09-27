@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Verified
@@ -67,7 +68,10 @@ import dev.fazrigading.wheeldeck.ui.features.connection.view_models.ConnectionVi
 /// M3 Connect screen: status card, paired/unpaired discovery lists, FAB manual add.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConnectionScreen(viewModel: ConnectionViewModel) {
+fun ConnectionScreen(
+    viewModel: ConnectionViewModel,
+    onOpenSettings: () -> Unit = {},
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var manualAddOpen by remember { mutableStateOf(false) }
 
@@ -85,6 +89,9 @@ fun ConnectionScreen(viewModel: ConnectionViewModel) {
             TopAppBar(
                 title = { Text("Connect to WheelDeck") },
                 actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                    }
                     FilledTonalIconButton(onClick = { viewModel.refreshDiscoveryAsync() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
                     }

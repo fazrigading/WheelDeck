@@ -277,7 +277,7 @@ class DrivingViewModelTest {
     }
 
     @Test
-    fun `refreshSettings picks up a mode switch and clears the gate`() = runTest(dispatcher) {
+    fun `re-init picks up a mode switch and clears the gate`() = runTest(dispatcher) {
         val store = InMemorySettingsStore(strings = mapOf(WheelMode.KEY to WheelMode.Gyro.wireValue))
         val f = fixture(store)
         f.viewModel.init()
@@ -286,7 +286,7 @@ class DrivingViewModelTest {
         assertTrue(f.viewModel.uiState.value.awaitingCalibration)
 
         store.saveString(WheelMode.KEY, WheelMode.Rotatable.wireValue)
-        f.viewModel.refreshSettings()
+        f.viewModel.init()
         advanceUntilIdle()
 
         assertTrue(f.viewModel.uiState.value.isRotatable)

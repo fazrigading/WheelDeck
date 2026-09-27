@@ -4,9 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import dev.fazrigading.wheeldeck.ui.core.AppShell
 import dev.fazrigading.wheeldeck.ui.core.LifecycleObserver
 import dev.fazrigading.wheeldeck.ui.core.theme.WheelDeckTheme
-import dev.fazrigading.wheeldeck.ui.features.connection.views.ConnectionScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         lifecycle.addObserver(LifecycleObserver(coordinator.viewModel))
         setContent {
             WheelDeckTheme {
-                ConnectionScreen(coordinator.viewModel)
+                AppShell(coordinator)
             }
         }
     }

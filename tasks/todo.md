@@ -37,7 +37,7 @@ Plan details, acceptance criteria, and verification commands: [`tasks/plan.md`](
 
 - [x] Task 11: Rotatable grid layout engine (**gear 2×1, ACC+BRK group 4×3, inter-block padding**)
 - [x] Task 12: Dashboard controls (signals/hazard/lights/engine; **camera pad keybinds default `auto`**)
-- [ ] Task 13: Onboarding + permissions + settings (**Keybind Configuration page; keyboard afloat, dashboard doesn't resize**)
+- [x] Task 13: Onboarding + permissions + settings (**Keybind Configuration page; keyboard afloat, dashboard doesn't resize**)
 
 ## Checkpoint C: Parity + fixes
 
