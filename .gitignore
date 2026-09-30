@@ -43,4 +43,5 @@ Thumbs.db
 
 # --- Graphify ---
 .opencode
+.commandcode
 graphify-out/
