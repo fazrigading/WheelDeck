@@ -42,6 +42,7 @@ android/.kotlin/
 Thumbs.db
 
 # --- Graphify ---
-.opencode
-.commandcode
+.opencode/
+.commandcode/
+.claude/
 graphify-out/
