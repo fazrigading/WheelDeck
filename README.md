@@ -10,6 +10,8 @@ Primary target: Euro Truck Simulator 2.
 
 ## How it works
 
+[![Architecture diagram of fazrigading/wheeldeck](https://gitdiagram.com/fazrigading/wheeldeck/diagram.png)](https://gitdiagram.com/fazrigading/wheeldeck?utm_source=readme&utm_medium=picture)
+
 1. Phone captures gyroscope steering, touch pedals, and dashboard button presses
 2. Phone discovers the desktop server on the local network via mDNS
 3. One-time PIN pairing establishes a session
