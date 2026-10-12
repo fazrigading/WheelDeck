@@ -62,9 +62,9 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 - [x] **Task 1: Scaffold Android project** (S)
   - New `android/` Gradle KTS project: version catalog, Kotlin 2.x, Compose BOM, Material 3, package `dev.fazrigading.wheeldeck`, minSdk 26 / targetSdk 36. Manifest permissions (INTERNET, CHANGE_WIFI_MULTICAST_STATE). `data/domain/ui` package skeleton, `AppContainer`, M3 theme ported from `mobile/lib/ui/core/theme/app_theme.dart`, empty shell screen. Extend `.github` CI with an Android build+test job.
   - **Acceptance criteria:**
-    - [ ] `./gradlew assembleDebug` builds; app installs and launches on a device
-    - [ ] `./gradlew test` green
-    - [ ] Theme (colors/typography) matches the Flutter app visually
+    - [x] `./gradlew assembleDebug` builds; app installs and launches on a device
+    - [x] `./gradlew test` green
+    - [x] Theme (colors/typography) matches the Flutter app visually
   - **Verification:** `./gradlew assembleDebug test`; manual install + launch.
   - **Dependencies:** None.
   - **Files likely touched:** `android/**` (new), `.github/workflows/*`.
@@ -73,7 +73,7 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
 - [x] **Task 2: Protocol models + contract tests** (M)
   - kotlinx.serialization models for all five schema files (`button_message`, `state_message`, `mapping_message`, `session_messages`, `controls` enums). Port `control_contract_test.dart` and `input_mapping_test.dart` — these define the wire contract with the desktop.
   - **Acceptance criteria:**
-    - [ ] Every schema message type has a Kotlin model that round-trips JSON compatible with desktop expectations
+    - [x] Every schema message type has a Kotlin model that round-trips JSON compatible with desktop expectations
     - [ ] `control_contract_test` and `input_mapping_test` ports pass
   - **Verification:** `./gradlew test`.
   - **Dependencies:** Task 1.
@@ -81,17 +81,17 @@ Rebuild the `mobile/` Flutter app as an Android-native Kotlin + Jetpack Compose 
   - **Reference:** `mobile/lib/domain/models/*.dart`, `mobile/lib/data/services/input_mapping.dart`, `protocol/schema/*.json`.
 
 ### Checkpoint: Foundation
-- [ ] Android project builds and tests run in CI
-- [ ] Wire contract pinned by contract tests
+- [x] Android project builds and tests run in CI
+- [x] Wire contract pinned by contract tests
 
 ### Phase 2: Connection core (highest risk — fail fast on real hardware)
 
 - [x] **Task 3: mDNS discovery** (M)
   - `NsdManager` discovery of `_wheeldeck._tcp.` services; port `discovery.dart` semantics (dedupe, target model, manual IP/port fallback). Hide `NsdManager` behind an interface so discovery logic is testable with a fake.
   - **Acceptance criteria:**
-    - [ ] Kotlin app discovers a running desktop on the LAN on a real device
-    - [ ] Manual IP add works as fallback
-    - [ ] Discovery logic unit-tested via fake (NsdManager service-type format handled once, in one place)
+    - [x] Kotlin app discovers a running desktop on the LAN on a real device
+    - [x] Manual IP add works as fallback
+    - [x] Discovery logic unit-tested via fake (NsdManager service-type format handled once, in one place)
   - **Verification:** `./gradlew test`; manual device check against `dotnet run --project WheelDeck.App`.
   - **Dependencies:** Task 1.
   - **Files likely touched:** `.../data/repositories/server_discovery_repository.kt`, `.../data/services/discovery.kt`, `.../domain/models/discovered_server.kt`.
