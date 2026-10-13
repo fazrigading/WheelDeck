@@ -57,6 +57,10 @@ jobs:
           dotnet publish desktop/WheelDeck.App/WheelDeck.App.csproj
           -c Release -r win-x64 --self-contained -o publish/windows
 
+      - name: Include HIDMaestro license
+        run: |
+          Copy-Item -Path desktop/third_party/HIDMaestro/LICENSE -Destination publish/windows/LICENSE -Force
+
       - name: Zip
         run: Compress-Archive -Path publish/windows/* -DestinationPath wheeldeck-windows-x64.zip
 
