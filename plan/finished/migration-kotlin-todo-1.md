@@ -43,13 +43,13 @@ Deferred and known-gap notes: [`tasks/task-12-leftovers.md`](../../tasks/task-12
 
 ## Checkpoint C: Parity + fixes
 
-- [ ] Side-by-side parity vs Flutter + all seven TODO.md fixes verified; `./gradlew test` and `flutter test` green
+- [x] Side-by-side parity vs Flutter + all seven TODO.md fixes verified; `./gradlew test` and `flutter test` green
 
 ## Phase 5: Polish + cutover
 
 - [x] Task 14: Menu / about / donate screens
-- [ ] Task 15: Cutover (docs rewrite, CI update, delete `mobile/`, archive plan, check off TODO.md items)
+- [x] Task 15: Cutover (docs rewrite, CI update, delete `mobile/`, archive plan, check off TODO.md items)
 
 ## Checkpoint: Complete
 
-- [ ] All acceptance criteria met; ready for review
+- [x] All acceptance criteria met; ready for review
